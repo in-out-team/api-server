@@ -7,6 +7,7 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
+import java.util.*
 
 class UserRepositoryTest {
     private val userJpaRepository = mockk<UserJpaRepository>()
@@ -61,5 +62,57 @@ class UserRepositoryTest {
         assertEquals(user.email, result.email)
         assertEquals(user.password, result.password)
         assertEquals(user.nickname, result.nickname)
+    }
+
+    @Test
+    fun `update - should return updated user`() {
+        // given
+        val user = UserEntity(
+            id = 1L,
+            email = "email@1.com",
+            password = "password",
+            nickname = "nickname",
+            createdAt = now,
+            updatedAt = now
+        )
+        every { userJpaRepository.save(any()) } returns user
+
+        // when
+        val result = userRepository.update(user.toDomain())
+
+        // then
+        assertNotNull(result)
+        assertEquals(user.id, result.id)
+        assertEquals(user.email, result.email)
+        assertEquals(user.password, result.password)
+        assertEquals(user.nickname, result.nickname)
+    }
+
+    @Test
+    fun `findById - should return null when user not found`() {
+        // given
+        val id = 1L
+        every { userJpaRepository.findById(id) } returns Optional.empty()
+
+        // when
+        val result = userRepository.findById(id)
+
+        // then
+        assertNull(result)
+    }
+
+    @Test
+    fun `findById - should return user when user found`() {
+        // given
+        val id = 1L
+        val userEntity = UserEntity(id = id, email = "email@1.com", password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
+        every { userJpaRepository.findById(id) } returns Optional.of(userEntity)
+
+        // when
+        val result = userRepository.findById(id)
+
+        // then
+        assertNotNull(result)
+        assertEquals(userEntity.id, result?.id)
     }
 }

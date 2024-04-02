@@ -2,6 +2,7 @@ package com.inout.apiserver.config
 
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.InOutRequireNotNullException
+import com.inout.apiserver.error.NotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -32,5 +33,12 @@ class ControllerAdvice {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse(code = e.code, message = e.message ?: "Internal Server Error"))
+    }
+
+    @ExceptionHandler(NotFoundException::class)
+    fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(code = e.code, message = e.message ?: "Not Found"))
     }
 }

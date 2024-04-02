@@ -8,8 +8,8 @@ data class User(
     val email: String,
     val password: String,
     val nickname: String,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    val createdAt: LocalDateTime?,
+    val updatedAt: LocalDateTime?,
 ) {
     fun toEntity(): UserEntity {
         return UserEntity(

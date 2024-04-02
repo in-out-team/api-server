@@ -1,8 +1,10 @@
 package com.inout.apiserver.service
 
 import com.inout.apiserver.controller.v1.request.CreateUserRequest
+import com.inout.apiserver.controller.v1.request.UpdateUserRequest
 import com.inout.apiserver.domain.User
 import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.repository.user.UserRepository
 import org.springframework.stereotype.Service
 
@@ -21,7 +23,16 @@ class UserService(
         )
     }
 
+    fun updateUser(request: UpdateUserRequest): User {
+        val user = getUserById(request.id) ?: throw NotFoundException(message = "User not found", code = "USER_2")
+        return userRepository.update(user.copy(nickname = request.nickname))
+    }
+
     fun getUserByEmail(email: String): User? {
         return userRepository.findByEmail(email.lowercase())
+    }
+
+    fun getUserById(id: Long): User? {
+        return userRepository.findById(id)
     }
 }

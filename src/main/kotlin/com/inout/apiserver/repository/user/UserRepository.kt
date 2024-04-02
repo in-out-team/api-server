@@ -24,4 +24,12 @@ class UserRepository(
             )
         ).toDomain()
     }
+
+    fun update(user: User): User {
+        return userJpaRepository.save(user.toEntity()).toDomain()
+    }
+
+    fun findById(id: Long): User? {
+        return userJpaRepository.findById(id).orElse(null)?.toDomain()
+    }
 }

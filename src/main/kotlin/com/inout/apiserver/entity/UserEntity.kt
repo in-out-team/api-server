@@ -3,9 +3,9 @@ package com.inout.apiserver.entity
 import com.inout.apiserver.config.JpaAuditingConfig
 import com.inout.apiserver.domain.User
 import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicUpdate
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedDate
+import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
 @Entity
@@ -20,11 +20,11 @@ data class UserEntity(
     val email: String,
     val password: String,
     val nickname: String,
-    @CreatedDate
+    @CreationTimestamp
     @Column(updatable = false)
-    val createdAt: LocalDateTime,
-    @LastModifiedDate
-    val updatedAt: LocalDateTime
+    val createdAt: LocalDateTime? = null,
+    @UpdateTimestamp
+    val updatedAt: LocalDateTime? = null,
 ) {
     fun toDomain(): User {
         return User(
