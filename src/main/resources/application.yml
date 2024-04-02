@@ -7,10 +7,10 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
+        show-sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 # disable spring security's basic auth
 security:
@@ -18,3 +18,11 @@ security:
     enabled: false
 # debug true for development
 debug: true
+# set bindings for SQL
+logging:
+  level:
+    org:
+      hibernate:
+        orm:
+          jdbc:
+            bind: trace
