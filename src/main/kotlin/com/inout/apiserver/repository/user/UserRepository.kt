@@ -19,6 +19,8 @@ class UserRepository(
                 email = user.email,
                 password = user.password,
                 nickname = user.nickname,
+                createdAt = user.createdAt,
+                updatedAt = user.updatedAt
             )
         ).toDomain()
     }

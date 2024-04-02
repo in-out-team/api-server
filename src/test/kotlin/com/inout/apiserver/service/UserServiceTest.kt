@@ -9,17 +9,19 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.LocalDateTime
 
 class UserServiceTest {
     private val userRepository = mockk<UserRepository>()
     private val userService = UserService(userRepository)
+    private val now = LocalDateTime.now()
 
     @Test
     fun `createUser - should raise error when user already exists`() {
         // Given
         val email = "email@1.com"
         val request = CreateUserRequest(email = email, password = "password", nickname = "nickname")
-        val existingUser = User(id = 1L, email = email, password = "password", nickname = "nickname")
+        val existingUser = User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         every { userRepository.findByEmail(email) } returns existingUser
 
         // When
@@ -37,7 +39,7 @@ class UserServiceTest {
         // Given
         val email = "email@1.com"
         val request = CreateUserRequest(email = email, password = "password", nickname = "nickname")
-        val newUser = User(id = 1L, email = email, password = "password", nickname = "nickname")
+        val newUser = User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         every { userRepository.findByEmail(email) } returns null
         every { userRepository.save(any()) } returns newUser
 
@@ -66,7 +68,7 @@ class UserServiceTest {
     fun `getUserByEmail - should return user when user exists`() {
         // Given
         val email = "email@1.com"
-        val user = User(id = 1L, email = email, password = "password", nickname = "nickname")
+        val user = User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         every { userRepository.findByEmail(email) } returns user
 
         // When

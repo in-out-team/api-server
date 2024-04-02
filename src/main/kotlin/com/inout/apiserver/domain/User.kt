@@ -1,12 +1,15 @@
 package com.inout.apiserver.domain
 
 import com.inout.apiserver.entity.UserEntity
+import java.time.LocalDateTime
 
 data class User(
     val id: Long?,
     val email: String,
     val password: String,
     val nickname: String,
+    val createdAt: LocalDateTime,
+    val updatedAt: LocalDateTime,
 ) {
     fun toEntity(): UserEntity {
         return UserEntity(
@@ -14,6 +17,8 @@ data class User(
             email = email,
             password = password,
             nickname = nickname,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
         )
     }
 
@@ -24,6 +29,8 @@ data class User(
                 email = email.lowercase(),
                 password = password,
                 nickname = nickname,
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now(),
             )
         }
     }

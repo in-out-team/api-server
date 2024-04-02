@@ -6,6 +6,7 @@ import com.inout.apiserver.service.UserService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class CreateUserApplicationTest {
