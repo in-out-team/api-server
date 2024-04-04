@@ -1,9 +1,12 @@
 package com.inout.apiserver.config.security
 
+import com.inout.apiserver.repository.user.UserRepository
+import com.inout.apiserver.service.boot.CustomUserDetailsService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.DefaultSecurityFilterChain
 
 @Configuration
@@ -23,5 +26,10 @@ class SecurityConfig() {
             }
 
         return http.build()
+    }
+
+    @Bean
+    fun userDetailsService(userRepository: UserRepository): UserDetailsService {
+        return CustomUserDetailsService(userRepository)
     }
 }
