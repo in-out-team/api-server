@@ -1,4 +1,4 @@
-package com.inout.apiserver.config
+package com.inout.apiserver.config.security
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

@@ -1,4 +1,4 @@
-package com.inout.apiserver.config.boot.jwt
+package com.inout.apiserver.config.jwt
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.EnableConfigurationProperties

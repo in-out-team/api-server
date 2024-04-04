@@ -1,6 +1,6 @@
 package com.inout.apiserver.service
 
-import com.inout.apiserver.config.boot.jwt.JwtProperties
+import com.inout.apiserver.config.jwt.JwtProperties
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts

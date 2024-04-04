@@ -1,6 +1,6 @@
 package com.inout.apiserver.entity
 
-import com.inout.apiserver.config.JpaAuditingConfig
+import com.inout.apiserver.config.jpa.JpaAuditingConfig
 import com.inout.apiserver.domain.User
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
