@@ -1,4 +1,4 @@
-package com.inout.apiserver.service.boot
+package com.inout.apiserver.service.security
 
 import com.inout.apiserver.domain.User
 import com.inout.apiserver.repository.user.UserRepository
