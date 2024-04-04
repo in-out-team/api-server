@@ -11,3 +11,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
+jwt:
+  key: "test-super-long-secret-key-1234567890"
+  access-token-expiration: 60000000
+  refresh-token-expiration: 300000000

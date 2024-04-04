@@ -26,3 +26,8 @@ logging:
         orm:
           jdbc:
             bind: trace
+# jwt token configuration
+jwt:
+  key: ${JWT_KEY}
+  access-token-expiration: 60000
+  refresh-token-expiration: 300000
