@@ -6,11 +6,13 @@ import com.inout.apiserver.domain.User
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.repository.user.UserRepository
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
 @Service
 class UserService(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val passwordEncoder: PasswordEncoder
 ) {
     fun createUser(request: CreateUserRequest): User {
         val existingUser = getUserByEmail(request.email)
@@ -19,7 +21,11 @@ class UserService(
         }
 
         return userRepository.save(
-            User.newOf(email = request.email, password = request.password, nickname = request.nickname)
+            User.newOf(
+                email = request.email,
+                password = passwordEncoder.encode(request.password),
+                nickname = request.nickname
+            )
         )
     }
 
