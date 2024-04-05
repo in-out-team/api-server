@@ -1,8 +1,6 @@
 package com.inout.apiserver.config
 
-import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.error.InOutRequireNotNullException
-import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.error.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -40,5 +38,19 @@ class ControllerAdvice {
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
             .body(ErrorResponse(code = e.code, message = e.message ?: "Not Found"))
+    }
+
+    @ExceptionHandler(InvalidCredentialsException::class)
+    fun handleInvalidCredentialsException(e: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(code = e.code, message = e.message ?: "Unauthorized"))
+    }
+
+    @ExceptionHandler(InternalServerErrorException::class)
+    fun handleInternalServerErrorException(e: InternalServerErrorException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ErrorResponse(code = e.code, message = e.message ?: "Internal Server Error"))
     }
 }
