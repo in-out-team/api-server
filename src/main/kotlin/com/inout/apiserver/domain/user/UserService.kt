@@ -19,7 +19,7 @@ class UserService(
         if (existingUser != null) {
             throw ConflictException(message = "User already exists", code = "USER_1")
         }
-
+        // TODO: validate user parameters like email length/pattern, password length/pattern, nickname length, etc
         val userCreateObject = UserCreateObject(
             email = request.email,
             password = passwordEncoder.encode(request.password),

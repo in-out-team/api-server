@@ -33,6 +33,7 @@ class SecurityConfig(
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // permit all swagger related requests (TODO: this is for dev, disable on prod)
                     .requestMatchers(HttpMethod.POST, "/v1/users").permitAll() // for user creation, no authentication required
                     .requestMatchers("/v*/auth/**").permitAll() // for user authentication, no authentication required
                     .requestMatchers("/admin/**").hasRole("ADMIN") // admin role check
