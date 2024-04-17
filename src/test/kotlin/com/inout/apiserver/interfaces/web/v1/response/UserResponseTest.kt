@@ -1,4 +1,4 @@
-package com.inout.apiserver.controller.v1.response
+package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.domain.User
 import com.inout.apiserver.error.InOutRequireNotNullException

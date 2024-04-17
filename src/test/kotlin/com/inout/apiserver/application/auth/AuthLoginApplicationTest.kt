@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
-import com.inout.apiserver.controller.v1.request.UserLoginRequest
+import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.service.TokenService

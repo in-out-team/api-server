@@ -1,4 +1,4 @@
-package com.inout.apiserver.controller.v1.response
+package com.inout.apiserver.interfaces.web.v1.response
 
 data class TokenResponse(
     val accessToken: String

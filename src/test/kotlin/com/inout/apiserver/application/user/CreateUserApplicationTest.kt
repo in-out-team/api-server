@@ -1,6 +1,6 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.controller.v1.request.CreateUserRequest
+import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.service.UserService
 import io.mockk.every

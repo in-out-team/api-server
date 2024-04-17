@@ -1,4 +1,4 @@
-package com.inout.apiserver.controller.v1.request
+package com.inout.apiserver.interfaces.web.v1.request
 
 data class UserLoginRequest(
     val email: String,

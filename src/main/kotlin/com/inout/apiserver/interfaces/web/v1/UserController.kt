@@ -1,11 +1,11 @@
-package com.inout.apiserver.controller.v1
+package com.inout.apiserver.interfaces.web.v1
 
 import com.inout.apiserver.application.user.CreateUserApplication
 import com.inout.apiserver.application.user.ReadUserApplication
 import com.inout.apiserver.application.user.UpdateUserApplication
-import com.inout.apiserver.controller.v1.request.CreateUserRequest
-import com.inout.apiserver.controller.v1.request.UpdateUserRequest
-import com.inout.apiserver.controller.v1.response.UserResponse
+import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
+import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
+import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import org.springframework.web.bind.annotation.*
 
 @RestController
