@@ -26,8 +26,7 @@ class UserController(
         return ResponseEntity(updateUserApplication.run(request), OK)
     }
 
-    @GetMapping("/{id}")
-    fun getUser(@PathVariable id: Long): UserResponse {
-        return readUserApplication.run(id)
+    override fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse> {
+        return ResponseEntity(readUserApplication.run(id), OK)
     }
 }
