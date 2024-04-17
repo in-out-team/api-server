@@ -1,18 +1,14 @@
 package com.inout.apiserver.infrastructure.db.user
 
-import com.inout.apiserver.config.jpa.JpaAuditingConfig
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
+import com.inout.apiserver.infrastructure.db.BaseEntity
 import jakarta.persistence.*
-import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicUpdate
-import org.hibernate.annotations.UpdateTimestamp
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "users")
-@EntityListeners(JpaAuditingConfig::class)
 @DynamicUpdate
 data class UserEntity(
     @Column(unique = true)

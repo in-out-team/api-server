@@ -1,4 +1,4 @@
-package com.inout.apiserver.infrastructure.db.user
+package com.inout.apiserver.infrastructure.db
 
 import com.inout.apiserver.config.jpa.JpaAuditingConfig
 import jakarta.persistence.*
