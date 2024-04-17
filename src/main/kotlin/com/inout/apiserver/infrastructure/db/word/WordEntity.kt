@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.DynamicUpdate
 
 enum class LanguageTypes {
     ENGLISH,
@@ -19,6 +20,7 @@ enum class LanguageTypes {
 @Table(name = "words", uniqueConstraints = [
     UniqueConstraint(columnNames = ["name", "language"])
 ])
+@DynamicUpdate
 data class WordEntity(
     val name: String,
     @Enumerated(EnumType.STRING)
