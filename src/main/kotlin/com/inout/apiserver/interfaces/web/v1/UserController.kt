@@ -22,9 +22,8 @@ class UserController(
         return ResponseEntity(createUserApplication.run(request), CREATED)
     }
 
-    @PutMapping
-    fun updateUser(@RequestBody request: UpdateUserRequest): UserResponse {
-        return updateUserApplication.run(request)
+    override fun updateUser(@RequestBody request: UpdateUserRequest): ResponseEntity<UserResponse> {
+        return ResponseEntity(updateUserApplication.run(request), OK)
     }
 
     @GetMapping("/{id}")
