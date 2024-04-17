@@ -1,6 +1,5 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
