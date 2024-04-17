@@ -7,6 +7,7 @@ import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -148,8 +149,8 @@ class UserServiceTest {
         val request = UpdateUserRequest(id = 1L, nickname = "nickname")
         val user = User(id = 1L, email = "email@1.com", password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         val updatedUser = user.copy(nickname = request.nickname)
-        every { userRepository.findById(1L) } returns user
-        every { userRepository.update(updatedUser) } returns updatedUser
+        every { userRepository.findById(any()) } returns user
+        every { userRepository.save(any()) } returns updatedUser
 
         // When
         val result = userService.updateUser(request)
@@ -159,6 +160,8 @@ class UserServiceTest {
         assertEquals(request.nickname, result.nickname)
         assertEquals(user.email, result.email)
         assertEquals(user.password, result.password)
+        verify(exactly = 1) { userRepository.save(any()) }
+        verify(exactly = 1) { userRepository.findById(any()) }
     }
 }
 

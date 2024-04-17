@@ -1,6 +1,7 @@
 package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.domain.user.User
+import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -11,21 +12,8 @@ class UserRepository(
         return userJpaRepository.findByEmail(email)?.toDomain()
     }
 
-    fun save(user: User): User {
-        return userJpaRepository.save(
-            UserEntity(
-                id = null,
-                email = user.email,
-                password = user.password,
-                nickname = user.nickname,
-                createdAt = user.createdAt,
-                updatedAt = user.updatedAt
-            )
-        ).toDomain()
-    }
-
-    fun update(user: User): User {
-        return userJpaRepository.save(user.toEntity()).toDomain()
+    fun save(user: UserEntity): User {
+        return userJpaRepository.save(user).toDomain()
     }
 
     fun findById(id: Long): User? {

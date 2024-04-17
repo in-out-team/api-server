@@ -2,6 +2,8 @@ package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.config.jpa.JpaAuditingConfig
 import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.domain.user.UserCreateObject
+import com.inout.apiserver.error.InOutRequireNotNullException
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicUpdate
@@ -13,27 +15,41 @@ import java.time.LocalDateTime
 @EntityListeners(JpaAuditingConfig::class)
 @DynamicUpdate
 data class UserEntity(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long?,
     @Column(unique = true)
     val email: String,
     val password: String,
     val nickname: String,
-    @CreationTimestamp
-    @Column(updatable = false)
-    val createdAt: LocalDateTime? = null,
-    @UpdateTimestamp
-    val updatedAt: LocalDateTime? = null,
-) {
+) : BaseEntity() {
     fun toDomain(): User {
         return User(
-            id = requireNotNull(id),
+            id = id ?: throw InOutRequireNotNullException("User id is null", "IORNN_USER_1"),
             email = email,
             password = password,
             nickname = nickname,
             createdAt = createdAt,
             updatedAt = updatedAt,
         )
+    }
+
+    companion object {
+        fun of(user: User): UserEntity {
+            return UserEntity(
+                email = user.email,
+                password = user.password,
+                nickname = user.nickname,
+            ).apply {
+                id = user.id
+                createdAt = user.createdAt
+                updatedAt = user.updatedAt
+            }
+        }
+
+        fun fromCreateObject(userCreateObject: UserCreateObject): UserEntity {
+            return UserEntity(
+                email = userCreateObject.email.lowercase(),
+                password = userCreateObject.password,
+                nickname = userCreateObject.nickname,
+            )
+        }
     }
 }

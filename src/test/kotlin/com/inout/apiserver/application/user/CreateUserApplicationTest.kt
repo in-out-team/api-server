@@ -28,22 +28,6 @@ class CreateUserApplicationTest {
     }
 
     @Test
-    fun `run - should throw InOutRequireNotNullException when user id is null`() {
-        // given
-        val request = mockk<CreateUserRequest>()
-        every { userService.createUser(request) } returns mockk { every { id } returns null }
-
-        // when
-        val error = assertThrows(InOutRequireNotNullException::class.java) {
-            createUserApplication.run(request)
-        }
-
-        // then
-        assertEquals("User id is null", error.message)
-        assertEquals("IORNN_USER_1", error.code)
-    }
-
-    @Test
     fun `run - should return UserResponse when user is created successfully`() {
         // given
         val request = mockk<CreateUserRequest>()

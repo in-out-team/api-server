@@ -11,7 +11,7 @@ data class UserResponse(
     companion object {
         fun from(user: User): UserResponse {
             return UserResponse(
-                id = user.id ?: throw InOutRequireNotNullException(message = "User id is null", code = "IORNN_USER_1"),
+                id = user.id,
                 email = user.email,
                 nickname = user.nickname,
             )

@@ -4,6 +4,7 @@ import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.user.UserEntity
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
@@ -19,18 +20,17 @@ class UserService(
             throw ConflictException(message = "User already exists", code = "USER_1")
         }
 
-        return userRepository.save(
-            User.newOf(
-                email = request.email,
-                password = passwordEncoder.encode(request.password),
-                nickname = request.nickname
-            )
+        val userCreateObject = UserCreateObject(
+            email = request.email,
+            password = passwordEncoder.encode(request.password),
+            nickname = request.nickname
         )
+        return userRepository.save(UserEntity.fromCreateObject(userCreateObject))
     }
 
     fun updateUser(request: UpdateUserRequest): User {
         val user = getUserById(request.id) ?: throw NotFoundException(message = "User not found", code = "USER_2")
-        return userRepository.update(user.copy(nickname = request.nickname))
+        return userRepository.save(UserEntity.of(user.copy(nickname = request.nickname)))
     }
 
     fun getUserByEmail(email: String): User? {
