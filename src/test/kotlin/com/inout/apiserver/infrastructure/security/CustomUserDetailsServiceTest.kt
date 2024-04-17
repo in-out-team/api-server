@@ -1,10 +1,10 @@
-package com.inout.apiserver.service.security
+package com.inout.apiserver.infrastructure.security
 
-import com.inout.apiserver.domain.User
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 
@@ -19,7 +19,7 @@ class CustomUserDetailsServiceTest {
         every { userRepository.findByEmail(email) } returns null
 
         // when & then
-        assertThrows(UsernameNotFoundException::class.java) {
+        Assertions.assertThrows(UsernameNotFoundException::class.java) {
             customUserDetailsService.loadUserByUsername(email)
         }
     }
@@ -35,8 +35,8 @@ class CustomUserDetailsServiceTest {
         val userDetails = customUserDetailsService.loadUserByUsername(email)
 
         // then
-        assertEquals(email, userDetails.username)
-        assertEquals("password", userDetails.password)
-        assertEquals("ROLE_USER", userDetails.authorities.first().authority)
+        Assertions.assertEquals(email, userDetails.username)
+        Assertions.assertEquals("password", userDetails.password)
+        Assertions.assertEquals("ROLE_USER", userDetails.authorities.first().authority)
     }
 }

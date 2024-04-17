@@ -1,9 +1,9 @@
-package com.inout.apiserver.service
+package com.inout.apiserver.domain.auth
 
 import io.jsonwebtoken.Claims
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,14 +44,14 @@ class TokenServiceTest(
         val token = tokenService.generate(userDetails, expirationDate, extraClaims)
 
         // then
-        assertTrue(token.isNotBlank())
+        Assertions.assertTrue(token.isNotBlank())
         val claims = useTokenServiceGetClaimsWithToken(token)
         // check if expiration matches up to second
         // - this is because implementation of JwtBuilder's expiration method slices out milliseconds
-        assertEquals(expirationDate.time / 1000, claims.expiration.time / 1000)
-        assertEquals(userDetails.username, claims.subject)
-        assertEquals(extraClaims["key1"], claims["key1"])
-        assertEquals(extraClaims["key2"], claims["key2"])
+        Assertions.assertEquals(expirationDate.time / 1000, claims.expiration.time / 1000)
+        Assertions.assertEquals(userDetails.username, claims.subject)
+        Assertions.assertEquals(extraClaims["key1"], claims["key1"])
+        Assertions.assertEquals(extraClaims["key2"], claims["key2"])
     }
 
     @Test
@@ -64,7 +64,7 @@ class TokenServiceTest(
         val isValid = tokenService.isValid(token, userDetails)
 
         // then
-        assertTrue(isValid)
+        Assertions.assertTrue(isValid)
     }
 
     @Test
@@ -74,7 +74,7 @@ class TokenServiceTest(
         val token = tokenService.generate(userDetails, expirationDate)
 
         // when & then
-        assertFalse(tokenService.isValid(token, userDetails))
+        Assertions.assertFalse(tokenService.isValid(token, userDetails))
     }
 
     @Test
@@ -86,7 +86,7 @@ class TokenServiceTest(
         every { otherUserDetails.username } returns userDetails.username + "1"
 
         // when & then
-        assertFalse(tokenService.isValid(token, otherUserDetails))
+        Assertions.assertFalse(tokenService.isValid(token, otherUserDetails))
     }
 
     @Test
@@ -99,7 +99,7 @@ class TokenServiceTest(
         val isExpired = tokenService.isExpired(token)
 
         // then
-        assertTrue(isExpired)
+        Assertions.assertTrue(isExpired)
     }
 
     @Test
@@ -112,7 +112,7 @@ class TokenServiceTest(
         val isExpired = tokenService.isExpired(token)
 
         // then
-        assertFalse(isExpired)
+        Assertions.assertFalse(isExpired)
     }
 
     @Test
@@ -125,7 +125,7 @@ class TokenServiceTest(
         val email = tokenService.extractEmail(token)
 
         // then
-        assertEquals(userDetails.username, email)
+        Assertions.assertEquals(userDetails.username, email)
     }
 
     @Test
@@ -138,6 +138,6 @@ class TokenServiceTest(
         val email = tokenService.extractEmail(token)
 
         // then
-        assertNull(email)
+        Assertions.assertNull(email)
     }
 }

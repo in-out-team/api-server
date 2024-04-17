@@ -1,4 +1,4 @@
-package com.inout.apiserver.service
+package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
 import io.jsonwebtoken.Claims

@@ -1,4 +1,4 @@
-package com.inout.apiserver.service.security
+package com.inout.apiserver.infrastructure.security
 
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import org.springframework.security.core.userdetails.User as SecurityUser

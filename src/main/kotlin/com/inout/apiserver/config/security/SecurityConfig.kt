@@ -2,7 +2,7 @@ package com.inout.apiserver.config.security
 
 import com.inout.apiserver.config.filter.JwtAuthFilter
 import com.inout.apiserver.infrastructure.db.user.UserRepository
-import com.inout.apiserver.service.security.CustomUserDetailsService
+import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod

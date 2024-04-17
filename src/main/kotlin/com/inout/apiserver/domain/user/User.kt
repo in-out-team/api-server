@@ -1,4 +1,4 @@
-package com.inout.apiserver.domain
+package com.inout.apiserver.domain.user
 
 import com.inout.apiserver.infrastructure.db.user.UserEntity
 import java.time.LocalDateTime

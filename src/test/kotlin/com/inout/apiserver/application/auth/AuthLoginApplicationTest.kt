@@ -4,24 +4,16 @@ import com.inout.apiserver.config.jwt.JwtProperties
 import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
-import com.inout.apiserver.service.TokenService
-import com.inout.apiserver.service.security.CustomUserDetailsService
+import com.inout.apiserver.domain.auth.TokenService
+import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.`when`
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.AuthenticationProvider
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.security.core.userdetails.UserDetailsService
 
 class AuthLoginApplicationTest {
     private val tokenService = mockk<TokenService>()

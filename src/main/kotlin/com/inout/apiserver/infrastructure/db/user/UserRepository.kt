@@ -1,6 +1,6 @@
 package com.inout.apiserver.infrastructure.db.user
 
-import com.inout.apiserver.domain.User
+import com.inout.apiserver.domain.user.User
 import org.springframework.stereotype.Repository
 
 @Repository

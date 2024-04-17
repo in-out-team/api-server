@@ -5,7 +5,7 @@ import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.interfaces.web.v1.response.TokenResponse
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
-import com.inout.apiserver.service.TokenService
+import com.inout.apiserver.domain.auth.TokenService
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException

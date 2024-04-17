@@ -1,7 +1,7 @@
 package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.config.jpa.JpaAuditingConfig
-import com.inout.apiserver.domain.User
+import com.inout.apiserver.domain.user.User
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.DynamicUpdate

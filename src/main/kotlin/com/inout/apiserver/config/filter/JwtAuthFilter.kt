@@ -1,6 +1,6 @@
 package com.inout.apiserver.config.filter
 
-import com.inout.apiserver.service.TokenService
+import com.inout.apiserver.domain.auth.TokenService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

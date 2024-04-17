@@ -1,5 +1,6 @@
-package com.inout.apiserver.domain
+package com.inout.apiserver.domain.user
 
+import com.inout.apiserver.domain.user.User
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime

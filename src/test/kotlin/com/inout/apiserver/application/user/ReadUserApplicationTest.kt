@@ -1,9 +1,8 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.interfaces.web.v1.response.UserResponse
-import com.inout.apiserver.domain.User
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.service.UserService
+import com.inout.apiserver.domain.user.UserService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*

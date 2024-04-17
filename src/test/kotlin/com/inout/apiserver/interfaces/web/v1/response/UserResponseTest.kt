@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.User
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.InOutRequireNotNullException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
