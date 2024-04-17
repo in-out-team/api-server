@@ -1,7 +1,7 @@
 package com.inout.apiserver.service.security
 
 import com.inout.apiserver.domain.User
-import com.inout.apiserver.repository.user.UserRepository
+import com.inout.apiserver.infrastructure.db.user.UserRepository
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*

@@ -1,5 +1,6 @@
-package com.inout.apiserver.entity
+package com.inout.apiserver.infrastructure.db.user
 
+import com.inout.apiserver.infrastructure.db.user.UserEntity
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

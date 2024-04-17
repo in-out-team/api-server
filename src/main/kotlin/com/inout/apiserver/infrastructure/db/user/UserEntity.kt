@@ -1,4 +1,4 @@
-package com.inout.apiserver.entity
+package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.config.jpa.JpaAuditingConfig
 import com.inout.apiserver.domain.User

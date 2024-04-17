@@ -1,6 +1,6 @@
 package com.inout.apiserver.domain
 
-import com.inout.apiserver.entity.UserEntity
+import com.inout.apiserver.infrastructure.db.user.UserEntity
 import java.time.LocalDateTime
 
 data class User(

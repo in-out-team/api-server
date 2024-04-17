@@ -1,6 +1,6 @@
 package com.inout.apiserver.service.security
 
-import com.inout.apiserver.repository.user.UserRepository
+import com.inout.apiserver.infrastructure.db.user.UserRepository
 import org.springframework.security.core.userdetails.User as SecurityUser
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService

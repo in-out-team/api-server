@@ -1,7 +1,6 @@
-package com.inout.apiserver.repository.user
+package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.domain.User
-import com.inout.apiserver.entity.UserEntity
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*

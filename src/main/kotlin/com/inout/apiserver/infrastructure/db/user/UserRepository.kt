@@ -1,7 +1,6 @@
-package com.inout.apiserver.repository.user
+package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.domain.User
-import com.inout.apiserver.entity.UserEntity
 import org.springframework.stereotype.Repository
 
 @Repository
