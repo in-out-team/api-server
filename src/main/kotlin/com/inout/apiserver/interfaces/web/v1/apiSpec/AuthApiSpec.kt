@@ -22,7 +22,7 @@ interface AuthApiSpec {
             content = [
                 Content(
                     mediaType = "application/json",
-                    schema = io.swagger.v3.oas.annotations.media.Schema(implementation = UserLoginRequest::class)
+                    schema = Schema(implementation = UserLoginRequest::class)
                 )
             ]
         ),
