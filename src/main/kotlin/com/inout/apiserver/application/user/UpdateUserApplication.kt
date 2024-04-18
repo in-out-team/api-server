@@ -14,6 +14,6 @@ class UpdateUserApplication(
     // TODO: add authorization/user validation
     fun run(request: UpdateUserRequest): UserResponse {
         val updatedUser = userService.updateUser(request)
-        return UserResponse.from(updatedUser)
+        return UserResponse.of(updatedUser)
     }
 }

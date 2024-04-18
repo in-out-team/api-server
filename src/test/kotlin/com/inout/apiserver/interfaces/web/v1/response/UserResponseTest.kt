@@ -1,14 +1,13 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.domain.user.User
-import com.inout.apiserver.error.InOutRequireNotNullException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class UserResponseTest {
 
     @Test
-    fun `from - should correctly convert user to user response`() {
+    fun `of - should correctly convert user to user response`() {
         // given
         val user = User(
             id = 1,
@@ -20,7 +19,7 @@ class UserResponseTest {
         )
 
         // when
-        val result = UserResponse.from(user)
+        val result = UserResponse.of(user)
 
         // then
         assertEquals(user.id, result.id)

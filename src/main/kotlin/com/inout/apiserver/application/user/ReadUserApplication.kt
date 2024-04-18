@@ -12,6 +12,6 @@ class ReadUserApplication(
     // TODO: add authorization/user validation
     fun run(id: Long): UserResponse {
         val user = userService.getUserById(id) ?: throw NotFoundException(message = "User not found", code = "USER_2")
-        return UserResponse.from(user)
+        return UserResponse.of(user)
     }
 }

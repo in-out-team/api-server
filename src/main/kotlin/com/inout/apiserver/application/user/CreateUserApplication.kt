@@ -13,6 +13,6 @@ class CreateUserApplication(
 ) {
     fun run(request: CreateUserRequest): UserResponse {
         val newUser = userService.createUser(request)
-        return UserResponse.from(newUser)
+        return UserResponse.of(newUser)
     }
 }
