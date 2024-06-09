@@ -31,3 +31,7 @@ jwt:
   key: ${JWT_KEY}
   access-token-expiration: 60000
   refresh-token-expiration: 300000
+# openai configuration
+openai:
+  token: ${OPENAI_API_KEY}
+  organization: ${OPENAI_ORGANIZATION}
