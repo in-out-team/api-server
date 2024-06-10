@@ -1,4 +1,4 @@
-package com.inout.apiserver.base.client
+package com.inout.apiserver.base.service.openai.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
