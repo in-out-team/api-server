@@ -3,7 +3,7 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.word.LanguageTypes
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import io.mockk.every
 import io.mockk.mockk
@@ -21,7 +21,7 @@ class ReadOrCreateWordApplicationTest {
     fun `run - should raise NotFoundException if word is not found`() {
         // Given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
+        val language = LanguageType.ENGLISH
         every { wordService.getWordByNameAndLanguage(name, language) } returns null
 
         // When
@@ -38,7 +38,7 @@ class ReadOrCreateWordApplicationTest {
     fun `run - should return WordResponse if word is found`() {
         // Given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
+        val language = LanguageType.ENGLISH
         val word = Word(id = 1L, name = name, language = language, createdAt = now, updatedAt = now)
         every { wordService.getWordByNameAndLanguage(name, language) } returns word
 

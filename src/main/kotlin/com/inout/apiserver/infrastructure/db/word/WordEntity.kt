@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
@@ -11,11 +12,6 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.DynamicUpdate
 
-enum class LanguageTypes {
-    ENGLISH,
-    KOREAN
-}
-
 @Entity
 @Table(name = "words", uniqueConstraints = [
     UniqueConstraint(columnNames = ["name", "language"])
@@ -24,7 +20,7 @@ enum class LanguageTypes {
 data class WordEntity(
     val name: String,
     @Enumerated(EnumType.STRING)
-    val language: LanguageTypes = LanguageTypes.ENGLISH
+    val language: LanguageType = LanguageType.ENGLISH
 ) : BaseEntity() {
     fun toDomain(): Word {
         return Word(

@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.infrastructure.db.DbTestSupport
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -16,12 +17,12 @@ class WordRepositoryTest(
     @Test
     fun `save - should raise error when same combination of name and language exists`() {
         // given
-        val wordEntity = WordEntity(name = "test", language = LanguageTypes.ENGLISH)
+        val wordEntity = WordEntity(name = "test", language = LanguageType.ENGLISH)
         wordJpaRepository.save(wordEntity)
 
         // when & then
         assertThatThrownBy {
-            wordRepository.save(WordEntity(name = "test", language = LanguageTypes.ENGLISH))
+            wordRepository.save(WordEntity(name = "test", language = LanguageType.ENGLISH))
         }
             .isInstanceOf(DataIntegrityViolationException::class.java)
             .hasMessageContaining("could not execute statement")
@@ -30,7 +31,7 @@ class WordRepositoryTest(
     @Test
     fun `save - should return new saved word`() {
         // given
-        val wordEntity = WordEntity(name = "test", language = LanguageTypes.ENGLISH)
+        val wordEntity = WordEntity(name = "test", language = LanguageType.ENGLISH)
 
         // when
         val result = wordRepository.save(wordEntity)
@@ -47,11 +48,11 @@ class WordRepositoryTest(
     @Test
     fun `findByNameAndLanguage - should return null when word not found`() {
         // given
-        val wordEntity = WordEntity(name = "test", language = LanguageTypes.ENGLISH)
+        val wordEntity = WordEntity(name = "test", language = LanguageType.ENGLISH)
         wordJpaRepository.save(wordEntity)
 
         // when
-        val result = wordRepository.findByNameAndLanguage("1-test", LanguageTypes.ENGLISH)
+        val result = wordRepository.findByNameAndLanguage("1-test", LanguageType.ENGLISH)
 
         // then
         assertNull(result)
@@ -60,11 +61,11 @@ class WordRepositoryTest(
     @Test
     fun `findByNameAndLanguage - should return word when word found`() {
         // given
-        val wordEntity = WordEntity(name = "test", language = LanguageTypes.ENGLISH)
+        val wordEntity = WordEntity(name = "test", language = LanguageType.ENGLISH)
         wordJpaRepository.save(wordEntity)
 
         // when
-        val result = wordRepository.findByNameAndLanguage("test", LanguageTypes.ENGLISH)
+        val result = wordRepository.findByNameAndLanguage("test", LanguageType.ENGLISH)
 
         // then
         assertNotNull(result)
@@ -87,7 +88,7 @@ class WordRepositoryTest(
     @Test
     fun `findById - should return word when word found`() {
         // given
-        val wordEntity = WordEntity(name = "test", language = LanguageTypes.ENGLISH)
+        val wordEntity = WordEntity(name = "test", language = LanguageType.ENGLISH)
         val savedWord = wordJpaRepository.save(wordEntity)
 
         // when

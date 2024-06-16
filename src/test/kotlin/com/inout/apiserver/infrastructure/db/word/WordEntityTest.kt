@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
@@ -16,7 +17,7 @@ class WordEntityTest {
         // given
         val wordEntity = WordEntity(
             name = "name",
-            language = LanguageTypes.ENGLISH
+            language = LanguageType.ENGLISH
         )
 
         // when & then
@@ -31,7 +32,7 @@ class WordEntityTest {
     fun `toDomain - returns Word`() {
         // given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
+        val language = LanguageType.ENGLISH
         val wordEntity = WordEntity(name = name, language = language)
             .apply {
                 id = 1L
@@ -55,7 +56,7 @@ class WordEntityTest {
     fun `of - returns WordEntity`() {
         // given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
+        val language = LanguageType.ENGLISH
         val word = Word(
             id = 1L,
             name = name,
@@ -80,7 +81,7 @@ class WordEntityTest {
     fun `fromCreateObject - returns WordEntity`() {
         // given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
+        val language = LanguageType.ENGLISH
 
         // when
         val wordEntity = WordEntity.fromCreateObject(WordCreateObject(name = name, language = language))
