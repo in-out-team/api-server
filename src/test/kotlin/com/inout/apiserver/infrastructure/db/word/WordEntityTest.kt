@@ -21,7 +21,8 @@ class WordEntityTest {
         val wordDefinitionEntity = createWordDefinitionEntity()
         val wordEntity = WordEntity(
             name = "name",
-            language = LanguageType.ENGLISH,
+            fromLanguage = LanguageType.ENGLISH,
+            toLanguage = LanguageType.KOREAN,
             definitions = listOf(wordDefinitionEntity)
         )
 
@@ -37,9 +38,15 @@ class WordEntityTest {
     fun `toDomain - returns Word`() {
         // given
         val name = "name"
-        val language = LanguageType.ENGLISH
+        val fromLanguage = LanguageType.ENGLISH
+        val toLanguage = LanguageType.KOREAN
         val wordDefinitionEntity = createWordDefinitionEntity().apply { id = 1L }
-        val wordEntity = WordEntity(name = name, language = language, definitions = listOf(wordDefinitionEntity))
+        val wordEntity = WordEntity(
+            name = name,
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            definitions = listOf(wordDefinitionEntity)
+        )
             .apply {
                 id = 1L
                 createdAt = now
@@ -53,7 +60,8 @@ class WordEntityTest {
         assertTrue(word is Word)
         assertEquals(1L, word.id)
         assertEquals(name, word.name)
-        assertEquals(language, word.language)
+        assertEquals(fromLanguage, word.fromLanguage)
+        assertEquals(toLanguage, word.toLanguage)
         assertEquals(now, word.createdAt)
         assertEquals(now, word.updatedAt)
     }
@@ -62,12 +70,14 @@ class WordEntityTest {
     fun `of - returns WordEntity`() {
         // given
         val name = "name"
-        val language = LanguageType.ENGLISH
+        val fromLanguage = LanguageType.ENGLISH
+        val toLanguage = LanguageType.KOREAN
         val wordDefinition = createWordDefinition()
         val word = Word(
             id = 1L,
             name = name,
-            language = language,
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
             definitions = listOf(wordDefinition),
             createdAt = now,
             updatedAt = now
@@ -80,7 +90,8 @@ class WordEntityTest {
         assertTrue(wordEntity is WordEntity)
         assertEquals(1L, wordEntity.id)
         assertEquals(name, wordEntity.name)
-        assertEquals(language, wordEntity.language)
+        assertEquals(fromLanguage, wordEntity.fromLanguage)
+        assertEquals(toLanguage, wordEntity.toLanguage)
         assertEquals(now, wordEntity.createdAt)
         assertEquals(now, wordEntity.updatedAt)
     }
@@ -89,7 +100,8 @@ class WordEntityTest {
     fun `fromCreateObject - returns WordEntity`() {
         // given
         val name = "name"
-        val language = LanguageType.ENGLISH
+        val fromLanguage = LanguageType.ENGLISH
+        val toLanguage = LanguageType.KOREAN
 
         // when
         val wordEntity = WordEntity.fromCreateObject(createWordCreateObject())
@@ -98,7 +110,8 @@ class WordEntityTest {
         assertTrue(wordEntity is WordEntity)
         assertNull(wordEntity.id)
         assertEquals(name, wordEntity.name)
-        assertEquals(language, wordEntity.language)
+        assertEquals(fromLanguage, wordEntity.fromLanguage)
+        assertEquals(toLanguage, wordEntity.toLanguage)
         assertNull(wordEntity.createdAt)
         assertNull(wordEntity.updatedAt)
     }
@@ -131,7 +144,8 @@ class WordEntityTest {
     private fun createWordCreateObject(): WordCreateObject {
         return WordCreateObject(
             name = "name",
-            language = LanguageType.ENGLISH,
+            fromLanguage = LanguageType.ENGLISH,
+            toLanguage = LanguageType.KOREAN,
             definitions = listOf(createWordDefinitionCreateObject())
         )
     }

@@ -4,6 +4,7 @@ import com.inout.apiserver.base.enums.LanguageType
 
 data class WordCreateObject(
     val name: String,
-    val language: LanguageType,
+    val fromLanguage: LanguageType,
+    val toLanguage: LanguageType,
     val definitions: List<WordDefinitionCreateObject>,
 )

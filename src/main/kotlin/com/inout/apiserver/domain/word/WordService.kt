@@ -9,8 +9,12 @@ import org.springframework.stereotype.Service
 class WordService(
     private val wordRepository: WordRepository
 ) {
-    fun getWordByNameAndLanguage(name: String, language: LanguageType): Word? {
-        return wordRepository.findByNameAndLanguage(name, language)
+    fun getWordByNameAndFromLanguageAndToLanguage(
+        name: String,
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType
+    ): Word? {
+        return wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)
     }
 
     fun getWordById(id: Long): Word? {

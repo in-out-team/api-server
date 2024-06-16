@@ -23,7 +23,14 @@ class WordRepositoryTest(
 
         // when & then
         assertThatThrownBy {
-            wordRepository.save(WordEntity(name = "test", language = LanguageType.ENGLISH, definitions = emptyList()))
+            wordRepository.save(
+                WordEntity(
+                    name = "test",
+                    fromLanguage = LanguageType.ENGLISH,
+                    toLanguage = LanguageType.KOREAN,
+                    definitions = emptyList()
+                )
+            )
         }
             .isInstanceOf(DataIntegrityViolationException::class.java)
             .hasMessageContaining("could not execute statement")
@@ -40,7 +47,8 @@ class WordRepositoryTest(
         // then
         assertTrue(result is Word)
         assertEquals(wordEntity.name, result.name)
-        assertEquals(wordEntity.language, result.language)
+        assertEquals(wordEntity.fromLanguage, result.fromLanguage)
+        assertEquals(wordEntity.toLanguage, result.toLanguage)
         assertEquals(wordEntity.definitions.size, result.definitions.size)
         assertEquals(wordEntity.definitions[0].lexicalCategory, result.definitions[0].lexicalCategory)
         assertEquals(wordEntity.definitions[0].meaning, result.definitions[0].meaning)
@@ -55,12 +63,15 @@ class WordRepositoryTest(
     fun `findByNameAndLanguage - should return null when word not found`() {
         // given
         val name = "test"
-        val language = LanguageType.ENGLISH
-        val wordEntity = createWordEntity(name, language)
+        val wordEntity = createWordEntity(name = name)
         wordJpaRepository.save(wordEntity)
 
         // when
-        val result = wordRepository.findByNameAndLanguage("1-$name", language)
+        val result = wordRepository.findByNameAndFromLanguageAndToLanguage(
+            name = "1-$name",
+            fromLanguage = wordEntity.fromLanguage,
+            toLanguage = wordEntity.toLanguage
+        )
 
         // then
         assertNull(result)
@@ -70,17 +81,21 @@ class WordRepositoryTest(
     fun `findByNameAndLanguage - should return word when word found`() {
         // given
         val name = "test"
-        val language = LanguageType.ENGLISH
-        val wordEntity = createWordEntity(name, language)
+        val wordEntity = createWordEntity(name = name)
         wordJpaRepository.save(wordEntity)
 
         // when
-        val result = wordRepository.findByNameAndLanguage(name, language)
+        val result = wordRepository.findByNameAndFromLanguageAndToLanguage(
+            name = name,
+            fromLanguage = wordEntity.fromLanguage,
+            toLanguage = wordEntity.toLanguage
+        )
 
         // then
         assertNotNull(result)
         assertEquals(wordEntity.name, result?.name)
-        assertEquals(wordEntity.language, result?.language)
+        assertEquals(wordEntity.fromLanguage, result?.fromLanguage)
+        assertEquals(wordEntity.toLanguage, result?.toLanguage)
         assertEquals(wordEntity.definitions.size, result?.definitions?.size)
         assertEquals(wordEntity.definitions[0].lexicalCategory, result?.definitions?.get(0)?.lexicalCategory)
         assertEquals(wordEntity.definitions[0].meaning, result?.definitions?.get(0)?.meaning)
@@ -111,7 +126,8 @@ class WordRepositoryTest(
         // then
         assertNotNull(result)
         assertEquals(wordEntity.name, result?.name)
-        assertEquals(wordEntity.language, result?.language)
+        assertEquals(wordEntity.fromLanguage, result?.fromLanguage)
+        assertEquals(wordEntity.toLanguage, result?.toLanguage)
         assertEquals(wordEntity.definitions.size, result?.definitions?.size)
         assertEquals(wordEntity.definitions[0].lexicalCategory, result?.definitions?.get(0)?.lexicalCategory)
         assertEquals(wordEntity.definitions[0].meaning, result?.definitions?.get(0)?.meaning)
@@ -122,9 +138,13 @@ class WordRepositoryTest(
         assertEquals(savedWord.definitions[0].id, result?.definitions?.get(0)?.id)
     }
 
-    private fun createWordEntity(name: String = "test", language: LanguageType = LanguageType.ENGLISH): WordEntity {
+    private fun createWordEntity(
+        name: String = "test",
+        fromLanguage: LanguageType = LanguageType.ENGLISH,
+        toLanguage: LanguageType = LanguageType.KOREAN
+    ): WordEntity {
         return WordEntity(
-            name = name, language = language, definitions = listOf(
+            name = name, fromLanguage = fromLanguage, toLanguage = toLanguage, definitions = listOf(
                 WordDefinitionEntity(
                     lexicalCategory = LexicalCategoryType.NOUN,
                     meaning = "test",

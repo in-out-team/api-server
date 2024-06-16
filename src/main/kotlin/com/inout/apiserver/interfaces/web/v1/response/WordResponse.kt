@@ -13,7 +13,7 @@ data class WordResponse(
             return WordResponse(
                 id = word.id,
                 name = word.name,
-                language = word.language
+                language = word.fromLanguage
             )
         }
     }
