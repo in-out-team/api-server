@@ -8,6 +8,9 @@ data class OpenAIWordDefinitionResponse(
     val definitions: List<Definition>
 ) {
     companion object {
+        /**
+         * @throws MissingFieldException if the required fields are missing
+         */
         fun fromJson(jsonString: String): OpenAIWordDefinitionResponse {
             val json = Json { ignoreUnknownKeys = true }
             return json.decodeFromString<OpenAIWordDefinitionResponse>(jsonString)

@@ -2,7 +2,6 @@ package com.inout.apiserver.base.service.openai
 
 import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
-import com.inout.apiserver.base.service.openai.config.OpenAIProperties
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
@@ -10,15 +9,9 @@ import org.springframework.stereotype.Service
 
 @Service
 class OpenAIService(
-    openAIProperties: OpenAIProperties,
     private val openAIRequestProvider: OpenAIRequestProvider,
+    private val openai: OpenAI
 ) {
-    // https://github.com/aallam/openai-kotlin/blob/main/guides/GettingStarted.md
-    private val openai = OpenAI(
-        token = openAIProperties.token,
-        organization = openAIProperties.organization
-    )
-
     fun fetchWordDefinition(
         word: String,
         fromLanguage: String = "English",
@@ -45,7 +38,7 @@ class OpenAIService(
          *   "choices": [ // List<ChatChoice.class>
          *       {
          *         "index": 0,
-         *         "longpobs": null,
+         *         "logpobs": null,
          *         "finishReason": "stop", // stop | length | content_filter | tool_calls
          *         "message": {
          *           "role": "assistant",

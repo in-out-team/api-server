@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component
 class OpenAIRequestProvider {
     private val chatCompletionModel = ModelId("gpt-3.5-turbo")
     private val chatCompletionResponseFormat = ChatResponseFormat.JsonObject
+
     fun genWordInfoRequest(
         word: String,
         fromLanguage: String = "English",
