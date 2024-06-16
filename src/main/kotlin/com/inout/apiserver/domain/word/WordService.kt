@@ -18,6 +18,7 @@ class WordService(
     }
 
     fun createWord(wordCreateObject: WordCreateObject): Word {
+        // TODO: add duplicate check
         return wordRepository.save(WordEntity.fromCreateObject(wordCreateObject))
     }
 }

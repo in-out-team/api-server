@@ -7,6 +7,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import java.time.LocalDateTime
 
 class WordServiceTest {
@@ -19,7 +20,7 @@ class WordServiceTest {
         // Given
         val name = "name"
         val language = LanguageType.ENGLISH
-        val word = Word(id = 1L, name = name, language = language, createdAt = now, updatedAt = now)
+        val word = Word(id = 1L, name = name, language = language, definitions = emptyList(), createdAt = now, updatedAt = now)
         every { wordRepository.findByNameAndLanguage(name, language) } returns word
 
         // When
@@ -49,7 +50,7 @@ class WordServiceTest {
     fun `getWordById - should return Word if found`() {
         // Given
         val id = 1L
-        val word = Word(id = id, name = "name", language = LanguageType.ENGLISH, createdAt = now, updatedAt = now)
+        val word = Word(id = id, name = "name", language = LanguageType.ENGLISH, definitions = emptyList(), createdAt = now, updatedAt = now)
         every { wordRepository.findById(id) } returns word
 
         // When
@@ -77,8 +78,16 @@ class WordServiceTest {
     @Test
     fun `createWord - should return Word`() {
         // Given
-        val wordCreateObject = WordCreateObject(name = "name", language = LanguageType.ENGLISH)
-        val word = Word(id = 1L, name = wordCreateObject.name, language = wordCreateObject.language, createdAt = now, updatedAt = now)
+        val wordCreateObject =
+            WordCreateObject(name = "name", language = LanguageType.ENGLISH, definitions = emptyList())
+        val word = Word(
+            id = 1L,
+            name = wordCreateObject.name,
+            language = wordCreateObject.language,
+            definitions = emptyList(),
+            createdAt = now,
+            updatedAt = now
+        )
         every { wordRepository.save(any()) } returns word
 
         // When

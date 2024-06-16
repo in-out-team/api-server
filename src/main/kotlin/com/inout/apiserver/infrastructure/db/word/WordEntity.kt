@@ -3,13 +3,10 @@ package com.inout.apiserver.infrastructure.db.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordCreateObject
+import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.Table
-import jakarta.persistence.UniqueConstraint
+import jakarta.persistence.*
 import org.hibernate.annotations.DynamicUpdate
 
 @Entity
@@ -20,13 +17,17 @@ import org.hibernate.annotations.DynamicUpdate
 data class WordEntity(
     val name: String,
     @Enumerated(EnumType.STRING)
-    val language: LanguageType = LanguageType.ENGLISH
+    val language: LanguageType,
+    @OneToMany(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "word_id")
+    val definitions: List<WordDefinitionEntity>,
 ) : BaseEntity() {
     fun toDomain(): Word {
         return Word(
             id = id ?: throw InOutRequireNotNullException("Word id is null", "IORNN_WORD_1"),
             name = name,
             language = language,
+            definitions = definitions.map { it.toDomain() },
             createdAt = createdAt,
             updatedAt = updatedAt,
         )
@@ -36,7 +37,8 @@ data class WordEntity(
         fun of(word: Word): WordEntity {
             return WordEntity(
                 name = word.name,
-                language = word.language
+                language = word.language,
+                definitions = word.definitions.map { WordDefinitionEntity.of(it) }
             ).apply {
                 id = word.id
                 createdAt = word.createdAt
@@ -47,7 +49,8 @@ data class WordEntity(
         fun fromCreateObject(wordCreateObject: WordCreateObject): WordEntity {
             return WordEntity(
                 name = wordCreateObject.name,
-                language = wordCreateObject.language
+                language = wordCreateObject.language,
+                definitions = wordCreateObject.definitions.map { WordDefinitionEntity.fromCreateObject(it) }
             )
         }
     }

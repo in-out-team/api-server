@@ -39,7 +39,7 @@ class ReadOrCreateWordApplicationTest {
         // Given
         val name = "name"
         val language = LanguageType.ENGLISH
-        val word = Word(id = 1L, name = name, language = language, createdAt = now, updatedAt = now)
+        val word = Word(id = 1L, name = name, language = language, definitions = emptyList(), createdAt = now, updatedAt = now)
         every { wordService.getWordByNameAndLanguage(name, language) } returns word
 
         // When

@@ -7,6 +7,7 @@ data class Word(
     val id: Long,
     val name: String,
     val language: LanguageType,
+    val definitions: List<WordDefinition>,
     val createdAt: LocalDateTime?,
     val updatedAt: LocalDateTime?
 )
