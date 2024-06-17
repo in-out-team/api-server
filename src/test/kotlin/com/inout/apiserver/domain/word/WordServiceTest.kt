@@ -1,7 +1,7 @@
 package com.inout.apiserver.domain.word
 
-import com.inout.apiserver.infrastructure.db.word.LanguageTypes
-import com.inout.apiserver.infrastructure.db.word.WordEntity
+import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -16,41 +16,59 @@ class WordServiceTest {
     private val now = LocalDateTime.now()
 
     @Test
-    fun `getWordByNameAndLanguage - should return Word if found`() {
+    fun `getWordByNameAndFromLanguageAndToLanguage - should return Word if found`() {
         // Given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
-        val word = Word(id = 1L, name = name, language = language, createdAt = now, updatedAt = now)
-        every { wordRepository.findByNameAndLanguage(name, language) } returns word
+        val fromLanguage = LanguageType.ENGLISH
+        val toLanguage = LanguageType.KOREAN
+        val word = Word(
+            id = 1L,
+            name = name,
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            definitions = emptyList(),
+            createdAt = now,
+            updatedAt = now
+        )
+        every { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) } returns word
 
         // When
-        val result = wordService.getWordByNameAndLanguage(name, language)
+        val result = wordService.getWordByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)
 
         // Then
         assertEquals(word, result)
-        verify(exactly = 1) { wordRepository.findByNameAndLanguage(name, language) }
+        verify(exactly = 1) { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) }
     }
 
     @Test
-    fun `getWordByNameAndLanguage - should return null if not found`() {
+    fun `getWordByNameAndFromLanguageAndToLanguage - should return null if not found`() {
         // Given
         val name = "name"
-        val language = LanguageTypes.ENGLISH
-        every { wordRepository.findByNameAndLanguage(name, language) } returns null
+        val fromLanguage = LanguageType.ENGLISH
+        val toLanguage = LanguageType.KOREAN
+        every { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) } returns null
 
         // When
-        val result = wordService.getWordByNameAndLanguage(name, language)
+        val result = wordService.getWordByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)
 
         // Then
         assertNull(result)
-        verify(exactly = 1) { wordRepository.findByNameAndLanguage(name, language) }
+        verify(exactly = 1) { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) }
     }
 
     @Test
     fun `getWordById - should return Word if found`() {
         // Given
         val id = 1L
-        val word = Word(id = id, name = "name", language = LanguageTypes.ENGLISH, createdAt = now, updatedAt = now)
+        val word = Word(
+            id = id,
+            name = "name",
+            fromLanguage = LanguageType.ENGLISH,
+            toLanguage = LanguageType.KOREAN,
+            definitions = emptyList(),
+            createdAt = now,
+            updatedAt = now
+        )
         every { wordRepository.findById(id) } returns word
 
         // When
@@ -76,10 +94,53 @@ class WordServiceTest {
     }
 
     @Test
+    fun `createWord - should raise ConflictException if word already exists`() {
+        // Given
+        val wordCreateObject =
+            WordCreateObject(
+                name = "name",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions = emptyList()
+            )
+        val word = Word(
+            id = 1L,
+            name = wordCreateObject.name,
+            fromLanguage = wordCreateObject.fromLanguage,
+            toLanguage = wordCreateObject.toLanguage,
+            definitions = emptyList(),
+            createdAt = now,
+            updatedAt = now
+        )
+        every { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) } returns word
+
+        // When, Then
+        assertThrows(ConflictException::class.java) {
+            wordService.createWord(wordCreateObject)
+        }
+        verify(exactly = 1) { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) }
+    }
+
+    @Test
     fun `createWord - should return Word`() {
         // Given
-        val wordCreateObject = WordCreateObject(name = "name", language = LanguageTypes.ENGLISH)
-        val word = Word(id = 1L, name = wordCreateObject.name, language = wordCreateObject.language, createdAt = now, updatedAt = now)
+        val wordCreateObject =
+            WordCreateObject(
+                name = "name",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions = emptyList()
+            )
+        val word = Word(
+            id = 1L,
+            name = wordCreateObject.name,
+            fromLanguage = wordCreateObject.fromLanguage,
+            toLanguage = wordCreateObject.toLanguage,
+            definitions = emptyList(),
+            createdAt = now,
+            updatedAt = now
+        )
+        every { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) } returns null
         every { wordRepository.save(any()) } returns word
 
         // When

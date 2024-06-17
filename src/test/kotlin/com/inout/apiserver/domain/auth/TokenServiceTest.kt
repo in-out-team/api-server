@@ -1,5 +1,7 @@
 package com.inout.apiserver.domain.auth
 
+import com.inout.apiserver.config.jwt.JwtConfig
+import com.inout.apiserver.config.jwt.JwtProperties
 import io.jsonwebtoken.Claims
 import io.mockk.every
 import io.mockk.mockk
@@ -8,11 +10,14 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Import
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.test.context.ContextConfiguration
 import java.lang.reflect.Method
 import java.util.*
 
 @SpringBootTest
+@ContextConfiguration(classes = [TokenService::class, JwtConfig::class])
 class TokenServiceTest(
     @Autowired private val tokenService: TokenService,
 ) {

@@ -54,4 +54,11 @@ class ControllerAdvice {
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ErrorResponse(code = e.code, message = e.message ?: "Internal Server Error"))
     }
+
+    @ExceptionHandler(BadRequestException::class)
+    fun handleBadRequestException(e: BadRequestException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse(code = e.code, message = e.message ?: "Bad Request"))
+    }
 }

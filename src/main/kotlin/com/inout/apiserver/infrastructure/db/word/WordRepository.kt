@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.word.Word
 import org.springframework.stereotype.Repository
 
@@ -11,8 +12,8 @@ class WordRepository(
         return wordJpaRepository.save(word).toDomain()
     }
 
-    fun findByNameAndLanguage(name: String, language: LanguageTypes): Word? {
-        return wordJpaRepository.findByNameAndLanguage(name, language)?.toDomain()
+    fun findByNameAndFromLanguageAndToLanguage(name: String, fromLanguage: LanguageType, toLanguage: LanguageType): Word? {
+        return wordJpaRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)?.toDomain()
     }
 
     fun findById(id: Long): Word? {
