@@ -29,8 +29,8 @@ logging:
 # jwt token configuration
 jwt:
   key: ${JWT_KEY}
-  access-token-expiration: 60000
-  refresh-token-expiration: 300000
+  access-token-expiration: 3600000
+  refresh-token-expiration: 86400000
 # openai configuration
 openai:
   token: ${OPENAI_API_KEY}
