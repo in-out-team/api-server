@@ -1,6 +1,7 @@
 package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -93,6 +94,34 @@ class WordServiceTest {
     }
 
     @Test
+    fun `createWord - should raise ConflictException if word already exists`() {
+        // Given
+        val wordCreateObject =
+            WordCreateObject(
+                name = "name",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions = emptyList()
+            )
+        val word = Word(
+            id = 1L,
+            name = wordCreateObject.name,
+            fromLanguage = wordCreateObject.fromLanguage,
+            toLanguage = wordCreateObject.toLanguage,
+            definitions = emptyList(),
+            createdAt = now,
+            updatedAt = now
+        )
+        every { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) } returns word
+
+        // When, Then
+        assertThrows(ConflictException::class.java) {
+            wordService.createWord(wordCreateObject)
+        }
+        verify(exactly = 1) { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) }
+    }
+
+    @Test
     fun `createWord - should return Word`() {
         // Given
         val wordCreateObject =
@@ -111,6 +140,7 @@ class WordServiceTest {
             createdAt = now,
             updatedAt = now
         )
+        every { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) } returns null
         every { wordRepository.save(any()) } returns word
 
         // When

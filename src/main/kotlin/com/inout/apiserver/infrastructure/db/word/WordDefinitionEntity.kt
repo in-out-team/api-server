@@ -6,11 +6,14 @@ import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.Table
 
 @Entity
 @Table(name = "word_definitions")
 data class WordDefinitionEntity(
+    @Enumerated(EnumType.STRING)
     val lexicalCategory: LexicalCategoryType,
     val meaning: String,
     val preContext: String
