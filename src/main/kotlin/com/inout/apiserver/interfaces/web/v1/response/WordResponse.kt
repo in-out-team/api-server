@@ -6,14 +6,16 @@ import com.inout.apiserver.base.enums.LanguageType
 data class WordResponse(
     val id: Long,
     val name: String,
-    val language: LanguageType
+    val fromLanguage: LanguageType,
+    val toLanguage: LanguageType,
 ) {
     companion object {
         fun of(word: Word): WordResponse {
             return WordResponse(
                 id = word.id,
                 name = word.name,
-                language = word.fromLanguage
+                fromLanguage = word.fromLanguage,
+                toLanguage = word.toLanguage,
             )
         }
     }
