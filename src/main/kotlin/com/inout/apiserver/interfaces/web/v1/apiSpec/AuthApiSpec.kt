@@ -1,5 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
+import com.inout.apiserver.interfaces.web.v1.request.GoogleLoginRequest
 import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.interfaces.web.v1.response.TokenResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -50,4 +51,34 @@ interface AuthApiSpec {
         ]
     )
     fun login(@RequestBody request: UserLoginRequest): ResponseEntity<TokenResponse>
+
+    @PostMapping("/login/google")
+    @Operation(
+        summary = "구글 로그인",
+        description = "구글 계정으로 로그인을 시도합니다. ID Token을 전달해야 합니다.",
+        requestBody = SwaggerRequestBody(
+            description = "구글 로그인 요청",
+            required = true,
+            content = [
+                Content(
+                    mediaType = "application/json",
+                    schema = Schema(implementation = GoogleLoginRequest::class)
+                )
+            ]
+        ),
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "로그인 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = TokenResponse::class),
+                    )
+                ]
+            )
+            // TODO: add fail responses
+        ]
+    )
+    fun googleLogin(@RequestBody request: GoogleLoginRequest): ResponseEntity<TokenResponse>
 }

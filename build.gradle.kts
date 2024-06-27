@@ -51,6 +51,10 @@ dependencies {
     // db
     runtimeOnly("org.postgresql:postgresql")
 
+    // logins
+    // google api client
+    implementation("com.google.api-client:google-api-client:2.2.0")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
