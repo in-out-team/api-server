@@ -1,6 +1,7 @@
 package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
+import com.inout.apiserver.domain.user.User
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -11,18 +12,35 @@ import java.util.*
 
 @Service
 class TokenService(
-    jwtProperties: JwtProperties,
+    private val jwtProperties: JwtProperties,
 ) {
     private val key = Keys.hmacShaKeyFor(jwtProperties.key.toByteArray())
 
+    @Deprecated("Use generate with user instead")
     fun generate(
         userDetails: UserDetails,
-        expirationDate: Date,
+        expirationDate: Date = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration),
         extraClaims: Map<String, Any> = emptyMap()
     ): String {
         return Jwts.builder()
             .claims()
             .subject(userDetails.username) // userDetails.username is the email in this service.
+            .issuedAt(Date(System.currentTimeMillis()))
+            .expiration(expirationDate)
+            .add(extraClaims)
+            .and()
+            .signWith(key)
+            .compact()
+    }
+
+    fun generate(
+        user: User,
+        expirationDate: Date = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration),
+        extraClaims: Map<String, Any> = emptyMap()
+    ): String {
+        return Jwts.builder()
+            .claims()
+            .subject(user.email)
             .issuedAt(Date(System.currentTimeMillis()))
             .expiration(expirationDate)
             .add(extraClaims)

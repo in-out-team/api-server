@@ -1,6 +1,5 @@
 package com.inout.apiserver.application.auth
 
-import com.inout.apiserver.config.jwt.JwtProperties
 import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.interfaces.web.v1.response.TokenResponse
 import com.inout.apiserver.error.InternalServerErrorException
@@ -11,20 +10,25 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Component
-import java.util.*
 
+/**
+ * TODO: change name to EmailPasswordLoginApplication
+ */
 @Component
 class AuthLoginApplication(
     private val tokenService: TokenService,
     private val authManager: AuthenticationManager,
     private val userDetailsService: UserDetailsService,
-    private val jwtProperties: JwtProperties
 ) {
     fun run(request: UserLoginRequest): TokenResponse {
         validateRequest(request.email, request.password)
+        /**
+         * TODO:
+         * - switch using authManager to userService
+         */
         val user = userDetailsService.loadUserByUsername(request.email)
-        val now = System.currentTimeMillis()
-        val accessToken = tokenService.generate(user, Date(now + jwtProperties.accessTokenExpiration))
+        // TODO: change to user method signature instead of userDetails
+        val accessToken = tokenService.generate(userDetails = user)
 
         return TokenResponse(accessToken = accessToken)
     }
