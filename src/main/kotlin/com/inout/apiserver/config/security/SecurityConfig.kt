@@ -1,8 +1,12 @@
 package com.inout.apiserver.config.security
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
 import com.inout.apiserver.config.filter.JwtAuthFilter
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpMethod
@@ -68,5 +72,15 @@ class SecurityConfig(
     @Bean
     fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
         return config.authenticationManager
+    }
+
+    @Bean // place oauth related here for now, on implementing other providers(ex. apple, kakao), relocate to a different config
+    fun googleIdTokenVerifier(
+        @Value("\${auth.google.ios-client-id}")
+        googleIosClientId: String
+    ): GoogleIdTokenVerifier {
+        return GoogleIdTokenVerifier.Builder(NetHttpTransport(), GsonFactory.getDefaultInstance())
+            .setAudience(listOf(googleIosClientId))
+            .build()
     }
 }

@@ -35,3 +35,7 @@ jwt:
 openai:
   token: ${OPENAI_API_KEY}
   organization: ${OPENAI_ORGANIZATION}
+# Social Login Configuration
+auth:
+  google:
+    ios-client-id: ${GOOGLE_IOS_CLIENT_ID}

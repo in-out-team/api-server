@@ -14,6 +14,11 @@ class UserService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder
 ) {
+    /**
+     * TODO: change parameter to...
+     * 1. accept dto from different package
+     * 2. flatten the request object (if not over 3 parameters)
+     */
     fun createUser(request: CreateUserRequest): User {
         val existingUser = getUserByEmail(request.email)
         if (existingUser != null) {
@@ -28,6 +33,11 @@ class UserService(
         return userRepository.save(UserEntity.fromCreateObject(userCreateObject))
     }
 
+    /**
+     * TODO: change parameter to...
+     * 1. accept dto from different package
+     * 2. flatten the request object (if not over 3 parameters)
+     */
     fun updateUser(request: UpdateUserRequest): User {
         val user = getUserById(request.id) ?: throw NotFoundException(message = "User not found", code = "USER_2")
         return userRepository.save(UserEntity.of(user.copy(nickname = request.nickname)))

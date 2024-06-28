@@ -41,7 +41,7 @@ class ControllerAdvice {
             .body(ErrorResponse(code = e.code, message = e.message ?: "Not Found"))
     }
 
-    @ExceptionHandler(InvalidCredentialsException::class)
+    @ExceptionHandler(InvalidCredentialsException::class, GoogleIdTokenVerificationException::class)
     fun handleInvalidCredentialsException(e: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)

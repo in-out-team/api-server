@@ -8,6 +8,7 @@ import com.inout.apiserver.domain.auth.TokenService
 import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -16,15 +17,15 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.core.userdetails.UserDetails
 
 class AuthLoginApplicationTest {
-    private val tokenService = mockk<TokenService>()
-    private val authManager = mockk<AuthenticationManager>()
-    private val userDetailsService = mockk<CustomUserDetailsService>()
     private val jwtProperties = JwtProperties(
-        key = "key",
+        key = "super-long-secret-key-long-enough-to-have-a-size-over-256-bits",
         accessTokenExpiration = 1000L,
         refreshTokenExpiration = 1000L
     )
-    private val authLoginApplication = AuthLoginApplication(tokenService, authManager, userDetailsService, jwtProperties)
+    private val tokenService = spyk(TokenService(jwtProperties))
+    private val authManager = mockk<AuthenticationManager>()
+    private val userDetailsService = mockk<CustomUserDetailsService>()
+    private val authLoginApplication = AuthLoginApplication(tokenService, authManager, userDetailsService)
 
     @Test
     fun `run - should raise InvalidCredentialsException when invalid credentials`() {
