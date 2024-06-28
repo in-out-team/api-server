@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -15,23 +14,6 @@ class TokenService(
     private val jwtProperties: JwtProperties,
 ) {
     private val key = Keys.hmacShaKeyFor(jwtProperties.key.toByteArray())
-
-    @Deprecated("Use generate with user instead")
-    fun generate(
-        userDetails: UserDetails,
-        expirationDate: Date = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration),
-        extraClaims: Map<String, Any> = emptyMap()
-    ): String {
-        return Jwts.builder()
-            .claims()
-            .subject(userDetails.username) // userDetails.username is the email in this service.
-            .issuedAt(Date(System.currentTimeMillis()))
-            .expiration(expirationDate)
-            .add(extraClaims)
-            .and()
-            .signWith(key)
-            .compact()
-    }
 
     fun generate(
         user: User,
@@ -49,9 +31,9 @@ class TokenService(
             .compact()
     }
 
-    fun isValid(token: String, userDetails: UserDetails): Boolean {
+    fun isValid(token: String, email: String): Boolean {
         return runCatching {
-            extractEmail(token) == userDetails.username && !isExpired(token)
+            extractEmail(token) == email && !isExpired(token)
         }.getOrElse {
             false
         }

@@ -43,7 +43,7 @@ class JwtAuthFilter(
 
         val user = userDetailsService.loadUserByUsername(email)
         // if token is valid, update security context
-        if (tokenService.isValid(token, user)) {
+        if (tokenService.isValid(token, user.username)) {
             updateSecurityContext(user, request)
         }
 

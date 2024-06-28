@@ -1,7 +1,7 @@
 package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtConfig
-import com.inout.apiserver.config.jwt.JwtProperties
+import com.inout.apiserver.domain.user.User
 import io.jsonwebtoken.Claims
 import io.mockk.every
 import io.mockk.mockk
@@ -10,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.annotation.Import
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.test.context.ContextConfiguration
 import java.lang.reflect.Method
 import java.util.*
@@ -21,11 +19,12 @@ import java.util.*
 class TokenServiceTest(
     @Autowired private val tokenService: TokenService,
 ) {
-    private val userDetails = mockk<UserDetails>()
+    private val user = mockk<User>()
+    private val testEmail = "test@1.com"
 
     @BeforeEach
     fun setUp() {
-        every { userDetails.username } returns "example@1.com"
+        every { user.email } returns testEmail
     }
 
     /**
@@ -46,7 +45,7 @@ class TokenServiceTest(
         val extraClaims = mapOf("key1" to "value1", "key2" to "value2")
 
         // when
-        val token = tokenService.generate(userDetails, expirationDate, extraClaims)
+        val token = tokenService.generate(user, expirationDate, extraClaims)
 
         // then
         Assertions.assertTrue(token.isNotBlank())
@@ -54,7 +53,7 @@ class TokenServiceTest(
         // check if expiration matches up to second
         // - this is because implementation of JwtBuilder's expiration method slices out milliseconds
         Assertions.assertEquals(expirationDate.time / 1000, claims.expiration.time / 1000)
-        Assertions.assertEquals(userDetails.username, claims.subject)
+        Assertions.assertEquals(user.email, claims.subject)
         Assertions.assertEquals(extraClaims["key1"], claims["key1"])
         Assertions.assertEquals(extraClaims["key2"], claims["key2"])
     }
@@ -63,10 +62,10 @@ class TokenServiceTest(
     fun `isValid - should return true if token is valid and email matches`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(userDetails, expirationDate)
+        val token = tokenService.generate(user, expirationDate)
 
         // when
-        val isValid = tokenService.isValid(token, userDetails)
+        val isValid = tokenService.isValid(token, user.email)
 
         // then
         Assertions.assertTrue(isValid)
@@ -76,29 +75,27 @@ class TokenServiceTest(
     fun `isValid - should return false if token is expired`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
-        val token = tokenService.generate(userDetails, expirationDate)
+        val token = tokenService.generate(user, expirationDate)
 
         // when & then
-        Assertions.assertFalse(tokenService.isValid(token, userDetails))
+        Assertions.assertFalse(tokenService.isValid(token, user.email))
     }
 
     @Test
     fun `isValid - should return false if email does not match`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(userDetails, expirationDate)
-        val otherUserDetails = mockk<UserDetails>()
-        every { otherUserDetails.username } returns userDetails.username + "1"
+        val token = tokenService.generate(user, expirationDate)
 
         // when & then
-        Assertions.assertFalse(tokenService.isValid(token, otherUserDetails))
+        Assertions.assertFalse(tokenService.isValid(token, user.email + "1"))
     }
 
     @Test
     fun `isExpired - should return true if token is expired`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
-        val token = tokenService.generate(userDetails, expirationDate)
+        val token = tokenService.generate(user, expirationDate)
 
         // when
         val isExpired = tokenService.isExpired(token)
@@ -111,7 +108,7 @@ class TokenServiceTest(
     fun `isExpired - should return false if token is not expired`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(userDetails, expirationDate)
+        val token = tokenService.generate(user, expirationDate)
 
         // when
         val isExpired = tokenService.isExpired(token)
@@ -124,20 +121,20 @@ class TokenServiceTest(
     fun `extractEmail - should return email if token is valid`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(userDetails, expirationDate)
+        val token = tokenService.generate(user, expirationDate)
 
         // when
         val email = tokenService.extractEmail(token)
 
         // then
-        Assertions.assertEquals(userDetails.username, email)
+        Assertions.assertEquals(user.email, email)
     }
 
     @Test
     fun `extractEmail - should return null if token is invalid`() {
         // given
         val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
-        val token = tokenService.generate(userDetails, expirationDate)
+        val token = tokenService.generate(user, expirationDate)
 
         // when
         val email = tokenService.extractEmail(token)
