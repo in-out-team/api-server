@@ -5,7 +5,8 @@ import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
+import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.domain.user.UserService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -14,9 +15,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.core.userdetails.UserDetails
 
-class AuthLoginApplicationTest {
+class EmailPasswordLoginApplicationTest {
     private val jwtProperties = JwtProperties(
         key = "super-long-secret-key-long-enough-to-have-a-size-over-256-bits",
         accessTokenExpiration = 1000L,
@@ -24,8 +24,8 @@ class AuthLoginApplicationTest {
     )
     private val tokenService = spyk(TokenService(jwtProperties))
     private val authManager = mockk<AuthenticationManager>()
-    private val userDetailsService = mockk<CustomUserDetailsService>()
-    private val authLoginApplication = AuthLoginApplication(tokenService, authManager, userDetailsService)
+    private val userService = mockk<UserService>()
+    private val emailPasswordLoginApplication = EmailPasswordLoginApplication(tokenService, authManager, userService)
 
     @Test
     fun `run - should raise InvalidCredentialsException when invalid credentials`() {
@@ -34,7 +34,7 @@ class AuthLoginApplicationTest {
 
         // when
         val exception = assertThrows(InvalidCredentialsException::class.java) {
-            authLoginApplication.run(UserLoginRequest("email@1.com", "password"))
+            emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
         }
 
         // then
@@ -49,7 +49,7 @@ class AuthLoginApplicationTest {
 
         // when
         val exception = assertThrows(InternalServerErrorException::class.java) {
-            authLoginApplication.run(UserLoginRequest("email@1.com", "password"))
+            emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
         }
 
         // then
@@ -60,18 +60,18 @@ class AuthLoginApplicationTest {
     @Test
     fun `run - should return TokenResponse when user is authenticated successfully`() {
         // given
-        val user = mockk<UserDetails>()
-        every { userDetailsService.loadUserByUsername("email@1.com") } returns user
+        val user = mockk<User>()
+        every { userService.getUserByEmail("email@1.com") } returns user
         every { authManager.authenticate(any()) } returns null
-        every { tokenService.generate(user, any()) } returns "token"
+        every { tokenService.generate(user, any(), any()) } returns "token"
 
         // when
-        val result = authLoginApplication.run(UserLoginRequest("email@1.com", "password"))
+        val result = emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
 
         // then
         assertEquals("token", result.accessToken)
-        verify { userDetailsService.loadUserByUsername("email@1.com") }
+        verify { userService.getUserByEmail("email@1.com") }
         verify { authManager.authenticate(any()) }
-        verify { tokenService.generate(user, any()) }
+        verify { tokenService.generate(user, any(), any()) }
     }
 }

@@ -5,30 +5,27 @@ import com.inout.apiserver.interfaces.web.v1.response.TokenResponse
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.domain.auth.TokenService
+import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.error.NotFoundException
+import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.AuthenticationException
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Component
 
-/**
- * TODO: change name to EmailPasswordLoginApplication
- */
 @Component
-class AuthLoginApplication(
+class EmailPasswordLoginApplication(
     private val tokenService: TokenService,
     private val authManager: AuthenticationManager,
-    private val userDetailsService: UserDetailsService,
+    private val userService: UserService,
 ) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     fun run(request: UserLoginRequest): TokenResponse {
         validateRequest(request.email, request.password)
-        /**
-         * TODO:
-         * - switch using authManager to userService
-         */
-        val user = userDetailsService.loadUserByUsername(request.email)
-        // TODO: change to user method signature instead of userDetails
-        val accessToken = tokenService.generate(userDetails = user)
+        val user = userService.getUserByEmail(request.email)
+            ?: throw NotFoundException(message = "User not found", code = "USER_2")
+        val accessToken = tokenService.generate(user)
 
         return TokenResponse(accessToken = accessToken)
     }
@@ -36,12 +33,12 @@ class AuthLoginApplication(
     private fun validateRequest(email: String, password: String) {
         runCatching {
             authManager.authenticate(UsernamePasswordAuthenticationToken(email, password))
-        }.onFailure { action ->
-            if (action is AuthenticationException) {
+        }.onFailure { exception ->
+            if (exception is AuthenticationException) {
                 throw InvalidCredentialsException(message = "Invalid credentials", code = "AUTH_1")
             }
-            // TODO: add logging
-            throw InternalServerErrorException(message = action.message ?: "Internal server error", code = "UNKNOWN_1")
+            logger.error("Unexpected error occurred", exception)
+            throw InternalServerErrorException(message = exception.message ?: "Internal server error", code = "UNKNOWN_1")
         }
     }
 }
