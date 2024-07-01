@@ -2,6 +2,7 @@ version: '3.9'
 
 services:
   db:
+    container_name: in-out-db
     image: postgres:14
     environment:
       POSTGRES_DB: "in-out"
@@ -10,3 +11,31 @@ services:
     ports:
       - "5432:5432"
     restart: always
+    networks:
+      - in-out-network
+  api:
+    container_name: in-out-api
+    image: in-out-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/src
+    environment:
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_KEY=${JWT_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_ORGANIZATION=${OPENAI_ORGANIZATION}
+      - GOOGLE_IOS_CLIENT_ID=${GOOGLE_IOS_CLIENT_ID}
+    depends_on:
+      - db
+    networks:
+      - in-out-network
+
+networks:
+  in-out-network:
+    driver: bridge
