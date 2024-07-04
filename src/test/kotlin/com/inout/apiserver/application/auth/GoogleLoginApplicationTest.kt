@@ -45,7 +45,9 @@ class GoogleLoginApplicationTest {
     fun `run - should create user if user with email does not exist`() {
         // given
         val request = GoogleLoginRequest("valid-id-token")
-        val newUser = mockk<User>()
+        val newUser = mockk<User>() {
+            every { id } returns 1L
+        }
         every { googleApiClientService.extractEmail(request.idToken) } returns email
         every { userService.getUserByEmail(email) } returns null
         every { userService.createUser(any()) } returns newUser
@@ -63,7 +65,9 @@ class GoogleLoginApplicationTest {
     fun `run - should not create user if user with email exists`() {
         // given
         val request = GoogleLoginRequest("valid-id-token")
-        val user = mockk<User>()
+        val user = mockk<User>() {
+            every { id } returns 1L
+        }
         every { googleApiClientService.extractEmail(request.idToken) } returns email
         every { userService.getUserByEmail(email) } returns user
         every { tokenService.generate(user, any(), any()) } returns "accessToken"
