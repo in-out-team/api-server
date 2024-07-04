@@ -7,4 +7,4 @@ echo "JAR file built successfully!"
 
 # Run Docker Compose
 echo "Running Docker Compose..."
-docker-compose up
+docker-compose up --build
