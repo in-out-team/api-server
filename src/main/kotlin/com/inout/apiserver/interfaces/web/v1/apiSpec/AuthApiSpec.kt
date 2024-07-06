@@ -1,5 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
+import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.GoogleLoginRequest
 import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.interfaces.web.v1.response.TokenResponse
@@ -44,7 +45,7 @@ interface AuthApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = TokenResponse::class),
+                        schema = Schema(implementation = HttpException::class),
                     )
                 ]
             )

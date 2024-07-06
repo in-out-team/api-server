@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
-import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.request.ReadWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
@@ -46,7 +46,7 @@ interface WordApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = ConflictException::class),
+                        schema = Schema(implementation = HttpException::class),
                     )
                 ]
             ),
@@ -86,7 +86,7 @@ interface WordApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = ConflictException::class),
+                        schema = Schema(implementation = HttpException::class),
                     )
                 ]
             ),

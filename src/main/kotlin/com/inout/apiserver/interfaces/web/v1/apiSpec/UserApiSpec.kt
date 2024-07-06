@@ -1,7 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
-import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import com.inout.apiserver.interfaces.web.v1.response.UserResponse
@@ -45,7 +44,7 @@ interface UserApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = ConflictException::class),
+                        schema = Schema(implementation = HttpException::class),
                     )
                 ]
             )
@@ -84,7 +83,7 @@ interface UserApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = NotFoundException::class),
+                        schema = Schema(implementation = HttpException::class),
                     )
                 ]
             )
@@ -114,7 +113,7 @@ interface UserApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = NotFoundException::class),
+                        schema = Schema(implementation = HttpException::class),
                     )
                 ]
             )
