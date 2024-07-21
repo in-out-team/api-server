@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -49,14 +50,15 @@ interface AuthApiSpec {
                     )
                 ]
             )
+        // TODO: add fail responses
         ]
     )
-    fun login(@RequestBody request: UserLoginRequest): ResponseEntity<TokenResponse>
+    fun login(@RequestBody @Valid request: UserLoginRequest): ResponseEntity<TokenResponse>
 
     @PostMapping("/login/google")
     @Operation(
         summary = "구글 로그인",
-        description = "구글 계정으로 로그인을 시도합니다. ID Token을 전달해야 합니다.",
+        description = "구글 계정으로 로그인을 시도합니다.",
         requestBody = SwaggerRequestBody(
             description = "구글 로그인 요청",
             required = true,
@@ -81,5 +83,5 @@ interface AuthApiSpec {
             // TODO: add fail responses
         ]
     )
-    fun googleLogin(@RequestBody request: GoogleLoginRequest): ResponseEntity<TokenResponse>
+    fun googleLogin(@RequestBody @Valid request: GoogleLoginRequest): ResponseEntity<TokenResponse>
 }
