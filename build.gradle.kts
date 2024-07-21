@@ -26,11 +26,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // openai
-//    implementation(platform("com.aallam.openai:openai-client-bom:3.7.2"))
-//    implementation("com.aallam.openai:openai-client")
-//    runtimeOnly("io.ktor:ktor-client-okhttp")
     implementation("com.aallam.openai:openai-client:3.7.2")
     implementation("io.ktor:ktor-client-okhttp:2.3.11")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")

@@ -48,6 +48,7 @@ interface UserApiSpec {
                     )
                 ]
             )
+            // TODO: add fail responses
         ]
     )
     fun createUser(@RequestBody request: CreateUserRequest): ResponseEntity<UserResponse>
@@ -77,7 +78,7 @@ interface UserApiSpec {
                     )
                 ]
             ),
-        ApiResponse(
+            ApiResponse(
                 responseCode = "404",
                 description = "사용자 정보 수정 실패 (code: USER_2) - 사용자를 찾을 수 없음",
                 content = [
@@ -88,6 +89,7 @@ interface UserApiSpec {
                 ]
             )
         ]
+        // TODO: add fail responses
     )
     fun updateUser(@RequestBody request: UpdateUserRequest): ResponseEntity<UserResponse>
 
@@ -117,6 +119,7 @@ interface UserApiSpec {
                     )
                 ]
             )
+            // TODO: add fail responses
         ]
     )
     fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse>

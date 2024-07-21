@@ -6,6 +6,7 @@ import com.inout.apiserver.interfaces.web.v1.apiSpec.AuthApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.GoogleLoginRequest
 import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import com.inout.apiserver.interfaces.web.v1.response.TokenResponse
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,11 +18,11 @@ class AuthController(
     private val emailPasswordLoginApplication: EmailPasswordLoginApplication,
     private val googleLoginApplication: GoogleLoginApplication,
 ) : AuthApiSpec {
-    override fun login(@RequestBody request: UserLoginRequest): ResponseEntity<TokenResponse> {
+    override fun login(@RequestBody @Valid request: UserLoginRequest): ResponseEntity<TokenResponse> {
         return ResponseEntity.ok(emailPasswordLoginApplication.run(request))
     }
 
-    override fun googleLogin(@RequestBody request: GoogleLoginRequest): ResponseEntity<TokenResponse> {
+    override fun googleLogin(@RequestBody @Valid request: GoogleLoginRequest): ResponseEntity<TokenResponse> {
         return ResponseEntity.ok(googleLoginApplication.run(request))
     }
 
