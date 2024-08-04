@@ -1,18 +1,20 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.request.ReadWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
-import com.inout.apiserver.interfaces.web.v1.response.WordDefinitionResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
+import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.media.SchemaProperty
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import org.springframework.http.ResponseEntity
@@ -102,17 +104,35 @@ interface WordApiSpec {
     )
     fun readWord(@RequestBody request: ReadWordRequest): ResponseEntity<WordResponse>
 
-
     @GetMapping("/definitions")
+    @PageableAsQueryParam
     @Operation(
         summary = "사전 단어 조회, prefix와 lexicalCategoryType으로 필터링 가능",
         description = "사전 단어 정의 조회를 요청합니다.",
         parameters = [
             Parameter(
                 name = "pagable",
-                description = "페이지네이션 정보",
+                description = "페이지네이션 정보, page, size, sort 정보를 포함 (현재 sort는 기대한것과 다르게 동작할 수 있음)",
                 required = true,
                 schema = Schema(implementation = Pageable::class)
+            ),
+            Parameter(
+                name = "fromLanguage",
+                description = "영한사전 기준 영어에 해당되는 값. ex) apple의 뜻을 한글로 알고싶을 경우 ENGLISH로 제공",
+                required = true,
+                schema = Schema(
+                    implementation = LanguageType::class,
+                    example = "ENGLISH",
+                )
+            ),
+            Parameter(
+                name = "toLanguage",
+                description = "영한사전 기준 한국어에 해당되는 값. ex) apple의 뜻을 한글로 알고싶을 경우 KOREAN으로 제공",
+                required = true,
+                schema = Schema(
+                    implementation = LanguageType::class,
+                    example = "KOREAN",
+                )
             ),
             Parameter(
                 name = "prefix",
@@ -121,11 +141,11 @@ interface WordApiSpec {
                 schema = Schema(implementation = String::class)
             ),
             Parameter(
-                name = "lexicalCategoryType",
+                name = "lexicalCategory",
                 description = "단어 품사",
                 required = false,
                 schema = Schema(implementation = LexicalCategoryType::class)
-            )
+            ),
         ],
         responses = [
             ApiResponse(
@@ -138,19 +158,15 @@ interface WordApiSpec {
                             // TODO: this is too verbose, consider using a custom schema
                             SchemaProperty(
                                 name = "data",
-                                schema = Schema(implementation = WordDefinitionResponse::class)
+                                schema = Schema(implementation = WordWithDefinitionsResponse::class)
                             ),
                             SchemaProperty(
-                                name = "total",
-                                schema = Schema(implementation = Integer::class)
+                                name = "hasMore",
+                                schema = Schema(implementation = Boolean::class)
                             ),
                             SchemaProperty(
-                                name = "page",
-                                schema = Schema(implementation = Integer::class)
-                            ),
-                            SchemaProperty(
-                                name = "size",
-                                schema = Schema(implementation = Integer::class)
+                                name = "count",
+                                schema = Schema(implementation = Long::class)
                             ),
                         ]
                     )
@@ -158,11 +174,15 @@ interface WordApiSpec {
             ),
         ]
     )
-    fun readWordDefinitionsWithMatchingPrefix(
+    fun readWordsWithMatchingPrefix(
         pageable: Pageable,
+        @RequestParam(required = true)
+        fromLanguage: LanguageType,
+        @RequestParam(required = true)
+        toLanguage: LanguageType,
         @RequestParam(required = true)
         prefix: String,
         @RequestParam(required = false)
-        lexicalCategoryType: LexicalCategoryType?
-    ): ResponseEntity<ResponsePaginationWrapper<WordDefinitionResponse>>
+        lexicalCategory: LexicalCategoryType?,
+    ): ResponseEntity<ResponsePaginationWrapper<WordWithDefinitionsResponse>>
 }

@@ -16,6 +16,8 @@ data class ErrorResponse(
 
 @ControllerAdvice
 class ControllerAdvice {
+    // TODO:phil, e: HttpException won't bind properly, create specific exception interfaces
+    //  if multiple exceptions are needed for a single handler
     @ExceptionHandler(ConflictException::class)
     fun handleConflictException(e: HttpException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
