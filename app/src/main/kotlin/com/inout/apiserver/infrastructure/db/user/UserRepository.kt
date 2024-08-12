@@ -1,7 +1,6 @@
 package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.domain.user.User
-import org.springframework.data.jpa.domain.AbstractPersistable_.id
 import org.springframework.stereotype.Repository
 
 @Repository

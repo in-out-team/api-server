@@ -3,7 +3,6 @@ package com.inout.apiserver.infrastructure.db.user
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
-import com.inout.apiserver.infrastructure.db.user.UserEntity
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
