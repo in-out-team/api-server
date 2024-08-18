@@ -1,4 +1,5 @@
 rootProject.name = "api-server"
 include(
-    "app"
+    "app",
+    "fsrs",
 )
