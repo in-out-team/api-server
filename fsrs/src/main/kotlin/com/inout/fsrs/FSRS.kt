@@ -13,11 +13,11 @@ import kotlin.math.round
 import kotlin.math.roundToInt
 
 class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
-    fun <T : RecordLog> repeat(
+    fun repeat(
         card: Card,
         now: Date,
-        afterHandler: ((RecordLog) -> T)? = null
-    ): T {
+        afterHandler: ((RecordLog) -> RecordLog)? = null
+    ): RecordLog {
         val schedulingCard = SchedulingCard(card, now)
         val interval = card.elapsedDays
         when (card.state) {
@@ -55,7 +55,7 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
         }
 
         val recordLog = schedulingCard.recordLog(card, now)
-        return afterHandler?.invoke(recordLog) ?: recordLog as T
+        return afterHandler?.invoke(recordLog) ?: recordLog
     }
 
     fun getRetrievability(card: Card, now: Date): Double? {
@@ -67,11 +67,11 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
         return forgettingCurve(elapsedDays, round(card.stability))
     }
 
-    fun <T : Card> rollback(
+    fun rollback(
         card: Card,
         log: ReviewLog,
-        afterHandler: ((Card) -> T)? = null
-    ): T {
+        afterHandler: ((Card) -> Card)? = null
+    ): Card {
         if (log.rating == Rating.Manual) {
             throw IllegalArgumentException("Cannot rollback a manual rating")
         }
@@ -96,15 +96,15 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
             state = log.state,
             lastReview = lastReview,
         )
-        return afterHandler?.invoke(prevCard) ?: prevCard as T
+        return afterHandler?.invoke(prevCard) ?: prevCard
     }
 
-    fun <T : RecordLogItem> forget(
+    fun forget(
         card: Card,
         now: Date,
         resetCount: Boolean = false,
-        afterHandler: ((RecordLogItem) -> T)? = null
-    ) : T {
+        afterHandler: ((RecordLogItem) -> RecordLogItem)? = null
+    ) : RecordLogItem {
         val scheduledDays = if (card.state != State.New) 0 else now.diff(card.lastReview!!)
         val forgetLog = ReviewLog(
             rating = Rating.Manual,
@@ -130,7 +130,7 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
         )
         val recordLogItem = RecordLogItem(forgetCard, forgetLog)
 
-        return afterHandler?.invoke(recordLogItem) ?: recordLogItem as T
+        return afterHandler?.invoke(recordLogItem) ?: recordLogItem
     }
 
     fun reschedule(

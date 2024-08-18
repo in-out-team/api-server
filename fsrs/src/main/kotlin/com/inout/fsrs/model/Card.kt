@@ -15,10 +15,10 @@ data class Card(
     var lastReview: Date?
 ) {
     companion object {
-        fun <T : Card> createEmptyCard(
+        fun createEmptyCard(
             now: Date? = Date(),
-            afterHandler: ((Card) -> T)? = null
-        ): T {
+            afterHandler: ((Card) -> Card)? = null
+        ): Card {
             val card = Card(
                 state = State.New,
                 due = now ?: Date(),
@@ -30,7 +30,7 @@ data class Card(
                 lapses = 0,
                 lastReview = null,
             )
-            return afterHandler?.invoke(card) ?: card as T
+            return afterHandler?.invoke(card) ?: card
         }
     }
 }
