@@ -70,7 +70,7 @@ interface WordApiSpec {
         description = "사전 단어 정의 조회를 요청합니다.",
         parameters = [
             Parameter(
-                name = "pagable",
+                name = "pageable",
                 description = "페이지네이션 정보, page, size, sort 정보를 포함 (현재 sort는 기대한것과 다르게 동작할 수 있음)",
                 required = true,
                 schema = Schema(implementation = Pageable::class)
