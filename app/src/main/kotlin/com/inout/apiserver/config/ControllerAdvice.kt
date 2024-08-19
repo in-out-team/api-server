@@ -17,10 +17,10 @@ data class ErrorResponse(
 @ControllerAdvice
 class ControllerAdvice {
     @ExceptionHandler(ConflictException::class)
-    fun handleConflictException(e: HttpException): ResponseEntity<ErrorResponse> {
+    fun handleConflictException(e: ConflictException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.CONFLICT)
-            .body(ErrorResponse(code = e.code, message = e.message ?: "Conflict"))
+            .body(ErrorResponse(code = e.code, message = e.message))
     }
 
     /**
@@ -30,38 +30,38 @@ class ControllerAdvice {
      * - IORNN_USER_1: User id is null from CreateUserApplication
      */
     @ExceptionHandler(InOutRequireNotNullException::class)
-    fun handleInOutRequireNotNullException(e: HttpException): ResponseEntity<ErrorResponse> {
+    fun handleInOutRequireNotNullException(e: InOutRequireNotNullException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ErrorResponse(code = e.code, message = e.message ?: "Internal Server Error"))
+            .body(ErrorResponse(code = e.code, message = e.message))
     }
 
     @ExceptionHandler(NotFoundException::class)
-    fun handleNotFoundException(e: HttpException): ResponseEntity<ErrorResponse> {
+    fun handleNotFoundException(e: NotFoundException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ErrorResponse(code = e.code, message = e.message ?: "Not Found"))
+            .body(ErrorResponse(code = e.code, message = e.message))
     }
 
     @ExceptionHandler(InvalidCredentialsException::class, GoogleIdTokenVerificationException::class)
-    fun handleInvalidCredentialsException(e: HttpException): ResponseEntity<ErrorResponse> {
+    fun handleInvalidCredentialsException(e: UnauthorizedException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.UNAUTHORIZED)
-            .body(ErrorResponse(code = e.code, message = e.message ?: "Unauthorized"))
+            .body(ErrorResponse(code = e.code, message = e.message))
     }
 
     @ExceptionHandler(InternalServerErrorException::class)
-    fun handleInternalServerErrorException(e: HttpException): ResponseEntity<ErrorResponse> {
+    fun handleInternalServerErrorException(e: InternalServerErrorException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ErrorResponse(code = e.code, message = e.message ?: "Internal Server Error"))
+            .body(ErrorResponse(code = e.code, message = e.message))
     }
 
     @ExceptionHandler(BadRequestException::class)
-    fun handleBadRequestException(e: HttpException): ResponseEntity<ErrorResponse> {
+    fun handleBadRequestException(e: BadRequestException): ResponseEntity<ErrorResponse> {
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ErrorResponse(code = e.code, message = e.message ?: "Bad Request"))
+            .body(ErrorResponse(code = e.code, message = e.message))
     }
 
     @ExceptionHandler(HttpMessageNotReadableException::class)
