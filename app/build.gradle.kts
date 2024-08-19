@@ -21,6 +21,10 @@ tasks.register<Wrapper>("wrapper") {
     gradleVersion = "8.8"
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 dependencies {
     implementation(project(":fsrs"))
     // spring

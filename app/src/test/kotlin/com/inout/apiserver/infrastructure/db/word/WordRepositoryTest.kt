@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.Import
 import org.springframework.dao.DataIntegrityViolationException
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 
 @Import(WordRepository::class)
 class WordRepositoryTest(
@@ -138,15 +140,66 @@ class WordRepositoryTest(
         assertEquals(savedWord.definitions[0].id, result?.definitions?.get(0)?.id)
     }
 
+    @Test
+    fun `findWordsWithDefinitions - should return words with matching prefix`() {
+        // given
+        val wordEntity1 = createWordEntity(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
+        val wordEntity2 = createWordEntity(name = "booked", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
+        wordJpaRepository.save(wordEntity1)
+        wordJpaRepository.save(wordEntity2)
+
+        // when
+        val result = wordRepository.findWordsWithDefinitions(
+            fromLanguage = LanguageType.ENGLISH,
+            toLanguage = LanguageType.KOREAN,
+            prefix = "book",
+            lexicalCategory = null,
+            pageable = PageRequest.of(0, 1, Sort.by(Sort.Order.asc("name")))
+        )
+
+        // then
+        assertEquals(2, result.totalElements)
+        assertEquals(1, result.numberOfElements)
+        assertEquals(2, result.totalPages)
+        assertEquals(1, result.content.size)
+        assertEquals(wordEntity1.name, result.content[0].name)
+    }
+
+    @Test
+    fun `findWordsWithDefinitions - should return words with matching prefix and lexical category`() {
+        // given
+        val wordEntity1 = createWordEntity(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
+        val wordEntity2 = createWordEntity(name = "booked", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN, lexicalCategory = LexicalCategoryType.VERB)
+        wordJpaRepository.save(wordEntity1)
+        wordJpaRepository.save(wordEntity2)
+
+        // when
+        val result = wordRepository.findWordsWithDefinitions(
+            fromLanguage = LanguageType.ENGLISH,
+            toLanguage = LanguageType.KOREAN,
+            prefix = "book",
+            lexicalCategory = LexicalCategoryType.VERB,
+            pageable = PageRequest.of(0, 1, Sort.by(Sort.Order.asc("name")))
+        )
+
+        // then
+        assertEquals(1, result.totalElements)
+        assertEquals(1, result.numberOfElements)
+        assertEquals(1, result.totalPages)
+        assertEquals(1, result.content.size)
+        assertEquals(wordEntity2.name, result.content[0].name)
+    }
+
     private fun createWordEntity(
         name: String = "test",
         fromLanguage: LanguageType = LanguageType.ENGLISH,
-        toLanguage: LanguageType = LanguageType.KOREAN
+        toLanguage: LanguageType = LanguageType.KOREAN,
+        lexicalCategory: LexicalCategoryType = LexicalCategoryType.NOUN
     ): WordEntity {
         return WordEntity(
             name = name, fromLanguage = fromLanguage, toLanguage = toLanguage, definitions = listOf(
                 WordDefinitionEntity(
-                    lexicalCategory = LexicalCategoryType.NOUN,
+                    lexicalCategory = lexicalCategory,
                     meaning = "test",
                     preContext = "test preContext"
                 ),
