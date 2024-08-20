@@ -6,6 +6,7 @@ import com.google.api.client.json.gson.GsonFactory
 import com.inout.apiserver.config.filter.JwtAuthFilter
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -46,6 +47,21 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // since we are using JWT
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .exceptionHandling {
+                it.authenticationEntryPoint { _, response, _ ->
+                    response.contentType = "application/json;charset=UTF-8"
+                    response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    response.writer.write(
+                        """
+                        {
+                            "message": "Unauthorized: Invalid Token or No Token Provided",
+                            "code": "UNAUTHORIZED_1",
+                            "extraData": {}
+                        }
+                        """.trimIndent()
+                    )
+                }
+            }
 
         return http.build()
     }
