@@ -3,6 +3,7 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import org.springframework.data.domain.Page
@@ -49,7 +50,8 @@ class WordService(
         return wordRepository.findWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategory, pageable)
     }
 
-    fun getWordByWordDefinitionId(wordDefinitionId: Long): Word? {
+    fun getWordByWordDefinitionId(wordDefinitionId: Long): Word {
         return wordRepository.findByWordDefinitionId(wordDefinitionId)
+            ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
     }
 }

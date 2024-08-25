@@ -1,7 +1,11 @@
 package com.inout.apiserver.infrastructure.db.study
 
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface StudyJpaRepository : JpaRepository<StudyEntity, Long> {
     fun findByUserIdAndWordDefinitionId(userId: Long, wordDefinitionId: Long): StudyEntity?
+
+    fun findAllByUserId(userId: Long, sortIgnoredPageRequest: Pageable): Page<StudyEntity>
 }

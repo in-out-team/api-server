@@ -1,6 +1,7 @@
 package com.inout.apiserver.infrastructure.db.study
 
 import com.inout.apiserver.domain.study.Study
+import com.inout.apiserver.domain.study.StudyCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
 import jakarta.persistence.Entity
@@ -26,5 +27,14 @@ data class StudyEntity(
             createdAt = createdAt,
             updatedAt = updatedAt,
         )
+    }
+
+    companion object {
+        fun fromCreateObject(studyCreateObject: StudyCreateObject): StudyEntity {
+            return StudyEntity(
+                userId = studyCreateObject.userId,
+                wordDefinitionId = studyCreateObject.wordDefinitionId,
+            )
+        }
     }
 }
