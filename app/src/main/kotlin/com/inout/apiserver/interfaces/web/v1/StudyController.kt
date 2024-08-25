@@ -1,6 +1,8 @@
 package com.inout.apiserver.interfaces.web.v1
 
 import com.inout.apiserver.application.study.CreateStudyApplication
+import com.inout.apiserver.config.web.RequestUser
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.response.StudyWithWordResponse
 import jakarta.validation.Valid
@@ -17,8 +19,10 @@ class StudyController(
     private val createStudyApplication: CreateStudyApplication,
 ) {
     @PostMapping
-    fun createStudy(@RequestBody @Valid request: CreateStudyRequest): ResponseEntity<StudyWithWordResponse> {
-        val userId = 1L // TODO: fix this with actual user id
-        return ResponseEntity(createStudyApplication.run(request, userId), HttpStatus.CREATED)
+    fun createStudy(
+        @RequestBody @Valid request: CreateStudyRequest,
+        @RequestUser user: User,
+    ): ResponseEntity<StudyWithWordResponse> {
+        return ResponseEntity(createStudyApplication.run(request, user.id), HttpStatus.CREATED)
     }
 }
