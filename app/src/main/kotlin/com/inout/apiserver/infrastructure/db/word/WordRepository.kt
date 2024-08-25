@@ -39,4 +39,11 @@ class WordRepository(
 
         return wordJpaRepository.findAll(spec, pageable).map { it.toDomain() }
     }
+
+    fun findByWordDefinitionId(wordDefinitionId: Long): Word? {
+        return wordJpaRepository
+            .findByDefinitionsId(wordDefinitionId)
+            ?.toDomain()
+            ?.let { word -> word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }) }
+    }
 }

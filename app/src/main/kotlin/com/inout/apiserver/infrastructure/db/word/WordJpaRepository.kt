@@ -10,4 +10,6 @@ interface WordJpaRepository : JpaRepository<WordEntity, Long>, JpaSpecificationE
         fromLanguage: LanguageType,
         toLanguage: LanguageType
     ): WordEntity?
+
+    fun findByDefinitionsId(wordDefinitionId: Long): WordEntity?
 }

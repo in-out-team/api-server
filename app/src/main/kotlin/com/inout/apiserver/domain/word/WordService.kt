@@ -48,4 +48,8 @@ class WordService(
     ): Page<Word> {
         return wordRepository.findWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategory, pageable)
     }
+
+    fun getWordByWordDefinitionId(wordDefinitionId: Long): Word? {
+        return wordRepository.findByWordDefinitionId(wordDefinitionId)
+    }
 }
