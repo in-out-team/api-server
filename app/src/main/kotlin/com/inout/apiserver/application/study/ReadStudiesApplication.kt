@@ -1,8 +1,10 @@
 package com.inout.apiserver.application.study
 
 import com.inout.apiserver.domain.study.StudyService
+import com.inout.apiserver.domain.study.StudyWord
+import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordService
-import com.inout.apiserver.interfaces.web.v1.response.StudyWithWordResponse
+import com.inout.apiserver.error.InternalServerErrorException
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
@@ -11,20 +13,22 @@ class ReadStudiesApplication(
     private val studyService: StudyService,
     private val wordService: WordService,
 ) {
-    /**
-     * TODO:
-     * application classes (use cases) should not return XXX_Response classes which reside in the interfaces layer
-     * instead, they should return domain classes and the controller should convert them to response classes
-     *
-     * TODO:
-     * should find a way to avoid N+1 queries
-     */
-    fun run(userId: Long, pageable: Pageable): Pair<Long, List<StudyWithWordResponse>> {
+    fun run(userId: Long, pageable: Pageable): Pair<Long, List<StudyWord>> {
         val studies = studyService.getAllByUserId(userId, pageable)
+        val wordDefinitionIds = studies.content.map { it.wordDefinitionId }
+        val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
+        val wordByDefinitionIdMap = mutableMapOf<Long, Word>()
+        words.forEach { word ->
+            word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id] = word }
+        }
+
         return Pair(
             studies.totalElements,
             studies.content.map { study ->
-                StudyWithWordResponse.of(study, wordService.getWordByWordDefinitionId(study.wordDefinitionId))
+                StudyWord(
+                    study = study,
+                    word = wordByDefinitionIdMap[study.wordDefinitionId] ?: throw InternalServerErrorException(message = "Data Integrity Error", code = "STUDY_1"),
+                )
             }
         )
     }

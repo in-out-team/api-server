@@ -44,6 +44,9 @@ class WordRepository(
         return wordJpaRepository
             .findByDefinitionsId(wordDefinitionId)
             ?.toDomain()
-            ?.let { word -> word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }) }
+    }
+
+    fun findAllByWordDefinitionIds(wordDefinitionIds: List<Long>): List<Word> {
+        return wordJpaRepository.findAllByDefinitionsIdIn(wordDefinitionIds).map { it.toDomain() }
     }
 }

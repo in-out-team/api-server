@@ -36,4 +36,8 @@ data class WordWithDefinitionsResponse(
             )
         }
     }
+
+    fun filterDefinitionsBy(wordDefinitionId: Long): WordWithDefinitionsResponse {
+        return copy(definitions = definitions.filter { it.id == wordDefinitionId })
+    }
 }

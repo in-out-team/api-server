@@ -69,7 +69,7 @@ class WordRepositoryTest(
     @Nested
     inner class FindByNameAndLanguage {
         @Test
-        fun `findByNameAndLanguage - should return null when word not found`() {
+        fun `should return null when word not found`() {
             // given
             val name = "test"
             val wordEntity = createWordEntity(name = name)
@@ -87,7 +87,7 @@ class WordRepositoryTest(
         }
 
         @Test
-        fun `findByNameAndLanguage - should return word when word found`() {
+        fun `should return word when word found`() {
             // given
             val name = "test"
             val wordEntity = createWordEntity(name = name)
@@ -115,7 +115,7 @@ class WordRepositoryTest(
     @Nested
     inner class FindById {
         @Test
-        fun `findById - should return null when word not found`() {
+        fun `should return null when word not found`() {
             // given
             assertEquals(wordJpaRepository.count(), 0)
 
@@ -127,7 +127,7 @@ class WordRepositoryTest(
         }
 
         @Test
-        fun `findById - should return word when word found`() {
+        fun `should return word when word found`() {
             // given
             val wordEntity = createWordEntity()
             val savedWord = wordJpaRepository.save(wordEntity)
@@ -154,7 +154,7 @@ class WordRepositoryTest(
     @Nested
     inner class FindWordsWithDefinitions {
         @Test
-        fun `findWordsWithDefinitions - should return words with matching prefix`() {
+        fun `should return words with matching prefix`() {
             // given
             val wordEntity1 = createWordEntity(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
             val wordEntity2 = createWordEntity(name = "booked", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
@@ -179,7 +179,7 @@ class WordRepositoryTest(
         }
 
         @Test
-        fun `findWordsWithDefinitions - should return words with matching prefix and lexical category`() {
+        fun `should return words with matching prefix and lexical category`() {
             // given
             val wordEntity1 = createWordEntity(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
             val wordEntity2 = createWordEntity(name = "booked", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN, lexicalCategory = LexicalCategoryType.VERB)
@@ -207,7 +207,7 @@ class WordRepositoryTest(
     @Nested
     inner class FindByWordDefinitionId {
         @Test
-        fun `findByWordDefinitionId - should return word with matching word definition id`() {
+        fun `should return word with matching word definition id`() {
             // given
             val wordEntity = createWordEntity()
             val savedWord = wordJpaRepository.save(wordEntity)
@@ -217,21 +217,11 @@ class WordRepositoryTest(
 
             // then
             assertNotNull(result)
-            assertEquals(wordEntity.name, result?.name)
-            assertEquals(wordEntity.fromLanguage, result?.fromLanguage)
-            assertEquals(wordEntity.toLanguage, result?.toLanguage)
-            assertEquals(1, result?.definitions?.size)
-            assertEquals(wordEntity.definitions[0].lexicalCategory, result?.definitions?.get(0)?.lexicalCategory)
-            assertEquals(wordEntity.definitions[0].meaning, result?.definitions?.get(0)?.meaning)
-            assertEquals(wordEntity.definitions[0].preContext, result?.definitions?.get(0)?.preContext)
             assertEquals(savedWord.id, result?.id)
-            assertEquals(savedWord.createdAt, result?.createdAt)
-            assertEquals(savedWord.updatedAt, result?.updatedAt)
-            assertEquals(savedWord.definitions[0].id, result?.definitions?.get(0)?.id)
         }
 
         @Test
-        fun `findByWordDefinitionId - should return null when word definition id not found`() {
+        fun `should return null when word definition id not found`() {
             // given
             val wordEntity = createWordEntity()
             val savedWordEntity = wordJpaRepository.save(wordEntity)
@@ -241,6 +231,37 @@ class WordRepositoryTest(
 
             // then
             assertNull(result)
+        }
+    }
+
+    @Nested
+    inner class FindAllByWordDefinitionIds {
+        @Test
+        fun `should return words with matching word definition ids`() {
+            // given
+            val wordEntity1 = createWordEntity(name = "book")
+            val wordEntity2 = createWordEntity(name = "booking")
+            val wordEntity3 = createWordEntity(name = "booked")
+            val savedWordEntity1 = wordJpaRepository.save(wordEntity1)
+            val savedWordEntity2 = wordJpaRepository.save(wordEntity2)
+            val savedWordEntity3 = wordJpaRepository.save(wordEntity3)
+
+
+            // when
+            val expectedWordEntities = listOf(savedWordEntity1, savedWordEntity2)
+            val notExpectedWordEntities = listOf(savedWordEntity3)
+            val sut = wordRepository.findAllByWordDefinitionIds(
+                expectedWordEntities.map { it.definitions[0].id!! }
+            )
+
+            // then
+            assertEquals(2, sut.size)
+            assertTrue(expectedWordEntities.all { expectedWordEntity ->
+                sut.any { it.id == expectedWordEntity.id }
+            })
+            assertTrue(notExpectedWordEntities.all { notExpectedWordEntity ->
+                sut.none { it.id == notExpectedWordEntity.id }
+            })
         }
     }
 

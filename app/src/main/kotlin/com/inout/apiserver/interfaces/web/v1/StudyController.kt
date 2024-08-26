@@ -6,7 +6,7 @@ import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
-import com.inout.apiserver.interfaces.web.v1.response.StudyWithWordResponse
+import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
@@ -27,20 +27,23 @@ class StudyController(
     @PostMapping
     fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
-        @RequestUser user: User,
-    ): ResponseEntity<StudyWithWordResponse> {
-        return ResponseEntity(createStudyApplication.run(request, user.id), HttpStatus.CREATED)
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<StudyWordResponse> {
+        return ResponseEntity(
+            createStudyApplication.run(request, user.id).let { StudyWordResponse.of(it.study, it.word) },
+            HttpStatus.CREATED
+        )
     }
 
     @GetMapping
     fun getStudies(
-        @RequestUser user: User,
+        @Parameter(hidden = true) @RequestUser user: User,
         @Parameter(hidden = true) pageable: Pageable,
-    ): ResponseEntity<ResponsePaginationWrapper<StudyWithWordResponse>> {
-        val (count, words) = readStudiesApplication.run(user.id, pageable)
+    ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
+        val (count, studyWithWords) = readStudiesApplication.run(user.id, pageable)
         return ResponseEntity(
             ResponsePaginationWrapper(
-                data = words,
+                data = studyWithWords.map { StudyWordResponse.of(it.study, it.word) },
                 hasMore = pageable.next().offset < count,
                 count = count
             ), HttpStatus.OK

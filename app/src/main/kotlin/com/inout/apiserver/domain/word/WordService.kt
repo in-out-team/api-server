@@ -52,6 +52,13 @@ class WordService(
 
     fun getWordByWordDefinitionId(wordDefinitionId: Long): Word {
         return wordRepository.findByWordDefinitionId(wordDefinitionId)
+            ?.let { word -> word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }) }
             ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
+    }
+
+    fun getWordsByWordDefinitionIds(wordDefinitionIds: List<Long>): List<Word> {
+        val ids = wordDefinitionIds.toSet()
+        return wordRepository.findAllByWordDefinitionIds(wordDefinitionIds)
+            .map { word -> word.copy(definitions = word.definitions.filter { it.id in ids }) }
     }
 }
