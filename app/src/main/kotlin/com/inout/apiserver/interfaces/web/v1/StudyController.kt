@@ -4,6 +4,7 @@ import com.inout.apiserver.application.study.CreateStudyApplication
 import com.inout.apiserver.application.study.ReadStudiesApplication
 import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.interfaces.web.v1.apiSpec.StudyApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
 import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
@@ -12,8 +13,6 @@ import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -23,9 +22,8 @@ import org.springframework.web.bind.annotation.RestController
 class StudyController(
     private val createStudyApplication: CreateStudyApplication,
     private val readStudiesApplication: ReadStudiesApplication,
-) {
-    @PostMapping
-    fun createStudy(
+): StudyApiSpec {
+    override fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<StudyWordResponse> {
@@ -35,8 +33,7 @@ class StudyController(
         )
     }
 
-    @GetMapping
-    fun getStudies(
+    override fun getStudies(
         @Parameter(hidden = true) @RequestUser user: User,
         @Parameter(hidden = true) pageable: Pageable,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
