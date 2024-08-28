@@ -27,7 +27,7 @@ class ReadStudiesApplication(
             studies.content.map { study ->
                 StudyWord(
                     study = study,
-                    word = wordByDefinitionIdMap[study.wordDefinitionId] ?: throw InternalServerErrorException(message = "Data Integrity Error", code = "STUDY_1"),
+                    word = wordByDefinitionIdMap[study.wordDefinitionId] ?: throw InternalServerErrorException(message = "Data Integrity Error", code = "STUDY_2"),
                 )
             }
         )

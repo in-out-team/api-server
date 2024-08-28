@@ -5,7 +5,6 @@ import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.study.StudyWord
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
-import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
 import org.springframework.stereotype.Component
 
 @Component

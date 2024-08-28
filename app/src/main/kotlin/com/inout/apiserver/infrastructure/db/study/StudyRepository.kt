@@ -21,7 +21,7 @@ class StudyRepository(
         return studyJpaRepository.findById(id).orElse(null)?.toDomain()
     }
 
-    fun findAllByUserId(userId: Long, sortIgnoredPageRequest: Pageable): Page<Study> {
-        return studyJpaRepository.findAllByUserId(userId, sortIgnoredPageRequest).map { it.toDomain() }
+    fun findAllByUserId(userId: Long, pageable: Pageable): Page<Study> {
+        return studyJpaRepository.findAllByUserId(userId, pageable).map { it.toDomain() }
     }
 }
