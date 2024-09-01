@@ -104,26 +104,7 @@ interface WordApiSpec {
             ApiResponse(
                 responseCode = "200",
                 description = "사전에 단어 정의 조회 성공",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schemaProperties = [
-                            // TODO: this is too verbose, consider using a custom schema
-                            SchemaProperty(
-                                name = "data",
-                                schema = Schema(implementation = WordWithDefinitionsResponse::class)
-                            ),
-                            SchemaProperty(
-                                name = "hasMore",
-                                schema = Schema(implementation = Boolean::class)
-                            ),
-                            SchemaProperty(
-                                name = "count",
-                                schema = Schema(implementation = Long::class)
-                            ),
-                        ]
-                    )
-                ]
+                useReturnTypeSchema = true,
             ),
         ]
     )

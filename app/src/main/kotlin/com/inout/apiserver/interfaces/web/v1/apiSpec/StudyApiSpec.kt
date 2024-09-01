@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import kotlin.reflect.KClass
 
 interface StudyApiSpec {
     @PostMapping
@@ -80,25 +81,7 @@ interface StudyApiSpec {
             ApiResponse(
                 responseCode = "200",
                 description = "학습 단어 조회 성공",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schemaProperties = [
-                            SchemaProperty(
-                                name = "data",
-                                schema = Schema(implementation = StudyWordResponse::class),
-                            ),
-                            SchemaProperty(
-                                name = "hasMore",
-                                schema = Schema(implementation = Boolean::class)
-                            ),
-                            SchemaProperty(
-                                name = "count",
-                                schema = Schema(implementation = Long::class)
-                            ),
-                        ]
-                    )
-                ]
+                useReturnTypeSchema = true,
             ),
         ]
     )
@@ -107,3 +90,5 @@ interface StudyApiSpec {
         @Parameter(hidden = true) pageable: Pageable,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>>
 }
+
+fun <T : Any> test(t: T): KClass<out T> = t::class
