@@ -28,11 +28,12 @@ class WordSpecification {
         }
 
         fun lexicalCategoryType(lexicalCategoryType: LexicalCategoryType?): Specification<WordEntity> {
-            return Specification { root, _, criteriaBuilder ->
+            return Specification { root, query, criteriaBuilder ->
                 if (lexicalCategoryType == null) {
                     return@Specification criteriaBuilder.conjunction()
                 }
                 val definitions = root.join<WordEntity, WordDefinitionEntity>("definitions", JoinType.INNER)
+                query.distinct(true)
                 criteriaBuilder.equal(definitions.get<LexicalCategoryType>("lexicalCategory"), lexicalCategoryType)
             }
         }
