@@ -3,6 +3,8 @@ package com.inout.apiserver.interfaces.web.v1
 import com.inout.apiserver.application.user.CreateUserApplication
 import com.inout.apiserver.application.user.ReadUserApplication
 import com.inout.apiserver.application.user.UpdateUserApplication
+import com.inout.apiserver.config.web.RequestUser
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.interfaces.web.v1.apiSpec.UserApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
@@ -23,9 +25,10 @@ class UserController(
         return ResponseEntity(createUserApplication.run(request), CREATED)
     }
 
-    override fun updateUser(@RequestBody @Valid request: UpdateUserRequest): ResponseEntity<UserResponse> {
-        return ResponseEntity(updateUserApplication.run(request), OK)
-    }
+    override fun updateUser(
+        @RequestBody @Valid request: UpdateUserRequest,
+        @RequestUser user: User,
+    ): ResponseEntity<UserResponse> = ResponseEntity(updateUserApplication.run(request, user), OK)
 
     override fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse> {
         return ResponseEntity(readUserApplication.run(id), OK)
