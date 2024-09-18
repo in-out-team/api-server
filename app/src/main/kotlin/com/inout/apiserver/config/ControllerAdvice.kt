@@ -78,4 +78,11 @@ class ControllerAdvice {
             .status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(code = "BAD_REQUEST_2", message = "Bad Request", extraData = errorMap))
     }
+
+    @ExceptionHandler(ForbiddenException::class)
+    fun handleForbiddenException(e: ForbiddenException): ResponseEntity<ErrorResponse> {
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(code = e.code, message = e.message))
+    }
 }

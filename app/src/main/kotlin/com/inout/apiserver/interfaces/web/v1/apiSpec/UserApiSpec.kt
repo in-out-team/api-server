@@ -1,10 +1,12 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
@@ -91,8 +93,10 @@ interface UserApiSpec {
         ]
         // TODO: add fail responses
     )
-    fun updateUser(@RequestBody request: UpdateUserRequest): ResponseEntity<UserResponse>
-
+    fun updateUser(
+        @RequestBody request: UpdateUserRequest,
+        @Parameter(hidden = true) user: User,
+    ): ResponseEntity<UserResponse>
 
     @GetMapping("/{id}")
     @Operation(
