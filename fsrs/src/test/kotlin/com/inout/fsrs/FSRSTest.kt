@@ -286,4 +286,53 @@ class FSRSTest {
             assertEquals(secondDue, easyLog.card.lastReview)
         }
     }
+
+    @Nested
+    inner class Rollback {
+        @Test
+        fun `rollback should undo the repeat`() {
+            // given
+            val fsrs = createFSRS()
+            val card = createCard()
+            val cardCopied = card.copy()
+            val due =
+                Calendar.getInstance().apply {
+                    set(2024, 0, 1, 0, 0, 0)
+                }.time
+            val firstRepeat = fsrs.repeat(card, due)
+
+            // when & then
+            listOf(Grade.Again, Grade.Hard, Grade.Good, Grade.Easy).forEach {
+                val recordLogItem = firstRepeat.logs[it]!!
+                val rollbackCard = fsrs.rollback(recordLogItem.card, recordLogItem.log)
+                assertEquals(cardCopied, rollbackCard)
+            }
+        }
+
+        @Test
+        fun `rollback should undo the repeat even with multiple repeats`() {
+            // given
+            val fsrs = createFSRS()
+            val card = createCard()
+            val due =
+                Calendar.getInstance().apply {
+                    set(2024, 0, 1, 0, 0, 0)
+                }.time
+            val firstRepeat = fsrs.repeat(card, due)
+            val secondCard = firstRepeat.logs[Grade.Again]!!.card
+            val secondCardCopied = secondCard.copy()
+            val secondDue = firstRepeat.logs[Grade.Again]!!.card.due
+            val secondRepeat = fsrs.repeat(secondCard, secondDue)
+
+            // when & then
+            listOf(Grade.Again, Grade.Hard, Grade.Good, Grade.Easy).forEach {
+                val recordLogItem = secondRepeat.logs[it]!!
+                val rollbackCard = fsrs.rollback(recordLogItem.card, recordLogItem.log)
+                assertEquals(secondCardCopied, rollbackCard)
+            }
+        }
+    }
+
+    @Nested
+    inner class Forget
 }
