@@ -11,11 +11,12 @@ import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpStatus.CREATED
+import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.http.HttpStatus.*
 
 @RestController
 @RequestMapping("/v1/words")
@@ -23,7 +24,9 @@ class WordController(
     private val createWordApplication: CreateWordApplication,
     private val readWordsApplication: ReadWordsApplication,
 ) : WordApiSpec {
-    override fun createWord(@RequestBody @Valid request: CreateWordRequest): ResponseEntity<WordResponse> {
+    override fun createWord(
+        @RequestBody @Valid request: CreateWordRequest,
+    ): ResponseEntity<WordResponse> {
         return ResponseEntity(createWordApplication.run(request), CREATED)
     }
 
@@ -41,8 +44,9 @@ class WordController(
             ResponsePaginationWrapper(
                 data = words.map { WordWithDefinitionsResponse.of(it, lexicalCategory) },
                 hasMore = pageable.next().offset < count,
-                count = count
-            ), OK
+                count = count,
+            ),
+            OK,
         )
     }
 }

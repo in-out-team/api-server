@@ -9,26 +9,31 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 interface UserApiSpec {
     @PostMapping
     @Operation(
         summary = "사용자 생성",
         description = "사용자를 생성합니다.",
-        requestBody = SwaggerRequestBody(
-            description = "사용자 생성 요청값",
-            required = true,
-            content = [
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = CreateUserRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                description = "사용자 생성 요청값",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = CreateUserRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "201",
@@ -36,9 +41,9 @@ interface UserApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = UserResponse::class)
-                    )
-                ]
+                        schema = Schema(implementation = UserResponse::class),
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "409",
@@ -47,28 +52,31 @@ interface UserApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
-            )
+                    ),
+                ],
+            ),
             // TODO: add fail responses
-        ]
+        ],
     )
-    fun createUser(@RequestBody request: CreateUserRequest): ResponseEntity<UserResponse>
+    fun createUser(
+        @RequestBody request: CreateUserRequest,
+    ): ResponseEntity<UserResponse>
 
     @PutMapping
     @Operation(
         summary = "사용자 정보 수정",
         description = "사용자 정보를 수정합니다.",
-        requestBody = SwaggerRequestBody(
-            description = "사용자 정보 수정 요청값",
-            required = true,
-            content = [
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = UpdateUserRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                description = "사용자 정보 수정 요청값",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = UpdateUserRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -76,9 +84,9 @@ interface UserApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = UserResponse::class)
-                    )
-                ]
+                        schema = Schema(implementation = UserResponse::class),
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "404",
@@ -87,10 +95,10 @@ interface UserApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
-            )
-        ]
+                    ),
+                ],
+            ),
+        ],
         // TODO: add fail responses
     )
     fun updateUser(
@@ -109,9 +117,9 @@ interface UserApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = UserResponse::class)
-                    )
-                ]
+                        schema = Schema(implementation = UserResponse::class),
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "404",
@@ -120,11 +128,13 @@ interface UserApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
-            )
+                    ),
+                ],
+            ),
             // TODO: add fail responses
-        ]
+        ],
     )
-    fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse>
+    fun getUser(
+        @PathVariable id: Long,
+    ): ResponseEntity<UserResponse>
 }

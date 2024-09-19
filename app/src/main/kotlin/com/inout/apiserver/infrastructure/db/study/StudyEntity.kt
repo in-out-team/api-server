@@ -12,8 +12,8 @@ import jakarta.persistence.UniqueConstraint
 @Table(
     name = "studies",
     uniqueConstraints = [
-        UniqueConstraint(columnNames = ["user_id", "word_definition_id"])
-    ]
+        UniqueConstraint(columnNames = ["user_id", "word_definition_id"]),
+    ],
 )
 data class StudyEntity(
     val userId: Long,

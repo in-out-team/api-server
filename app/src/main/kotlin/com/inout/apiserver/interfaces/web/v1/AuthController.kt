@@ -18,11 +18,15 @@ class AuthController(
     private val emailPasswordLoginApplication: EmailPasswordLoginApplication,
     private val googleLoginApplication: GoogleLoginApplication,
 ) : AuthApiSpec {
-    override fun login(@RequestBody @Valid request: UserLoginRequest): ResponseEntity<TokenResponse> {
+    override fun login(
+        @RequestBody @Valid request: UserLoginRequest,
+    ): ResponseEntity<TokenResponse> {
         return ResponseEntity.ok(emailPasswordLoginApplication.run(request))
     }
 
-    override fun googleLogin(@RequestBody @Valid request: GoogleLoginRequest): ResponseEntity<TokenResponse> {
+    override fun googleLogin(
+        @RequestBody @Valid request: GoogleLoginRequest,
+    ): ResponseEntity<TokenResponse> {
         return ResponseEntity.ok(googleLoginApplication.run(request))
     }
 

@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 @Service
 class OpenAIService(
     private val openAIRequestProvider: OpenAIRequestProvider,
-    private val openai: OpenAI
+    private val openai: OpenAI,
 ) {
     fun fetchWordDefinition(
         word: String,

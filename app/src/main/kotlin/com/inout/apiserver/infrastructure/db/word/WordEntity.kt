@@ -5,13 +5,23 @@ import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
+import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.DynamicUpdate
 
 @Entity
-@Table(name = "words", uniqueConstraints = [
-    UniqueConstraint(columnNames = ["name", "from_language", "to_language"])
-])
+@Table(
+    name = "words",
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["name", "from_language", "to_language"]),
+    ],
+)
 @DynamicUpdate
 data class WordEntity(
     val name: String,
@@ -41,7 +51,7 @@ data class WordEntity(
                 name = word.name,
                 fromLanguage = word.fromLanguage,
                 toLanguage = word.toLanguage,
-                definitions = word.definitions.map { WordDefinitionEntity.of(it) }
+                definitions = word.definitions.map { WordDefinitionEntity.of(it) },
             ).apply {
                 id = word.id
                 createdAt = word.createdAt
@@ -54,7 +64,7 @@ data class WordEntity(
                 name = wordCreateObject.name,
                 fromLanguage = wordCreateObject.fromLanguage,
                 toLanguage = wordCreateObject.toLanguage,
-                definitions = wordCreateObject.definitions.map { WordDefinitionEntity.fromCreateObject(it) }
+                definitions = wordCreateObject.definitions.map { WordDefinitionEntity.fromCreateObject(it) },
             )
         }
     }

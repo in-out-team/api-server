@@ -9,26 +9,27 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 interface AuthApiSpec {
     @PostMapping("/login")
     @Operation(
         summary = "로그인",
         description = "로그인합니다.",
-        requestBody = SwaggerRequestBody(
-            description = "로그인 요청",
-            required = true,
-            content = [
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = UserLoginRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                description = "로그인 요청",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = UserLoginRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -37,8 +38,8 @@ interface AuthApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = TokenResponse::class),
-                    )
-                ]
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "401",
@@ -47,28 +48,31 @@ interface AuthApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
-            )
-        // TODO: add fail responses
-        ]
+                    ),
+                ],
+            ),
+            // TODO: add fail responses
+        ],
     )
-    fun login(@RequestBody @Valid request: UserLoginRequest): ResponseEntity<TokenResponse>
+    fun login(
+        @RequestBody @Valid request: UserLoginRequest,
+    ): ResponseEntity<TokenResponse>
 
     @PostMapping("/login/google")
     @Operation(
         summary = "구글 로그인",
         description = "구글 계정으로 로그인을 시도합니다.",
-        requestBody = SwaggerRequestBody(
-            description = "구글 로그인 요청",
-            required = true,
-            content = [
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = GoogleLoginRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                description = "구글 로그인 요청",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = GoogleLoginRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -77,11 +81,13 @@ interface AuthApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = TokenResponse::class),
-                    )
-                ]
-            )
+                    ),
+                ],
+            ),
             // TODO: add fail responses
-        ]
+        ],
     )
-    fun googleLogin(@RequestBody @Valid request: GoogleLoginRequest): ResponseEntity<TokenResponse>
+    fun googleLogin(
+        @RequestBody @Valid request: GoogleLoginRequest,
+    ): ResponseEntity<TokenResponse>
 }

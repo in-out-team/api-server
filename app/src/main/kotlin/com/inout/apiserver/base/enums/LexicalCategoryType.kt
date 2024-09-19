@@ -9,7 +9,8 @@ enum class LexicalCategoryType {
     PREPOSITION,
     CONJUNCTION,
     INTERJECTION,
-    UNKNOWN;
+    UNKNOWN,
+    ;
 
     companion object {
         fun of(value: String): LexicalCategoryType {

@@ -13,7 +13,10 @@ class ReadStudiesApplication(
     private val studyService: StudyService,
     private val wordService: WordService,
 ) {
-    fun run(userId: Long, pageable: Pageable): Pair<Long, List<StudyWord>> {
+    fun run(
+        userId: Long,
+        pageable: Pageable,
+    ): Pair<Long, List<StudyWord>> {
         val studies = studyService.getAllByUserId(userId, pageable)
         val wordDefinitionIds = studies.content.map { it.wordDefinitionId }
         val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
@@ -27,9 +30,11 @@ class ReadStudiesApplication(
             studies.content.map { study ->
                 StudyWord(
                     study = study,
-                    word = wordByDefinitionIdMap[study.wordDefinitionId] ?: throw InternalServerErrorException(message = "Data Integrity Error", code = "STUDY_2"),
+                    word =
+                        wordByDefinitionIdMap[study.wordDefinitionId]
+                            ?: throw InternalServerErrorException(message = "Data Integrity Error", code = "STUDY_2"),
                 )
-            }
+            },
         )
     }
 }

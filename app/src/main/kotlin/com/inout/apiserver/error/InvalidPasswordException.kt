@@ -2,5 +2,5 @@ package com.inout.apiserver.error
 
 class InvalidPasswordException(
     override val message: String,
-    val code: String
+    val code: String,
 ) : RuntimeException(message)

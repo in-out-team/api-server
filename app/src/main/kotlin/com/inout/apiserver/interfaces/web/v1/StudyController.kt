@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.RestController
 class StudyController(
     private val createStudyApplication: CreateStudyApplication,
     private val readStudiesApplication: ReadStudiesApplication,
-): StudyApiSpec {
+) : StudyApiSpec {
     override fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<StudyWordResponse> {
         return ResponseEntity(
             createStudyApplication.run(request, user.id).let { StudyWordResponse.of(it.study, it.word) },
-            HttpStatus.CREATED
+            HttpStatus.CREATED,
         )
     }
 
@@ -42,8 +42,9 @@ class StudyController(
             ResponsePaginationWrapper(
                 data = studyWithWords.map { StudyWordResponse.of(it.study, it.word) },
                 hasMore = pageable.next().offset < count,
-                count = count
-            ), HttpStatus.OK
+                count = count,
+            ),
+            HttpStatus.OK,
         )
     }
 }

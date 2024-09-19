@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration
 data class JwtProperties(
     val key: String,
     val accessTokenExpiration: Long,
-    val refreshTokenExpiration: Long
+    val refreshTokenExpiration: Long,
 )
 
 @Configuration

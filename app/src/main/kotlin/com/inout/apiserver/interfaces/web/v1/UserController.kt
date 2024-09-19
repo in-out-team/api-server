@@ -10,18 +10,24 @@ import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus.CREATED
+import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import org.springframework.http.HttpStatus.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/v1/users")
 class UserController(
     private val createUserApplication: CreateUserApplication,
     private val updateUserApplication: UpdateUserApplication,
-    private val readUserApplication: ReadUserApplication
+    private val readUserApplication: ReadUserApplication,
 ) : UserApiSpec {
-    override fun createUser(@RequestBody @Valid request: CreateUserRequest): ResponseEntity<UserResponse> {
+    override fun createUser(
+        @RequestBody @Valid request: CreateUserRequest,
+    ): ResponseEntity<UserResponse> {
         return ResponseEntity(createUserApplication.run(request), CREATED)
     }
 
@@ -30,7 +36,9 @@ class UserController(
         @RequestUser user: User,
     ): ResponseEntity<UserResponse> = ResponseEntity(updateUserApplication.run(request, user), OK)
 
-    override fun getUser(@PathVariable id: Long): ResponseEntity<UserResponse> {
+    override fun getUser(
+        @PathVariable id: Long,
+    ): ResponseEntity<UserResponse> {
         return ResponseEntity(readUserApplication.run(id), OK)
     }
 }

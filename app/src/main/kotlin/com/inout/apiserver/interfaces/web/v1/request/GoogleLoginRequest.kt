@@ -8,7 +8,7 @@ data class GoogleLoginRequest(
     @Schema(
         description = "구글 로그인으로부터 받은 idToken값",
         example = "abcd.efgh.ijkl",
-        requiredMode = Schema.RequiredMode.REQUIRED
+        requiredMode = Schema.RequiredMode.REQUIRED,
     )
     val idToken: String,
 )

@@ -4,7 +4,9 @@ import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.Table
 import org.hibernate.annotations.DynamicUpdate
 
 @Entity
