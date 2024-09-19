@@ -18,7 +18,7 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
         now: Date,
         afterHandler: ((RecordLog) -> RecordLog)? = null
     ): RecordLog {
-        val schedulingCard = SchedulingCard(card, now)
+        val schedulingCard = SchedulingCard(card, now).updateState(card.state)
         val interval = card.elapsedDays
         when (card.state) {
             State.New -> {

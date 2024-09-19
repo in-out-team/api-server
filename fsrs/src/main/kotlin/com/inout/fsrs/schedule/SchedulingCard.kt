@@ -13,10 +13,10 @@ import com.inout.fsrs.model.enums.State
 import java.util.*
 
 class SchedulingCard(card: Card, now: Date) {
-    var again: Card = card.copy()
-    var hard: Card = card.copy()
-    var good: Card = card.copy()
-    var easy: Card = card.copy()
+    var again: Card
+    var hard: Card
+    var good: Card
+    var easy: Card
     var lastReview: Date = card.lastReview ?: card.due
     var lastElapsedDays: Int = card.elapsedDays
 
@@ -24,6 +24,10 @@ class SchedulingCard(card: Card, now: Date) {
         card.elapsedDays = if (card.state == State.New) 0 else now.diff(card.lastReview ?: Date())
         card.lastReview = now
         card.reps += 1
+        again = card.copy()
+        hard = card.copy()
+        good = card.copy()
+        easy = card.copy()
     }
 
     fun updateState(state: State): SchedulingCard {
@@ -64,63 +68,35 @@ class SchedulingCard(card: Card, now: Date) {
     }
 
     fun recordLog(card: Card, now: Date): RecordLog {
+        val baseReviewLog =
+            ReviewLog(
+                rating = Rating.Again,
+                state = card.state,
+                due = lastReview,
+                stability = card.stability,
+                difficulty = card.difficulty,
+                elapsedDays = card.elapsedDays,
+                lastElapsedDays = lastElapsedDays,
+                scheduledDays = card.scheduledDays,
+                review = now
+            )
         return RecordLog(
             logs = mapOf(
                 Grade.Again to RecordLogItem(
                     card = again,
-                    log = ReviewLog(
-                        rating = Rating.Again,
-                        state = card.state,
-                        due = lastReview,
-                        stability = card.stability,
-                        difficulty = card.difficulty,
-                        elapsedDays = card.elapsedDays,
-                        lastElapsedDays = lastElapsedDays,
-                        scheduledDays = card.scheduledDays,
-                        review = now
-                    )
+                    log = baseReviewLog
                 ),
                 Grade.Hard to RecordLogItem(
                     card = hard,
-                    log = ReviewLog(
-                        rating = Rating.Hard,
-                        state = card.state,
-                        due = lastReview,
-                        stability = card.stability,
-                        difficulty = card.difficulty,
-                        elapsedDays = card.elapsedDays,
-                        lastElapsedDays = lastElapsedDays,
-                        scheduledDays = card.scheduledDays,
-                        review = now
-                    )
+                    log = baseReviewLog.copy(rating = Rating.Hard)
                 ),
                 Grade.Good to RecordLogItem(
                     card = good,
-                    log = ReviewLog(
-                        rating = Rating.Good,
-                        state = card.state,
-                        due = lastReview,
-                        stability = card.stability,
-                        difficulty = card.difficulty,
-                        elapsedDays = card.elapsedDays,
-                        lastElapsedDays = lastElapsedDays,
-                        scheduledDays = card.scheduledDays,
-                        review = now
-                    )
+                    log = baseReviewLog.copy(rating = Rating.Good)
                 ),
                 Grade.Easy to RecordLogItem(
                     card = easy,
-                    log = ReviewLog(
-                        rating = Rating.Easy,
-                        state = card.state,
-                        due = lastReview,
-                        stability = card.stability,
-                        difficulty = card.difficulty,
-                        elapsedDays = card.elapsedDays,
-                        lastElapsedDays = lastElapsedDays,
-                        scheduledDays = card.scheduledDays,
-                        review = now
-                    )
+                    log = baseReviewLog.copy(rating = Rating.Easy)
                 )
             )
         )
