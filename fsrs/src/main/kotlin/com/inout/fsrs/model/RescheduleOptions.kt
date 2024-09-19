@@ -1,8 +1,8 @@
 package com.inout.fsrs.model
 
-import java.util.*
+import java.time.Instant
 
 data class RescheduleOptions(
     val enableFuzz: Boolean? = null,
-    val dateHandler: ((Date) -> Date)? = null,
+    val dateHandler: ((Instant) -> Instant)? = null,
 )

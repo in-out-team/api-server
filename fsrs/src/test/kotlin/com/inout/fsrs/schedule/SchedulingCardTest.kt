@@ -1,18 +1,19 @@
 package com.inout.fsrs.schedule
 
-import com.inout.fsrs.base.addDays
-import com.inout.fsrs.base.addMinutes
+import com.inout.fsrs.base.plusDays
+import com.inout.fsrs.base.plusMinutes
 import com.inout.fsrs.model.Card
 import com.inout.fsrs.model.enums.Grade
 import com.inout.fsrs.model.enums.Rating
 import com.inout.fsrs.model.enums.State
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.time.Instant
 
 class SchedulingCardTest {
-    val now = Date()
+    val now: Instant = Instant.now()
 
     private fun createCard(): Card {
         return Card(
@@ -34,7 +35,7 @@ class SchedulingCardTest {
         fun `should correctly set card's elapsed days`() {
             // given
             val newCard = createCard()
-            val learningCard = createCard().copy(state = State.Learning, lastReview = now.addMinutes(-60 * 24))
+            val learningCard = createCard().copy(state = State.Learning, lastReview = now.plusMinutes(-60 * 24))
 
             // when
             SchedulingCard(newCard, now)
@@ -49,7 +50,7 @@ class SchedulingCardTest {
         fun `should correctly set card's last review date`() {
             // given
             val newCard = createCard()
-            val learningCard = createCard().copy(state = State.Learning, lastReview = now.addMinutes(-60 * 24))
+            val learningCard = createCard().copy(state = State.Learning, lastReview = now.plusMinutes(-60 * 24))
 
             // when
             SchedulingCard(newCard, now)
@@ -65,7 +66,7 @@ class SchedulingCardTest {
             // given
             val newCard = createCard()
             val learningCard =
-                createCard().copy(state = State.Learning, lastReview = now.addMinutes(-60 * 24), reps = 1)
+                createCard().copy(state = State.Learning, lastReview = now.plusMinutes(-60 * 24), reps = 1)
 
             // when
             SchedulingCard(newCard, now)
@@ -79,13 +80,14 @@ class SchedulingCardTest {
         @Test
         fun `should correctly set lastReview and lastElapsedDays`() {
             // given
-            val lastReview = now.addMinutes(-60 * 24 * 5)
-            val learningCard = createCard().copy(
-                state = State.Learning,
-                lastReview = lastReview,
-                reps = 3,
-                elapsedDays = 5,
-            )
+            val lastReview = now.plusMinutes(-60 * 24 * 5)
+            val learningCard =
+                createCard().copy(
+                    state = State.Learning,
+                    lastReview = lastReview,
+                    reps = 3,
+                    elapsedDays = 5,
+                )
 
             // when
             val schedulingCard = SchedulingCard(learningCard, now)
@@ -191,14 +193,12 @@ class SchedulingCardTest {
 
             // then
             assertEquals(0, schedulingCard.again.scheduledDays)
-            assertEquals(now.addMinutes(5), schedulingCard.again.due)
+            assertEquals(now.plusMinutes(5), schedulingCard.again.due)
         }
 
         @Test
         fun `should correctly set hard information`() {
-            /**
-             * Scenario 1
-             */
+            // Scenario 1
             // given
             val card = createCard().copy(scheduledDays = 1)
             val schedulingCard = SchedulingCard(card, now)
@@ -209,11 +209,9 @@ class SchedulingCardTest {
 
             // then
             assertEquals(hardInterval1, schedulingCard.hard.scheduledDays)
-            assertEquals(now.addDays(hardInterval1), schedulingCard.hard.due)
+            assertEquals(now.plusDays(hardInterval1), schedulingCard.hard.due)
 
-            /**
-             * Scenario 2
-             */
+            // Scenario 2
             // given
             val card2 = createCard().copy(scheduledDays = 1)
             val schedulingCard2 = SchedulingCard(card2, now)
@@ -224,7 +222,7 @@ class SchedulingCardTest {
 
             // then
             assertEquals(hardInterval2, schedulingCard2.hard.scheduledDays)
-            assertEquals(now.addMinutes(10), schedulingCard2.hard.due)
+            assertEquals(now.plusMinutes(10), schedulingCard2.hard.due)
         }
 
         @Test
@@ -239,7 +237,7 @@ class SchedulingCardTest {
 
             // then
             assertEquals(goodInterval, schedulingCard.good.scheduledDays)
-            assertEquals(now.addDays(goodInterval), schedulingCard.good.due)
+            assertEquals(now.plusDays(goodInterval), schedulingCard.good.due)
         }
 
         @Test
@@ -254,7 +252,7 @@ class SchedulingCardTest {
 
             // then
             assertEquals(easyInterval, schedulingCard.easy.scheduledDays)
-            assertEquals(now.addDays(easyInterval), schedulingCard.easy.due)
+            assertEquals(now.plusDays(easyInterval), schedulingCard.easy.due)
         }
     }
 
