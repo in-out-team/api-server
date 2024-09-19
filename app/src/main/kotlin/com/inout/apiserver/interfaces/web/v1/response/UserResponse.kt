@@ -5,7 +5,7 @@ import com.inout.apiserver.domain.user.User
 data class UserResponse(
     val id: Long,
     val email: String,
-    val nickname: String
+    val nickname: String,
 ) {
     companion object {
         fun of(user: User): UserResponse {

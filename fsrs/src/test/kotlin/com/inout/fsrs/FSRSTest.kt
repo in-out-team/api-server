@@ -1,7 +1,7 @@
 package com.inout.fsrs
 
-import com.inout.fsrs.base.addDays
-import com.inout.fsrs.base.addMinutes
+import com.inout.fsrs.base.plusDays
+import com.inout.fsrs.base.plusMinutes
 import com.inout.fsrs.model.Card
 import com.inout.fsrs.model.FSRSParameters
 import com.inout.fsrs.model.enums.Grade
@@ -9,9 +9,11 @@ import com.inout.fsrs.model.enums.State
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.time.Instant
 
 class FSRSTest {
+    private val beginningOf2024 = "2024-01-01T00:00:00Z"
+
     private fun createFSRS(): FSRS {
         val param = FSRSParameters()
         return FSRS(param)
@@ -28,10 +30,7 @@ class FSRSTest {
             // given
             val fsrs = createFSRS()
             val card = createCard()
-            val firstDue =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val firstDue = Instant.parse(beginningOf2024)
 
             // when
             val logs = fsrs.repeat(card, firstDue).logs
@@ -39,7 +38,7 @@ class FSRSTest {
             // then
             val againLog = logs[Grade.Again]!!
             assertEquals(State.Learning, againLog.card.state)
-            assertEquals(firstDue.addMinutes(1), againLog.card.due)
+            assertEquals(firstDue.plusMinutes(1), againLog.card.due)
             assertEquals(0, againLog.card.elapsedDays)
             assertEquals(0, againLog.card.scheduledDays)
             assertEquals(1, againLog.card.reps)
@@ -48,7 +47,7 @@ class FSRSTest {
 
             val hardLog = logs[Grade.Hard]!!
             assertEquals(State.Learning, hardLog.card.state)
-            assertEquals(firstDue.addMinutes(5), hardLog.card.due)
+            assertEquals(firstDue.plusMinutes(5), hardLog.card.due)
             assertEquals(0, hardLog.card.elapsedDays)
             assertEquals(0, hardLog.card.scheduledDays)
             assertEquals(1, hardLog.card.reps)
@@ -57,7 +56,7 @@ class FSRSTest {
 
             val goodLog = logs[Grade.Good]!!
             assertEquals(State.Learning, goodLog.card.state)
-            assertEquals(firstDue.addMinutes(10), goodLog.card.due)
+            assertEquals(firstDue.plusMinutes(10), goodLog.card.due)
             assertEquals(0, goodLog.card.elapsedDays)
             assertEquals(0, goodLog.card.scheduledDays)
             assertEquals(1, goodLog.card.reps)
@@ -66,7 +65,7 @@ class FSRSTest {
 
             val easyLog = logs[Grade.Easy]!!
             assertEquals(State.Review, easyLog.card.state)
-            assertEquals(firstDue.addDays(11), easyLog.card.due)
+            assertEquals(firstDue.plusDays(11), easyLog.card.due)
             assertEquals(0, easyLog.card.elapsedDays)
             assertEquals(11, easyLog.card.scheduledDays)
             assertEquals(1, easyLog.card.reps)
@@ -79,10 +78,7 @@ class FSRSTest {
             // given
             val fsrs = createFSRS()
             val card = createCard()
-            val firstDue =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val firstDue = Instant.parse(beginningOf2024)
 
             // when
             val firstLogs = fsrs.repeat(card, firstDue).logs
@@ -92,7 +88,7 @@ class FSRSTest {
             // then
             val againLog = secondLogs[Grade.Again]!!
             assertEquals(State.Learning, againLog.card.state)
-            assertEquals(secondDue.addMinutes(5), againLog.card.due)
+            assertEquals(secondDue.plusMinutes(5), againLog.card.due)
             assertEquals(0, againLog.card.elapsedDays)
             assertEquals(0, againLog.card.scheduledDays)
             assertEquals(2, againLog.card.reps)
@@ -101,7 +97,7 @@ class FSRSTest {
 
             val hardLog = secondLogs[Grade.Hard]!!
             assertEquals(State.Learning, hardLog.card.state)
-            assertEquals(secondDue.addMinutes(10), hardLog.card.due)
+            assertEquals(secondDue.plusMinutes(10), hardLog.card.due)
             assertEquals(0, hardLog.card.elapsedDays)
             assertEquals(0, hardLog.card.scheduledDays)
             assertEquals(2, hardLog.card.reps)
@@ -110,7 +106,7 @@ class FSRSTest {
 
             val goodLog = secondLogs[Grade.Good]!!
             assertEquals(State.Review, goodLog.card.state)
-            assertEquals(secondDue.addDays(1), goodLog.card.due)
+            assertEquals(secondDue.plusDays(1), goodLog.card.due)
             assertEquals(0, goodLog.card.elapsedDays)
             assertEquals(1, goodLog.card.scheduledDays)
             assertEquals(2, goodLog.card.reps)
@@ -119,7 +115,7 @@ class FSRSTest {
 
             val easyLog = secondLogs[Grade.Easy]!!
             assertEquals(State.Review, easyLog.card.state)
-            assertEquals(secondDue.addDays(2), easyLog.card.due)
+            assertEquals(secondDue.plusDays(2), easyLog.card.due)
             assertEquals(0, easyLog.card.elapsedDays)
             assertEquals(2, easyLog.card.scheduledDays)
             assertEquals(2, easyLog.card.reps)
@@ -132,10 +128,7 @@ class FSRSTest {
             // given
             val fsrs = createFSRS()
             val card = createCard()
-            val firstDue =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val firstDue = Instant.parse(beginningOf2024)
 
             // when
             val firstLogs = fsrs.repeat(card, firstDue).logs
@@ -145,7 +138,7 @@ class FSRSTest {
             // then
             val againLog = secondLogs[Grade.Again]!!
             assertEquals(State.Learning, againLog.card.state)
-            assertEquals(secondDue.addMinutes(5), againLog.card.due)
+            assertEquals(secondDue.plusMinutes(5), againLog.card.due)
             assertEquals(0, againLog.card.elapsedDays)
             assertEquals(0, againLog.card.scheduledDays)
             assertEquals(2, againLog.card.reps)
@@ -154,7 +147,7 @@ class FSRSTest {
 
             val hardLog = secondLogs[Grade.Hard]!!
             assertEquals(State.Learning, hardLog.card.state)
-            assertEquals(secondDue.addMinutes(10), hardLog.card.due)
+            assertEquals(secondDue.plusMinutes(10), hardLog.card.due)
             assertEquals(0, hardLog.card.elapsedDays)
             assertEquals(0, hardLog.card.scheduledDays)
             assertEquals(2, hardLog.card.reps)
@@ -163,7 +156,7 @@ class FSRSTest {
 
             val goodLog = secondLogs[Grade.Good]!!
             assertEquals(State.Review, goodLog.card.state)
-            assertEquals(secondDue.addDays(1), goodLog.card.due)
+            assertEquals(secondDue.plusDays(1), goodLog.card.due)
             assertEquals(0, goodLog.card.elapsedDays)
             assertEquals(1, goodLog.card.scheduledDays)
             assertEquals(2, goodLog.card.reps)
@@ -172,7 +165,7 @@ class FSRSTest {
 
             val easyLog = secondLogs[Grade.Easy]!!
             assertEquals(State.Review, easyLog.card.state)
-            assertEquals(secondDue.addDays(2), easyLog.card.due)
+            assertEquals(secondDue.plusDays(2), easyLog.card.due)
             assertEquals(0, easyLog.card.elapsedDays)
             assertEquals(2, easyLog.card.scheduledDays)
             assertEquals(2, easyLog.card.reps)
@@ -185,10 +178,7 @@ class FSRSTest {
             // given
             val fsrs = createFSRS()
             val card = createCard()
-            val firstDue =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val firstDue = Instant.parse(beginningOf2024)
 
             // when
             val firstLogs = fsrs.repeat(card, firstDue).logs
@@ -198,7 +188,7 @@ class FSRSTest {
             // then
             val againLog = secondLogs[Grade.Again]!!
             assertEquals(State.Learning, againLog.card.state)
-            assertEquals(secondDue.addMinutes(5), againLog.card.due)
+            assertEquals(secondDue.plusMinutes(5), againLog.card.due)
             assertEquals(0, againLog.card.elapsedDays)
             assertEquals(0, againLog.card.scheduledDays)
             assertEquals(2, againLog.card.reps)
@@ -207,7 +197,7 @@ class FSRSTest {
 
             val hardLog = secondLogs[Grade.Hard]!!
             assertEquals(State.Learning, hardLog.card.state)
-            assertEquals(secondDue.addMinutes(10), hardLog.card.due)
+            assertEquals(secondDue.plusMinutes(10), hardLog.card.due)
             assertEquals(0, hardLog.card.elapsedDays)
             assertEquals(0, hardLog.card.scheduledDays)
             assertEquals(2, hardLog.card.reps)
@@ -216,7 +206,7 @@ class FSRSTest {
 
             val goodLog = secondLogs[Grade.Good]!!
             assertEquals(State.Review, goodLog.card.state)
-            assertEquals(secondDue.addDays(4), goodLog.card.due)
+            assertEquals(secondDue.plusDays(4), goodLog.card.due)
             assertEquals(0, goodLog.card.elapsedDays)
             assertEquals(4, goodLog.card.scheduledDays)
             assertEquals(2, goodLog.card.reps)
@@ -225,7 +215,7 @@ class FSRSTest {
 
             val easyLog = secondLogs[Grade.Easy]!!
             assertEquals(State.Review, easyLog.card.state)
-            assertEquals(secondDue.addDays(5), easyLog.card.due)
+            assertEquals(secondDue.plusDays(5), easyLog.card.due)
             assertEquals(0, easyLog.card.elapsedDays)
             assertEquals(5, easyLog.card.scheduledDays)
             assertEquals(2, easyLog.card.reps)
@@ -238,10 +228,7 @@ class FSRSTest {
             // given
             val fsrs = createFSRS()
             val card = createCard()
-            val firstDue =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val firstDue = Instant.parse(beginningOf2024)
 
             // when
             val firstLogs = fsrs.repeat(card, firstDue).logs
@@ -251,7 +238,7 @@ class FSRSTest {
             // then
             val againLog = secondLogs[Grade.Again]!!
             assertEquals(State.Relearning, againLog.card.state)
-            assertEquals(secondDue.addMinutes(5), againLog.card.due)
+            assertEquals(secondDue.plusMinutes(5), againLog.card.due)
             assertEquals(11, againLog.card.elapsedDays)
             assertEquals(0, againLog.card.scheduledDays)
             assertEquals(2, againLog.card.reps)
@@ -260,7 +247,7 @@ class FSRSTest {
 
             val hardLog = secondLogs[Grade.Hard]!!
             assertEquals(State.Review, hardLog.card.state)
-            assertEquals(secondDue.addDays(18), hardLog.card.due)
+            assertEquals(secondDue.plusDays(18), hardLog.card.due)
             assertEquals(11, hardLog.card.elapsedDays)
             assertEquals(18, hardLog.card.scheduledDays)
             assertEquals(2, hardLog.card.reps)
@@ -269,7 +256,7 @@ class FSRSTest {
 
             val goodLog = secondLogs[Grade.Good]!!
             assertEquals(State.Review, goodLog.card.state)
-            assertEquals(secondDue.addDays(42), goodLog.card.due)
+            assertEquals(secondDue.plusDays(42), goodLog.card.due)
             assertEquals(11, goodLog.card.elapsedDays)
             assertEquals(42, goodLog.card.scheduledDays)
             assertEquals(2, goodLog.card.reps)
@@ -278,7 +265,7 @@ class FSRSTest {
 
             val easyLog = secondLogs[Grade.Easy]!!
             assertEquals(State.Review, easyLog.card.state)
-            assertEquals(secondDue.addDays(98), easyLog.card.due)
+            assertEquals(secondDue.plusDays(98), easyLog.card.due)
             assertEquals(11, easyLog.card.elapsedDays)
             assertEquals(98, easyLog.card.scheduledDays)
             assertEquals(2, easyLog.card.reps)
@@ -295,10 +282,7 @@ class FSRSTest {
             val fsrs = createFSRS()
             val card = createCard()
             val cardCopied = card.copy()
-            val due =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val due = Instant.parse(beginningOf2024)
             val firstRepeat = fsrs.repeat(card, due)
 
             // when & then
@@ -314,10 +298,7 @@ class FSRSTest {
             // given
             val fsrs = createFSRS()
             val card = createCard()
-            val due =
-                Calendar.getInstance().apply {
-                    set(2024, 0, 1, 0, 0, 0)
-                }.time
+            val due = Instant.parse(beginningOf2024)
             val firstRepeat = fsrs.repeat(card, due)
             val secondCard = firstRepeat.logs[Grade.Again]!!.card
             val secondCardCopied = secondCard.copy()
@@ -332,7 +313,4 @@ class FSRSTest {
             }
         }
     }
-
-    @Nested
-    inner class Forget
 }

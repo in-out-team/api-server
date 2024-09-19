@@ -13,36 +13,39 @@ import org.springframework.stereotype.Component
 @Component
 class CreateWordApplication(
     private val wordService: WordService,
-    private val openAIService: OpenAIService
+    private val openAIService: OpenAIService,
 ) {
     // TODO: need to accept user
     fun run(request: CreateWordRequest): WordResponse {
         wordService.getWordByNameAndFromLanguageAndToLanguage(
             name = request.name,
             fromLanguage = request.fromLanguage,
-            toLanguage = request.toLanguage
+            toLanguage = request.toLanguage,
         )?.let {
             throw ConflictException(message = "Word already exists", code = "WORD_1")
         }
 
-        val openAIWordDefinitionResponse = openAIService.fetchWordDefinition(
-            word = request.name,
-            fromLanguage = request.fromLanguage.name.lowercase().replaceFirstChar { it.uppercase() },
-            toLanguage = request.toLanguage.name.lowercase().replaceFirstChar { it.uppercase() }
-        )
+        val openAIWordDefinitionResponse =
+            openAIService.fetchWordDefinition(
+                word = request.name,
+                fromLanguage = request.fromLanguage.name.lowercase().replaceFirstChar { it.uppercase() },
+                toLanguage = request.toLanguage.name.lowercase().replaceFirstChar { it.uppercase() },
+            )
 
-        val wordCreateObject = WordCreateObject(
-            name = request.name,
-            fromLanguage = request.fromLanguage,
-            toLanguage = request.toLanguage,
-            definitions = openAIWordDefinitionResponse.definitions.map {
-                WordDefinitionCreateObject(
-                    lexicalCategory = LexicalCategoryType.of(it.type),
-                    meaning = it.definition,
-                    preContext = it.preContext
-                )
-            }
-        )
+        val wordCreateObject =
+            WordCreateObject(
+                name = request.name,
+                fromLanguage = request.fromLanguage,
+                toLanguage = request.toLanguage,
+                definitions =
+                    openAIWordDefinitionResponse.definitions.map {
+                        WordDefinitionCreateObject(
+                            lexicalCategory = LexicalCategoryType.of(it.type),
+                            meaning = it.definition,
+                            preContext = it.preContext,
+                        )
+                    },
+            )
         return WordResponse.of(wordService.createWord(wordCreateObject))
     }
 }

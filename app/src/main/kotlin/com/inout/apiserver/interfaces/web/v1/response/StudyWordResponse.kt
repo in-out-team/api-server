@@ -8,11 +8,14 @@ data class StudyWordResponse(
     val word: WordWithDefinitionsResponse,
 ) {
     companion object {
-        fun of(study: Study, word: Word): StudyWordResponse {
+        fun of(
+            study: Study,
+            word: Word,
+        ): StudyWordResponse {
             val wordWithDefinitionsResponse = WordWithDefinitionsResponse.of(word)
             return StudyWordResponse(
                 id = study.id,
-                word = wordWithDefinitionsResponse.filterDefinitionsBy(study.wordDefinitionId)
+                word = wordWithDefinitionsResponse.filterDefinitionsBy(study.wordDefinitionId),
             )
         }
     }

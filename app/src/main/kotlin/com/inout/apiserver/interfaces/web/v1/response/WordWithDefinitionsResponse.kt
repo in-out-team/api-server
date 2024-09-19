@@ -9,7 +9,7 @@ data class WordWithDefinitionsResponse(
     val name: String,
     val fromLanguage: LanguageType,
     val toLanguage: LanguageType,
-    val definitions: List<WordDefinitionResponse>
+    val definitions: List<WordDefinitionResponse>,
 ) {
     companion object {
         fun of(word: Word): WordWithDefinitionsResponse {
@@ -18,21 +18,25 @@ data class WordWithDefinitionsResponse(
                 name = word.name,
                 fromLanguage = word.fromLanguage,
                 toLanguage = word.toLanguage,
-                definitions = word.definitions.map { WordDefinitionResponse.of(it) }
+                definitions = word.definitions.map { WordDefinitionResponse.of(it) },
             )
         }
 
-        fun of(word: Word, lexicalCategoryType: LexicalCategoryType?): WordWithDefinitionsResponse {
+        fun of(
+            word: Word,
+            lexicalCategoryType: LexicalCategoryType?,
+        ): WordWithDefinitionsResponse {
             return WordWithDefinitionsResponse(
                 id = word.id,
                 name = word.name,
                 fromLanguage = word.fromLanguage,
                 toLanguage = word.toLanguage,
-                definitions = word.definitions.filter {
-                    lexicalCategoryType == null || it.lexicalCategory == lexicalCategoryType
-                }.map {
-                    WordDefinitionResponse.of(it)
-                }
+                definitions =
+                    word.definitions.filter {
+                        lexicalCategoryType == null || it.lexicalCategory == lexicalCategoryType
+                    }.map {
+                        WordDefinitionResponse.of(it)
+                    },
             )
         }
     }

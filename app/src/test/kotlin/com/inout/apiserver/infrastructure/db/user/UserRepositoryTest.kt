@@ -3,7 +3,10 @@ package com.inout.apiserver.infrastructure.db.user
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.infrastructure.db.DbTestSupport
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.Import
 
@@ -14,7 +17,6 @@ class UserRepositoryTest(
 ) : DbTestSupport() {
     private val testEmail = "test@1.com"
     private val testPassword = "password"
-
 
     @Test
     fun `save - should raise error when same email exists`() {
@@ -55,7 +57,7 @@ class UserRepositoryTest(
         userJpaRepository.save(userEntity)
 
         // when
-        val result = userRepository.findByEmail("1-${testEmail}")
+        val result = userRepository.findByEmail("1-$testEmail")
 
         // then
         assertNull(result)

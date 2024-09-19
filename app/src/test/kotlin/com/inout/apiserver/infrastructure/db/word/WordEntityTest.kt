@@ -7,29 +7,33 @@ import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDateTime
+import java.time.Instant
 
 class WordEntityTest {
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
     @Test
     fun `toDomain - raises error when id is null`() {
         // given
         val wordDefinitionEntity = createWordDefinitionEntity()
-        val wordEntity = WordEntity(
-            name = "name",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN,
-            definitions = listOf(wordDefinitionEntity)
-        )
+        val wordEntity =
+            WordEntity(
+                name = "name",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions = listOf(wordDefinitionEntity),
+            )
 
         // when & then
-        val error = assertThrows<InOutRequireNotNullException> {
-            wordEntity.toDomain()
-        }
+        val error =
+            assertThrows<InOutRequireNotNullException> {
+                wordEntity.toDomain()
+            }
         assertEquals("Word id is null", error.message)
         assertEquals("IORNN_WORD_1", error.code)
     }
@@ -41,17 +45,18 @@ class WordEntityTest {
         val fromLanguage = LanguageType.ENGLISH
         val toLanguage = LanguageType.KOREAN
         val wordDefinitionEntity = createWordDefinitionEntity().apply { id = 1L }
-        val wordEntity = WordEntity(
-            name = name,
-            fromLanguage = fromLanguage,
-            toLanguage = toLanguage,
-            definitions = listOf(wordDefinitionEntity)
-        )
-            .apply {
-                id = 1L
-                createdAt = now
-                updatedAt = now
-            }
+        val wordEntity =
+            WordEntity(
+                name = name,
+                fromLanguage = fromLanguage,
+                toLanguage = toLanguage,
+                definitions = listOf(wordDefinitionEntity),
+            )
+                .apply {
+                    id = 1L
+                    createdAt = now
+                    updatedAt = now
+                }
 
         // when
         val word = wordEntity.toDomain()
@@ -73,15 +78,16 @@ class WordEntityTest {
         val fromLanguage = LanguageType.ENGLISH
         val toLanguage = LanguageType.KOREAN
         val wordDefinition = createWordDefinition()
-        val word = Word(
-            id = 1L,
-            name = name,
-            fromLanguage = fromLanguage,
-            toLanguage = toLanguage,
-            definitions = listOf(wordDefinition),
-            createdAt = now,
-            updatedAt = now
-        )
+        val word =
+            Word(
+                id = 1L,
+                name = name,
+                fromLanguage = fromLanguage,
+                toLanguage = toLanguage,
+                definitions = listOf(wordDefinition),
+                createdAt = now,
+                updatedAt = now,
+            )
 
         // when
         val wordEntity = WordEntity.of(word)
@@ -120,7 +126,7 @@ class WordEntityTest {
         return WordDefinitionEntity(
             lexicalCategory = LexicalCategoryType.NOUN,
             meaning = "meaning",
-            preContext = "preContext"
+            preContext = "preContext",
         )
     }
 
@@ -129,7 +135,7 @@ class WordEntityTest {
             id = 1L,
             lexicalCategory = LexicalCategoryType.NOUN,
             meaning = "meaning",
-            preContext = "preContext"
+            preContext = "preContext",
         )
     }
 
@@ -137,7 +143,7 @@ class WordEntityTest {
         return WordDefinitionCreateObject(
             lexicalCategory = LexicalCategoryType.NOUN,
             meaning = "meaning",
-            preContext = "preContext"
+            preContext = "preContext",
         )
     }
 
@@ -146,7 +152,7 @@ class WordEntityTest {
             name = "name",
             fromLanguage = LanguageType.ENGLISH,
             toLanguage = LanguageType.KOREAN,
-            definitions = listOf(createWordDefinitionCreateObject())
+            definitions = listOf(createWordDefinitionCreateObject()),
         )
     }
 }

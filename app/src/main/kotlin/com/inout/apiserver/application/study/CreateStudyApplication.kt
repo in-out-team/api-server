@@ -12,11 +12,15 @@ class CreateStudyApplication(
     private val studyService: StudyService,
     private val wordService: WordService,
 ) {
-    fun run(request: CreateStudyRequest, userId: Long): StudyWord {
-        val studyCreateObject = StudyCreateObject(
-            userId = userId,
-            wordDefinitionId = request.wordDefinitionId,
-        )
+    fun run(
+        request: CreateStudyRequest,
+        userId: Long,
+    ): StudyWord {
+        val studyCreateObject =
+            StudyCreateObject(
+                userId = userId,
+                wordDefinitionId = request.wordDefinitionId,
+            )
         val word = wordService.getWordByWordDefinitionId(request.wordDefinitionId)
         val createdStudy = studyService.createStudy(studyCreateObject)
         return StudyWord(study = createdStudy, word = word)

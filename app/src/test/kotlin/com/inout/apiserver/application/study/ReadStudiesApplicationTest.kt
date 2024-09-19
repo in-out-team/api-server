@@ -10,17 +10,18 @@ import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.InternalServerErrorException
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import java.time.LocalDateTime
+import java.time.Instant
 
 class ReadStudiesApplicationTest {
     private val studyService = mockk<StudyService>()
     private val wordService = mockk<WordService>()
     private val readStudiesApplication = ReadStudiesApplication(studyService, wordService)
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
     private fun createWords(count: Int): List<Word> {
         return (1..count).map { i ->
@@ -29,28 +30,32 @@ class ReadStudiesApplicationTest {
                 name = "name$i",
                 fromLanguage = LanguageType.ENGLISH,
                 toLanguage = LanguageType.KOREAN,
-                definitions = listOf(
-                    WordDefinition(
-                        id = i.toLong(),
-                        lexicalCategory = LexicalCategoryType.NOUN,
-                        meaning = "meaning$i",
-                        preContext = "preContext$i",
-                    )
-                ),
+                definitions =
+                    listOf(
+                        WordDefinition(
+                            id = i.toLong(),
+                            lexicalCategory = LexicalCategoryType.NOUN,
+                            meaning = "meaning$i",
+                            preContext = "preContext$i",
+                        ),
+                    ),
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
             )
         }
     }
 
-    private fun createStudies(count: Int, userId: Long): List<Study> {
+    private fun createStudies(
+        count: Int,
+        userId: Long,
+    ): List<Study> {
         return (1..count).map { i ->
             Study(
                 id = i.toLong(),
                 userId = userId,
                 wordDefinitionId = i.toLong(),
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
             )
         }
     }
@@ -68,9 +73,10 @@ class ReadStudiesApplicationTest {
         every { wordService.getWordsByWordDefinitionIds(wordDefinitionIds) } returns words
 
         // When
-        val sut = assertThrows(InternalServerErrorException::class.java) {
-            readStudiesApplication.run(userId, pageable)
-        }
+        val sut =
+            assertThrows(InternalServerErrorException::class.java) {
+                readStudiesApplication.run(userId, pageable)
+            }
 
         // Then
         assertEquals("Data Integrity Error", sut.message)

@@ -1,6 +1,11 @@
 package com.inout.apiserver.base.service.openai
 
-import com.aallam.openai.api.chat.*
+import com.aallam.openai.api.chat.ChatChoice
+import com.aallam.openai.api.chat.ChatCompletion
+import com.aallam.openai.api.chat.ChatCompletionRequest
+import com.aallam.openai.api.chat.ChatMessage
+import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.api.core.FinishReason
 import com.aallam.openai.api.core.Usage
 import com.aallam.openai.api.model.ModelId
@@ -9,7 +14,8 @@ import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 
 class OpenAIServiceTest {
@@ -46,34 +52,39 @@ class OpenAIServiceTest {
             id = "chatcmpl-9YPHOqmrcrv86cQL79X7nMEy88xkC",
             created = 1717987354,
             model = ModelId("gpt-3.5-turbo-0125"),
-            usage = Usage(
-                promptTokens = 420,
-                completionTokens = 92,
-                totalTokens = 512
-            ),
-            choices = listOf(
-                ChatChoice(
-                    index = 0,
-                    logprobs = null,
-                    finishReason = FinishReason.Stop,
-                    message = ChatMessage(
-                        role = ChatRole.System,
-                        messageContent = TextContent(
-                            content = """
-                                {
-                                    "definitions": [
-                                        {
-                                            "type": "noun",
-                                            "definition": "바나나",
-                                            "preContext": "과일로 먹는 식품"
-                                        }
-                                    ]
-                                }
-                            """.trimIndent()
-                        )
-                    )
-                )
-            )
+            usage =
+                Usage(
+                    promptTokens = 420,
+                    completionTokens = 92,
+                    totalTokens = 512,
+                ),
+            choices =
+                listOf(
+                    ChatChoice(
+                        index = 0,
+                        logprobs = null,
+                        finishReason = FinishReason.Stop,
+                        message =
+                            ChatMessage(
+                                role = ChatRole.System,
+                                messageContent =
+                                    TextContent(
+                                        content =
+                                            """
+                                            {
+                                                "definitions": [
+                                                    {
+                                                        "type": "noun",
+                                                        "definition": "바나나",
+                                                        "preContext": "과일로 먹는 식품"
+                                                    }
+                                                ]
+                                            }
+                                            """.trimIndent(),
+                                    ),
+                            ),
+                    ),
+                ),
         )
     }
 }

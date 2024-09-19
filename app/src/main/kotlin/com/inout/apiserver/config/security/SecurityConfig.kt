@@ -27,19 +27,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
 ) {
     @Bean
     fun securityFilterChain(
         http: HttpSecurity,
-        jwtAuthFilter: JwtAuthFilter
+        jwtAuthFilter: JwtAuthFilter,
     ): DefaultSecurityFilterChain {
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
                 it
-                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll() // permit all swagger related requests (TODO: this is for dev, disable on prod)
-                    .requestMatchers(HttpMethod.POST, "/v1/users").permitAll() // for user creation, no authentication required
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                    .permitAll() // permit all swagger related requests (TODO: this is for dev, disable on prod)
+                    .requestMatchers(HttpMethod.POST, "/v1/users")
+                    .permitAll() // for user creation, no authentication required
                     .requestMatchers("/v*/auth/**").permitAll() // for user authentication, no authentication required
                     .requestMatchers("/admin/**").hasRole("ADMIN") // admin role check
                     .requestMatchers("/**").hasRole("USER") // user role check
@@ -58,7 +60,7 @@ class SecurityConfig(
                             "code": "UNAUTHORIZED_1",
                             "extraData": {}
                         }
-                        """.trimIndent()
+                        """.trimIndent(),
                     )
                 }
             }
@@ -93,7 +95,7 @@ class SecurityConfig(
     @Bean // place oauth related here for now, on implementing other providers(ex. apple, kakao), relocate to a different config
     fun googleIdTokenVerifier(
         @Value("\${auth.google.ios-client-id}")
-        googleIosClientId: String
+        googleIosClientId: String,
     ): GoogleIdTokenVerifier {
         return GoogleIdTokenVerifier.Builder(NetHttpTransport(), GsonFactory.getDefaultInstance())
             .setAudience(listOf(googleIosClientId))

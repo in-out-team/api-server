@@ -9,32 +9,31 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.media.SchemaProperty
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import kotlin.reflect.KClass
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 interface StudyApiSpec {
     @PostMapping
     @Operation(
         summary = "단어장에 단어 추가",
         description = "단어장에 학습할 단어를 추가합니다.",
-        requestBody = SwaggerRequestBody(
-            description = "학습 단어 추가 요청값",
-            required = true,
-            content = [
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = CreateStudyRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                description = "학습 단어 추가 요청값",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = CreateStudyRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "201",
@@ -42,9 +41,9 @@ interface StudyApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = StudyWordResponse::class)
-                    )
-                ]
+                        schema = Schema(implementation = StudyWordResponse::class),
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "404",
@@ -53,8 +52,8 @@ interface StudyApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "409",
@@ -63,14 +62,14 @@ interface StudyApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
+                    ),
+                ],
             ),
-        ]
+        ],
     )
     fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
-        @Parameter(hidden = true) user: User
+        @Parameter(hidden = true) user: User,
     ): ResponseEntity<StudyWordResponse>
 
     @GetMapping
@@ -83,12 +82,10 @@ interface StudyApiSpec {
                 description = "학습 단어 조회 성공",
                 useReturnTypeSchema = true,
             ),
-        ]
+        ],
     )
     fun getStudies(
         @Parameter(hidden = true) user: User,
         @Parameter(hidden = true) pageable: Pageable,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>>
 }
-
-fun <T : Any> test(t: T): KClass<out T> = t::class

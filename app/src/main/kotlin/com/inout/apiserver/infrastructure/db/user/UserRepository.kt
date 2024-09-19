@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class UserRepository(
-    private val userJpaRepository: UserJpaRepository
+    private val userJpaRepository: UserJpaRepository,
 ) {
     fun findByEmail(email: String): User? {
         return userJpaRepository.findByEmail(email)?.toDomain()

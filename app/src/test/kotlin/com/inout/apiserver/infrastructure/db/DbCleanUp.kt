@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Component
 class DbCleanUp(
-    private val em: EntityManager
+    private val em: EntityManager,
 ) {
     private val tableNames = mutableListOf<String>()
 

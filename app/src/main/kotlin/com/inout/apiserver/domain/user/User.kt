@@ -1,12 +1,12 @@
 package com.inout.apiserver.domain.user
 
-import java.time.LocalDateTime
+import java.time.Instant
 
 data class User(
     val id: Long,
     val email: String,
     val password: String,
     val nickname: String,
-    val createdAt: LocalDateTime?,
-    val updatedAt: LocalDateTime?,
+    val createdAt: Instant?,
+    val updatedAt: Instant?,
 )

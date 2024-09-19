@@ -7,62 +7,66 @@ import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import java.time.LocalDateTime
+import java.time.Instant
 
 class ReadWordsApplicationTest {
     private val wordService = mockk<WordService>()
     private val readWordsApplication = ReadWordsApplication(wordService)
-    private val now = LocalDateTime.now()
-    private fun wordsList() = listOf(
-        Word(
-            id = 1L,
-            name = "book",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN,
-            definitions = listOf(
-                WordDefinition(
-                    id = 1L,
-                    lexicalCategory = LexicalCategoryType.NOUN,
-                    meaning = "책",
-                    preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
-                ),
-                WordDefinition(
-                    id = 2L,
-                    lexicalCategory = LexicalCategoryType.VERB,
-                    meaning = "예약하다",
-                    preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
-                )
+    private val now = Instant.now()
+
+    private fun wordsList() =
+        listOf(
+            Word(
+                id = 1L,
+                name = "book",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions =
+                    listOf(
+                        WordDefinition(
+                            id = 1L,
+                            lexicalCategory = LexicalCategoryType.NOUN,
+                            meaning = "책",
+                            preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                        ),
+                        WordDefinition(
+                            id = 2L,
+                            lexicalCategory = LexicalCategoryType.VERB,
+                            meaning = "예약하다",
+                            preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                        ),
+                    ),
+                createdAt = now,
+                updatedAt = now,
             ),
-            createdAt = now,
-            updatedAt = now
-        ),
-        Word(
-            id = 2L,
-            name = "booked",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN,
-            definitions = listOf(
-                WordDefinition(
-                    id = 3L,
-                    lexicalCategory = LexicalCategoryType.ADJECTIVE,
-                    meaning = "예약된",
-                    preContext = "미리 자리를 확보한",
-                ),
-                WordDefinition(
-                    id = 4L,
-                    lexicalCategory = LexicalCategoryType.VERB,
-                    meaning = "예약하다",
-                    preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
-                )
+            Word(
+                id = 2L,
+                name = "booked",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions =
+                    listOf(
+                        WordDefinition(
+                            id = 3L,
+                            lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                            meaning = "예약된",
+                            preContext = "미리 자리를 확보한",
+                        ),
+                        WordDefinition(
+                            id = 4L,
+                            lexicalCategory = LexicalCategoryType.VERB,
+                            meaning = "예약하다",
+                            preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                        ),
+                    ),
+                createdAt = now,
+                updatedAt = now,
             ),
-            createdAt = now,
-            updatedAt = now
         )
-    )
 
     @Test
     fun `run - should return words`() {
@@ -84,7 +88,7 @@ class ReadWordsApplicationTest {
                 toLanguage,
                 prefix,
                 lexicalCategoryType,
-                pageable
+                pageable,
             )
 
         // then

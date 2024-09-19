@@ -8,8 +8,9 @@ interface WordJpaRepository : JpaRepository<WordEntity, Long>, JpaSpecificationE
     fun findByNameAndFromLanguageAndToLanguage(
         name: String,
         fromLanguage: LanguageType,
-        toLanguage: LanguageType
+        toLanguage: LanguageType,
     ): WordEntity?
+
     fun findByDefinitionsId(wordDefinitionId: Long): WordEntity?
 
     fun findAllByDefinitionsIdIn(wordDefinitionIds: List<Long>): List<WordEntity>

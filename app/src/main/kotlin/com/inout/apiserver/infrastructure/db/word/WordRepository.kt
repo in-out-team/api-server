@@ -11,13 +11,17 @@ import org.springframework.stereotype.Repository
 
 @Repository
 class WordRepository(
-    private val wordJpaRepository: WordJpaRepository
+    private val wordJpaRepository: WordJpaRepository,
 ) {
     fun save(word: WordEntity): Word {
         return wordJpaRepository.save(word).toDomain()
     }
 
-    fun findByNameAndFromLanguageAndToLanguage(name: String, fromLanguage: LanguageType, toLanguage: LanguageType): Word? {
+    fun findByNameAndFromLanguageAndToLanguage(
+        name: String,
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+    ): Word? {
         return wordJpaRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)?.toDomain()
     }
 
@@ -32,10 +36,11 @@ class WordRepository(
         lexicalCategory: LexicalCategoryType?,
         pageable: Pageable,
     ): Page<Word> {
-        val spec = Specification.where(WordSpecification.fromLanguage(fromLanguage))
-            .and(WordSpecification.toLanguage(toLanguage))
-            .and(WordSpecification.prefix(prefix))
-            .and(WordSpecification.lexicalCategoryType(lexicalCategory))
+        val spec =
+            Specification.where(WordSpecification.fromLanguage(fromLanguage))
+                .and(WordSpecification.toLanguage(toLanguage))
+                .and(WordSpecification.prefix(prefix))
+                .and(WordSpecification.lexicalCategoryType(lexicalCategory))
 
         return wordJpaRepository.findAll(spec, pageable).map { it.toDomain() }
     }

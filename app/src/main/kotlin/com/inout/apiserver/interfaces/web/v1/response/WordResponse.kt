@@ -1,7 +1,7 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.domain.word.Word
 
 data class WordResponse(
     val id: Long,

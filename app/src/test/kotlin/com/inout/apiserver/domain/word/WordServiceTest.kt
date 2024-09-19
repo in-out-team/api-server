@@ -8,64 +8,69 @@ import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import java.time.LocalDateTime
+import java.time.Instant
 
 class WordServiceTest {
     private val wordRepository = mockk<WordRepository>()
     private val wordService = WordService(wordRepository)
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
-    private fun wordsList() = listOf(
-        Word(
-            id = 1L,
-            name = "book",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN,
-            definitions = listOf(
-                WordDefinition(
-                    id = 1L,
-                    lexicalCategory = LexicalCategoryType.NOUN,
-                    meaning = "책",
-                    preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
-                ),
-                WordDefinition(
-                    id = 2L,
-                    lexicalCategory = LexicalCategoryType.VERB,
-                    meaning = "예약하다",
-                    preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
-                )
+    private fun wordsList() =
+        listOf(
+            Word(
+                id = 1L,
+                name = "book",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions =
+                    listOf(
+                        WordDefinition(
+                            id = 1L,
+                            lexicalCategory = LexicalCategoryType.NOUN,
+                            meaning = "책",
+                            preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                        ),
+                        WordDefinition(
+                            id = 2L,
+                            lexicalCategory = LexicalCategoryType.VERB,
+                            meaning = "예약하다",
+                            preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                        ),
+                    ),
+                createdAt = now,
+                updatedAt = now,
             ),
-            createdAt = now,
-            updatedAt = now
-        ),
-        Word(
-            id = 2L,
-            name = "booked",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN,
-            definitions = listOf(
-                WordDefinition(
-                    id = 3L,
-                    lexicalCategory = LexicalCategoryType.ADJECTIVE,
-                    meaning = "예약된",
-                    preContext = "미리 자리를 확보한",
-                ),
-                WordDefinition(
-                    id = 4L,
-                    lexicalCategory = LexicalCategoryType.VERB,
-                    meaning = "예약하다",
-                    preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
-                )
+            Word(
+                id = 2L,
+                name = "booked",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+                definitions =
+                    listOf(
+                        WordDefinition(
+                            id = 3L,
+                            lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                            meaning = "예약된",
+                            preContext = "미리 자리를 확보한",
+                        ),
+                        WordDefinition(
+                            id = 4L,
+                            lexicalCategory = LexicalCategoryType.VERB,
+                            meaning = "예약하다",
+                            preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                        ),
+                    ),
+                createdAt = now,
+                updatedAt = now,
             ),
-            createdAt = now,
-            updatedAt = now
         )
-    )
 
     @Nested
     inner class GetWordByNameAndFromLanguageAndToLanguage {
@@ -75,15 +80,16 @@ class WordServiceTest {
             val name = "name"
             val fromLanguage = LanguageType.ENGLISH
             val toLanguage = LanguageType.KOREAN
-            val word = Word(
-                id = 1L,
-                name = name,
-                fromLanguage = fromLanguage,
-                toLanguage = toLanguage,
-                definitions = emptyList(),
-                createdAt = now,
-                updatedAt = now
-            )
+            val word =
+                Word(
+                    id = 1L,
+                    name = name,
+                    fromLanguage = fromLanguage,
+                    toLanguage = toLanguage,
+                    definitions = emptyList(),
+                    createdAt = now,
+                    updatedAt = now,
+                )
             every { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) } returns word
 
             // When
@@ -91,7 +97,13 @@ class WordServiceTest {
 
             // Then
             assertEquals(word, sut)
-            verify(exactly = 1) { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) }
+            verify(exactly = 1) {
+                wordRepository.findByNameAndFromLanguageAndToLanguage(
+                    name,
+                    fromLanguage,
+                    toLanguage,
+                )
+            }
         }
 
         @Test
@@ -107,7 +119,13 @@ class WordServiceTest {
 
             // Then
             assertNull(sut)
-            verify(exactly = 1) { wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage) }
+            verify(exactly = 1) {
+                wordRepository.findByNameAndFromLanguageAndToLanguage(
+                    name,
+                    fromLanguage,
+                    toLanguage,
+                )
+            }
         }
     }
 
@@ -117,15 +135,16 @@ class WordServiceTest {
         fun `should return Word if found`() {
             // Given
             val id = 1L
-            val word = Word(
-                id = id,
-                name = "name",
-                fromLanguage = LanguageType.ENGLISH,
-                toLanguage = LanguageType.KOREAN,
-                definitions = emptyList(),
-                createdAt = now,
-                updatedAt = now
-            )
+            val word =
+                Word(
+                    id = id,
+                    name = "name",
+                    fromLanguage = LanguageType.ENGLISH,
+                    toLanguage = LanguageType.KOREAN,
+                    definitions = emptyList(),
+                    createdAt = now,
+                    updatedAt = now,
+                )
             every { wordRepository.findById(id) } returns word
 
             // When
@@ -161,17 +180,18 @@ class WordServiceTest {
                     name = "name",
                     fromLanguage = LanguageType.ENGLISH,
                     toLanguage = LanguageType.KOREAN,
-                    definitions = emptyList()
+                    definitions = emptyList(),
                 )
-            val word = Word(
-                id = 1L,
-                name = wordCreateObject.name,
-                fromLanguage = wordCreateObject.fromLanguage,
-                toLanguage = wordCreateObject.toLanguage,
-                definitions = emptyList(),
-                createdAt = now,
-                updatedAt = now
-            )
+            val word =
+                Word(
+                    id = 1L,
+                    name = wordCreateObject.name,
+                    fromLanguage = wordCreateObject.fromLanguage,
+                    toLanguage = wordCreateObject.toLanguage,
+                    definitions = emptyList(),
+                    createdAt = now,
+                    updatedAt = now,
+                )
             every { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) } returns word
 
             // When, Then
@@ -189,17 +209,18 @@ class WordServiceTest {
                     name = "name",
                     fromLanguage = LanguageType.ENGLISH,
                     toLanguage = LanguageType.KOREAN,
-                    definitions = emptyList()
+                    definitions = emptyList(),
                 )
-            val word = Word(
-                id = 1L,
-                name = wordCreateObject.name,
-                fromLanguage = wordCreateObject.fromLanguage,
-                toLanguage = wordCreateObject.toLanguage,
-                definitions = emptyList(),
-                createdAt = now,
-                updatedAt = now
-            )
+            val word =
+                Word(
+                    id = 1L,
+                    name = wordCreateObject.name,
+                    fromLanguage = wordCreateObject.fromLanguage,
+                    toLanguage = wordCreateObject.toLanguage,
+                    definitions = emptyList(),
+                    createdAt = now,
+                    updatedAt = now,
+                )
             every { wordService.getWordByNameAndFromLanguageAndToLanguage(any(), any(), any()) } returns null
             every { wordRepository.save(any()) } returns word
 
@@ -229,12 +250,13 @@ class WordServiceTest {
                     toLanguage,
                     prefix,
                     lexicalCategoryType,
-                    pageable
+                    pageable,
                 )
             } returns PageImpl(listOf(words.first()), pageable, words.size.toLong())
 
             // When
-            val sut = wordService.getWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategoryType, pageable)
+            val sut =
+                wordService.getWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategoryType, pageable)
 
             // Then
             assertEquals(words.first(), sut.content.first())
@@ -245,7 +267,7 @@ class WordServiceTest {
                     toLanguage,
                     prefix,
                     lexicalCategoryType,
-                    pageable
+                    pageable,
                 )
             }
         }

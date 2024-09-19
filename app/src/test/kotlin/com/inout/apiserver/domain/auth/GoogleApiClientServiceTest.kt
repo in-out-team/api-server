@@ -5,7 +5,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.inout.apiserver.error.GoogleIdTokenVerificationException
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class GoogleApiClientServiceTest {
@@ -20,9 +22,10 @@ class GoogleApiClientServiceTest {
         every { verifier.verify(invalidIdToken) } returns null
 
         // when
-        val exception = assertThrows(GoogleIdTokenVerificationException::class.java) {
-            googleApiClientService.verifyIdToken(invalidIdToken)
-        }
+        val exception =
+            assertThrows(GoogleIdTokenVerificationException::class.java) {
+                googleApiClientService.verifyIdToken(invalidIdToken)
+            }
         assertEquals("Invalid ID token", exception.message)
         assertEquals("GOOGLE_AUTH_1", exception.code)
     }
@@ -44,11 +47,13 @@ class GoogleApiClientServiceTest {
     fun `extractEmail - should return email from GoogleIdToken payload`() {
         // given
         val responseEmail = "test@1.com"
-        val googleIdToken = mockk<GoogleIdToken> {
-            every { payload } returns mockk {
-                every { email } returns responseEmail
+        val googleIdToken =
+            mockk<GoogleIdToken> {
+                every { payload } returns
+                    mockk {
+                        every { email } returns responseEmail
+                    }
             }
-        }
         every { verifier.verify(validIdToken) } returns googleIdToken
 
         // when

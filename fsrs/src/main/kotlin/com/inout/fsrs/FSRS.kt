@@ -1,36 +1,42 @@
 package com.inout.fsrs
 
-import com.inout.fsrs.base.addDays
-import com.inout.fsrs.base.addMinutes
-import com.inout.fsrs.base.diff
-import com.inout.fsrs.model.*
+import com.inout.fsrs.base.diffInDays
+import com.inout.fsrs.base.plusDays
+import com.inout.fsrs.base.plusMinutes
+import com.inout.fsrs.model.Card
+import com.inout.fsrs.model.FSRSParameters
+import com.inout.fsrs.model.RecordLog
+import com.inout.fsrs.model.RecordLogItem
+import com.inout.fsrs.model.RescheduleOptions
+import com.inout.fsrs.model.ReviewLog
 import com.inout.fsrs.model.algorithm.FSRSAlgorithm
 import com.inout.fsrs.model.enums.Rating
 import com.inout.fsrs.model.enums.State
 import com.inout.fsrs.schedule.SchedulingCard
-import java.util.*
+import java.time.Instant
 import kotlin.math.round
 import kotlin.math.roundToInt
 
 class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
     fun repeat(
         card: Card,
-        now: Date,
-        afterHandler: ((RecordLog) -> RecordLog)? = null
+        now: Instant,
+        afterHandler: ((RecordLog) -> RecordLog)? = null,
     ): RecordLog {
         val schedulingCard = SchedulingCard(card, now).updateState(card.state)
         val interval = card.elapsedDays
         when (card.state) {
             State.New -> {
                 initDS(schedulingCard)
-                schedulingCard.again.due = now.addMinutes(1)
-                schedulingCard.hard.due = now.addMinutes(5)
-                schedulingCard.good.due = now.addMinutes(10)
+                schedulingCard.again.due = now.plusMinutes(1)
+                schedulingCard.hard.due = now.plusMinutes(5)
+                schedulingCard.good.due = now.plusMinutes(10)
 
                 val easyInterval = nextInterval(schedulingCard.easy.stability, interval)
                 schedulingCard.easy.scheduledDays = easyInterval
-                schedulingCard.easy.due = now.addDays(easyInterval)
+                schedulingCard.easy.due = now.plusDays(easyInterval)
             }
+
             State.Learning, State.Relearning -> {
                 val hardInterval = 0
                 val goodInterval = nextInterval(schedulingCard.good.stability, interval)
@@ -38,6 +44,7 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
 
                 schedulingCard.schedule(now, hardInterval, goodInterval, easyInterval)
             }
+
             State.Review -> {
                 val lastDifficulty = card.difficulty
                 val lastStability = card.stability
@@ -58,76 +65,84 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
         return afterHandler?.invoke(recordLog) ?: recordLog
     }
 
-    fun getRetrievability(card: Card, now: Date): Double? {
+    fun getRetrievability(
+        card: Card,
+        now: Instant,
+    ): Double? {
         if (card.state != State.Review || card.lastReview == null) {
             return null
         }
 
-        val elapsedDays = maxOf(now.diff(card.lastReview!!), 0)
+        val elapsedDays = maxOf(now.diffInDays(card.lastReview!!), 0)
         return forgettingCurve(elapsedDays, round(card.stability))
     }
 
     fun rollback(
         card: Card,
         log: ReviewLog,
-        afterHandler: ((Card) -> Card)? = null
+        afterHandler: ((Card) -> Card)? = null,
     ): Card {
         if (log.rating == Rating.Manual) {
             throw IllegalArgumentException("Cannot rollback a manual rating")
         }
 
-        val (lastDue, lastReview, lastLapses) = when (log.state) {
-            State.New -> Triple(log.due, null, 0)
-            State.Learning, State.Review, State.Relearning -> Triple(
-                log.review,
-                log.due,
-                card.lapses - if (log.rating == Rating.Again && log.state == State.Review) 1 else 0
-            )
-        }
+        val (lastDue, lastReview, lastLapses) =
+            when (log.state) {
+                State.New -> Triple(log.due, null, 0)
+                State.Learning, State.Review, State.Relearning ->
+                    Triple(
+                        log.review,
+                        log.due,
+                        card.lapses - if (log.rating == Rating.Again && log.state == State.Review) 1 else 0,
+                    )
+            }
 
-        val prevCard = card.copy(
-            due = lastDue,
-            stability = log.stability,
-            difficulty = log.difficulty,
-            elapsedDays = log.lastElapsedDays,
-            scheduledDays = log.scheduledDays,
-            reps = maxOf(card.reps - 1, 0),
-            lapses = maxOf(lastLapses, 0),
-            state = log.state,
-            lastReview = lastReview,
-        )
+        val prevCard =
+            card.copy(
+                due = lastDue,
+                stability = log.stability,
+                difficulty = log.difficulty,
+                elapsedDays = log.lastElapsedDays,
+                scheduledDays = log.scheduledDays,
+                reps = maxOf(card.reps - 1, 0),
+                lapses = maxOf(lastLapses, 0),
+                state = log.state,
+                lastReview = lastReview,
+            )
         return afterHandler?.invoke(prevCard) ?: prevCard
     }
 
     fun forget(
         card: Card,
-        now: Date,
+        now: Instant,
         resetCount: Boolean = false,
-        afterHandler: ((RecordLogItem) -> RecordLogItem)? = null
-    ) : RecordLogItem {
-        val scheduledDays = if (card.state != State.New) 0 else now.diff(card.lastReview!!)
-        val forgetLog = ReviewLog(
-            rating = Rating.Manual,
-            state = card.state,
-            due = card.due,
-            stability = card.stability,
-            difficulty = card.difficulty,
-            elapsedDays = 0,
-            lastElapsedDays = card.elapsedDays,
-            scheduledDays = scheduledDays,
-            review = now,
-        )
-        val forgetCard = card.copy(
-            due = now,
-            stability = 0.0,
-            difficulty = 0.0,
-            elapsedDays = 0,
-            scheduledDays = 0,
-            reps = if (resetCount) 0 else card.reps,
-            lapses = if (resetCount) 0 else card.lapses,
-            state = State.New,
-            lastReview = card.lastReview,
-        )
+        afterHandler: ((RecordLogItem) -> RecordLogItem)? = null,
+    ): RecordLogItem {
+        val scheduledDays = if (card.state != State.New) 0 else now.diffInDays(card.lastReview!!)
+        val forgetLog =
+            ReviewLog(
+                rating = Rating.Manual,
+                state = card.state,
+                due = card.due,
+                stability = card.stability,
+                difficulty = card.difficulty,
+                elapsedDays = 0,
+                lastElapsedDays = card.elapsedDays,
+                scheduledDays = scheduledDays,
+                review = now,
+            )
+        val forgetCard =
+            card.copy(
+                due = now,
+                stability = 0.0,
+                difficulty = 0.0,
+                elapsedDays = 0,
+                scheduledDays = 0,
+                reps = if (resetCount) 0 else card.reps,
+                lapses = if (resetCount) 0 else card.lapses,
+                state = State.New,
+                lastReview = card.lastReview,
+            )
         val recordLogItem = RecordLogItem(forgetCard, forgetLog)
 
         return afterHandler?.invoke(recordLogItem) ?: recordLogItem
@@ -145,15 +160,16 @@ class FSRS(param: FSRSParameters) : FSRSAlgorithm(param) {
             if (card.state != State.Review || card.lastReview == null) continue
 
             val scheduledDays = card.scheduledDays
-            val nextInterval = nextInterval(
-                card.stability.roundToInt().toDouble(),
-                card.elapsedDays,
-                options.enableFuzz ?: true
-            )
+            val nextInterval =
+                nextInterval(
+                    card.stability.roundToInt().toDouble(),
+                    card.elapsedDays,
+                    options.enableFuzz ?: true,
+                )
             if (nextInterval == scheduledDays || nextInterval == 0) continue
 
             val processedCard = card.copy(scheduledDays = nextInterval)
-            val newDue = card.lastReview!!.addDays(nextInterval)
+            val newDue = card.lastReview!!.plusDays(nextInterval)
             processedCard.due = options.dateHandler?.invoke(newDue) ?: newDue
             processedCards.add(processedCard)
         }

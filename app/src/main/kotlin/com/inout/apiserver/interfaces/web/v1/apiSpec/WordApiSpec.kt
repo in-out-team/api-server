@@ -11,32 +11,32 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.media.SchemaProperty
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
-import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 interface WordApiSpec {
     @PostMapping
     @Operation(
         summary = "사전 단어 등록",
         description = "사전 단어 등록을 요청합니다.",
-        requestBody = SwaggerRequestBody(
-            description = "단어 생성 요청값",
-            required = true,
-            content = [
-                Content(
-                    mediaType = "application/json",
-                    schema = Schema(implementation = CreateWordRequest::class)
-                )
-            ]
-        ),
+        requestBody =
+            SwaggerRequestBody(
+                description = "단어 생성 요청값",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = CreateWordRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "201",
@@ -44,9 +44,9 @@ interface WordApiSpec {
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = WordResponse::class)
-                    )
-                ]
+                        schema = Schema(implementation = WordResponse::class),
+                    ),
+                ],
             ),
             ApiResponse(
                 responseCode = "409",
@@ -55,13 +55,15 @@ interface WordApiSpec {
                     Content(
                         mediaType = "application/json",
                         schema = Schema(implementation = HttpException::class),
-                    )
-                ]
+                    ),
+                ],
             ),
-        // TODO: add more error codes (ex. in case openai service is down, or returns unexpected output)
-        ]
+            // TODO: add more error codes (ex. in case openai service is down, or returns unexpected output)
+        ],
     )
-    fun createWord(@RequestBody request: CreateWordRequest): ResponseEntity<WordResponse>
+    fun createWord(
+        @RequestBody request: CreateWordRequest,
+    ): ResponseEntity<WordResponse>
 
     @GetMapping("/definitions")
     @PageableAsQueryParam
@@ -73,31 +75,33 @@ interface WordApiSpec {
                 name = "fromLanguage",
                 description = "영한사전 기준 영어에 해당되는 값. ex) apple의 뜻을 한글로 알고싶을 경우 ENGLISH로 제공",
                 required = true,
-                schema = Schema(
-                    implementation = LanguageType::class,
-                    example = "ENGLISH",
-                )
+                schema =
+                    Schema(
+                        implementation = LanguageType::class,
+                        example = "ENGLISH",
+                    ),
             ),
             Parameter(
                 name = "toLanguage",
                 description = "영한사전 기준 한국어에 해당되는 값. ex) apple의 뜻을 한글로 알고싶을 경우 KOREAN으로 제공",
                 required = true,
-                schema = Schema(
-                    implementation = LanguageType::class,
-                    example = "KOREAN",
-                )
+                schema =
+                    Schema(
+                        implementation = LanguageType::class,
+                        example = "KOREAN",
+                    ),
             ),
             Parameter(
                 name = "prefix",
                 description = "단어 prefix",
                 required = true,
-                schema = Schema(implementation = String::class)
+                schema = Schema(implementation = String::class),
             ),
             Parameter(
                 name = "lexicalCategory",
                 description = "단어 품사",
                 required = false,
-                schema = Schema(implementation = LexicalCategoryType::class)
+                schema = Schema(implementation = LexicalCategoryType::class),
             ),
         ],
         responses = [
@@ -106,7 +110,7 @@ interface WordApiSpec {
                 description = "사전에 단어 정의 조회 성공",
                 useReturnTypeSchema = true,
             ),
-        ]
+        ],
     )
     fun readWordsWithMatchingPrefix(
         @Parameter(hidden = true)

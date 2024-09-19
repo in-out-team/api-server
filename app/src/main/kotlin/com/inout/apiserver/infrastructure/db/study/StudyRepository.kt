@@ -13,7 +13,10 @@ class StudyRepository(
         return studyJpaRepository.save(study).toDomain()
     }
 
-    fun findByUserIdAndWordDefinitionId(userId: Long, wordDefinitionId: Long): Study? {
+    fun findByUserIdAndWordDefinitionId(
+        userId: Long,
+        wordDefinitionId: Long,
+    ): Study? {
         return studyJpaRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)?.toDomain()
     }
 
@@ -21,7 +24,10 @@ class StudyRepository(
         return studyJpaRepository.findById(id).orElse(null)?.toDomain()
     }
 
-    fun findAllByUserId(userId: Long, pageable: Pageable): Page<Study> {
+    fun findAllByUserId(
+        userId: Long,
+        pageable: Pageable,
+    ): Page<Study> {
         return studyJpaRepository.findAllByUserId(userId, pageable).map { it.toDomain() }
     }
 }

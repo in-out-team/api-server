@@ -16,7 +16,7 @@ data class WordDefinitionEntity(
     @Enumerated(EnumType.STRING)
     val lexicalCategory: LexicalCategoryType,
     val meaning: String,
-    val preContext: String
+    val preContext: String,
 ) : BaseEntity() {
     fun toDomain(): WordDefinition {
         return WordDefinition(
@@ -32,7 +32,7 @@ data class WordDefinitionEntity(
             return WordDefinitionEntity(
                 lexicalCategory = wordDefinition.lexicalCategory,
                 meaning = wordDefinition.meaning,
-                preContext = wordDefinition.preContext
+                preContext = wordDefinition.preContext,
             ).apply {
                 id = wordDefinition.id
             }
@@ -42,7 +42,7 @@ data class WordDefinitionEntity(
             return WordDefinitionEntity(
                 lexicalCategory = wordDefinitionCreateObject.lexicalCategory,
                 meaning = wordDefinitionCreateObject.meaning,
-                preContext = wordDefinitionCreateObject.preContext
+                preContext = wordDefinitionCreateObject.preContext,
             )
         }
     }

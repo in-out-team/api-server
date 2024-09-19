@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class OpenAIWordDefinitionResponse(
-    val definitions: List<Definition>
+    val definitions: List<Definition>,
 ) {
     companion object {
         /**
@@ -22,5 +22,5 @@ data class OpenAIWordDefinitionResponse(
 data class Definition(
     val type: String,
     val definition: String,
-    val preContext: String
+    val preContext: String,
 )
