@@ -10,45 +10,50 @@ import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import java.time.LocalDateTime
+import java.time.Instant
 
 class CreateWordApplicationTest {
     private val wordService = mockk<WordService>()
     private val openAIService = mockk<OpenAIService>()
     private val createWordApplication = CreateWordApplication(wordService, openAIService)
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
     @Test
     fun `run - should throw ConflictException if word already exists`() {
         // Given
-        val request = CreateWordRequest(
-            name = "name",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN
-        )
-        val word = Word(
-            id = 1L,
-            name = request.name,
-            fromLanguage = request.fromLanguage,
-            toLanguage = request.toLanguage,
-            definitions = emptyList(),
-            createdAt = now,
-            updatedAt = now
-        )
+        val request =
+            CreateWordRequest(
+                name = "name",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+            )
+        val word =
+            Word(
+                id = 1L,
+                name = request.name,
+                fromLanguage = request.fromLanguage,
+                toLanguage = request.toLanguage,
+                definitions = emptyList(),
+                createdAt = now,
+                updatedAt = now,
+            )
         every {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
                 request.name,
                 request.fromLanguage,
-                request.toLanguage
+                request.toLanguage,
             )
         } returns word
 
         // When
-        val exception = assertThrows(ConflictException::class.java) {
-            createWordApplication.run(request)
-        }
+        val exception =
+            assertThrows(ConflictException::class.java) {
+                createWordApplication.run(request)
+            }
 
         // Then
         assertEquals("Word already exists", exception.message)
@@ -56,7 +61,7 @@ class CreateWordApplicationTest {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
                 request.name,
                 request.fromLanguage,
-                request.toLanguage
+                request.toLanguage,
             )
         }
     }
@@ -64,30 +69,33 @@ class CreateWordApplicationTest {
     @Test
     fun `run - should return WordResponse`() {
         // Given
-        val request = CreateWordRequest(
-            name = "name",
-            fromLanguage = LanguageType.ENGLISH,
-            toLanguage = LanguageType.KOREAN
-        )
-        val word = Word(
-            id = 1L,
-            name = request.name,
-            fromLanguage = request.fromLanguage,
-            toLanguage = request.toLanguage,
-            definitions = emptyList(),
-            createdAt = now,
-            updatedAt = now
-        )
+        val request =
+            CreateWordRequest(
+                name = "name",
+                fromLanguage = LanguageType.ENGLISH,
+                toLanguage = LanguageType.KOREAN,
+            )
+        val word =
+            Word(
+                id = 1L,
+                name = request.name,
+                fromLanguage = request.fromLanguage,
+                toLanguage = request.toLanguage,
+                definitions = emptyList(),
+                createdAt = now,
+                updatedAt = now,
+            )
         every {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
                 request.name,
                 request.fromLanguage,
-                request.toLanguage
+                request.toLanguage,
             )
         } returns null
-        every { openAIService.fetchWordDefinition(any(), any(), any()) } returns mockk() {
-            every { definitions } returns emptyList()
-        }
+        every { openAIService.fetchWordDefinition(any(), any(), any()) } returns
+            mockk {
+                every { definitions } returns emptyList()
+            }
         every { wordService.createWord(any()) } returns word
 
         // When
@@ -99,7 +107,7 @@ class CreateWordApplicationTest {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
                 request.name,
                 request.fromLanguage,
-                request.toLanguage
+                request.toLanguage,
             )
             openAIService.fetchWordDefinition(any(), any(), any())
             wordService.createWord(any())

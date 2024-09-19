@@ -1,37 +1,40 @@
 package com.inout.apiserver.domain.user
 
-import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
-import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.user.UserRepository
+import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
+import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.crypto.password.PasswordEncoder
-import java.time.LocalDateTime
+import java.time.Instant
 
 class UserServiceTest {
     private val userRepository = mockk<UserRepository>()
     private val passwordEncoder = mockk<PasswordEncoder>()
     private val userService = UserService(userRepository, passwordEncoder)
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
     @Test
     fun `createUser - should raise error when user already exists`() {
         // Given
         val email = "email@1.com"
         val request = CreateUserRequest(email = email, password = "password", nickname = "nickname")
-        val existingUser = User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
+        val existingUser =
+            User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         every { userRepository.findByEmail(email) } returns existingUser
 
         // When
-        val exception = assertThrows<ConflictException> {
-            userService.createUser(request)
-        }
+        val exception =
+            assertThrows<ConflictException> {
+                userService.createUser(request)
+            }
 
         // Then
         assertEquals("User already exists", exception.message)
@@ -43,7 +46,8 @@ class UserServiceTest {
         // Given
         val email = "email@1.com"
         val request = CreateUserRequest(email = email, password = "password", nickname = "nickname")
-        val newUser = User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
+        val newUser =
+            User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         every { userRepository.findByEmail(email) } returns null
         every { passwordEncoder.encode(any()) } returns "password"
         every { userRepository.save(any()) } returns newUser
@@ -73,7 +77,8 @@ class UserServiceTest {
     fun `getUserByEmail - should return user when user exists`() {
         // Given
         val email = "email@1.com"
-        val user = User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
+        val user =
+            User(id = 1L, email = email, password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
         every { userRepository.findByEmail(email) } returns user
 
         // When
@@ -101,7 +106,15 @@ class UserServiceTest {
     fun `getUserById - should return user when user exists`() {
         // Given
         val id = 1L
-        val user = User(id = 1L, email = "email@1.com", password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
+        val user =
+            User(
+                id = 1L,
+                email = "email@1.com",
+                password = "password",
+                nickname = "nickname",
+                createdAt = now,
+                updatedAt = now,
+            )
         every { userRepository.findById(id) } returns user
 
         // When
@@ -134,9 +147,10 @@ class UserServiceTest {
         every { userRepository.findById(id) } returns null
 
         // When
-        val exception = assertThrows<NotFoundException> {
-            userService.updateUser(request)
-        }
+        val exception =
+            assertThrows<NotFoundException> {
+                userService.updateUser(request)
+            }
 
         // Then
         assertEquals("User not found", exception.message)
@@ -147,7 +161,15 @@ class UserServiceTest {
     fun `updateUser - should update user`() {
         // Given
         val request = UpdateUserRequest(id = 1L, nickname = "nickname")
-        val user = User(id = 1L, email = "email@1.com", password = "password", nickname = "nickname", createdAt = now, updatedAt = now)
+        val user =
+            User(
+                id = 1L,
+                email = "email@1.com",
+                password = "password",
+                nickname = "nickname",
+                createdAt = now,
+                updatedAt = now,
+            )
         val updatedUser = user.copy(nickname = request.nickname)
         every { userRepository.findById(any()) } returns user
         every { userRepository.save(any()) } returns updatedUser
@@ -164,18 +186,3 @@ class UserServiceTest {
         verify(exactly = 1) { userRepository.findById(any()) }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

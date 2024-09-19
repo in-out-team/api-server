@@ -2,7 +2,10 @@ package com.inout.apiserver.infrastructure.db.study
 
 import com.inout.apiserver.infrastructure.db.DbTestSupport
 import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.context.annotation.Import
@@ -129,7 +132,6 @@ class StudyRepositoryTest(
             val sut1 = studyRepository.findAllByUserId(userId, pageable1)
             val pageable2 = PageRequest.of(1, 6)
             val sut2 = studyRepository.findAllByUserId(userId, pageable2)
-
 
             // then
             assertEquals(10, sut1.totalElements)

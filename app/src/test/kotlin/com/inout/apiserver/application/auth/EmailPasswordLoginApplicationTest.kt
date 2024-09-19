@@ -1,27 +1,29 @@
 package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
-import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
-import com.inout.apiserver.error.InternalServerErrorException
-import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.domain.auth.TokenService
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.error.InternalServerErrorException
+import com.inout.apiserver.error.InvalidCredentialsException
+import com.inout.apiserver.interfaces.web.v1.request.UserLoginRequest
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 
 class EmailPasswordLoginApplicationTest {
-    private val jwtProperties = JwtProperties(
-        key = "super-long-secret-key-long-enough-to-have-a-size-over-256-bits",
-        accessTokenExpiration = 1000L,
-        refreshTokenExpiration = 1000L
-    )
+    private val jwtProperties =
+        JwtProperties(
+            key = "super-long-secret-key-long-enough-to-have-a-size-over-256-bits",
+            accessTokenExpiration = 1000L,
+            refreshTokenExpiration = 1000L,
+        )
     private val tokenService = spyk(TokenService(jwtProperties))
     private val authManager = mockk<AuthenticationManager>()
     private val userService = mockk<UserService>()
@@ -33,9 +35,10 @@ class EmailPasswordLoginApplicationTest {
         every { authManager.authenticate(any()) } throws BadCredentialsException("Invalid credentials")
 
         // when
-        val exception = assertThrows(InvalidCredentialsException::class.java) {
-            emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
-        }
+        val exception =
+            assertThrows(InvalidCredentialsException::class.java) {
+                emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
+            }
 
         // then
         assertEquals("Invalid credentials", exception.message)
@@ -48,9 +51,10 @@ class EmailPasswordLoginApplicationTest {
         every { authManager.authenticate(any()) } throws RuntimeException("Unexpected error")
 
         // when
-        val exception = assertThrows(InternalServerErrorException::class.java) {
-            emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
-        }
+        val exception =
+            assertThrows(InternalServerErrorException::class.java) {
+                emailPasswordLoginApplication.run(UserLoginRequest("email@1.com", "password"))
+            }
 
         // then
         assertEquals("Unexpected error", exception.message)

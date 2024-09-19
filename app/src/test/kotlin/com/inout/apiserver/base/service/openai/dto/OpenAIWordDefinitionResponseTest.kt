@@ -2,7 +2,7 @@ package com.inout.apiserver.base.service.openai.dto
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -10,7 +10,8 @@ class OpenAIWordDefinitionResponseTest {
     @Test
     fun `fromJson - should return OpenAIWordDefinitionResponse with correct definitions`() {
         // Given
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "definitions": [
                     {
@@ -25,7 +26,7 @@ class OpenAIWordDefinitionResponseTest {
                     }
                 ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When
         val openAIWordDefinitionResponse = OpenAIWordDefinitionResponse.fromJson(jsonString)
@@ -43,11 +44,12 @@ class OpenAIWordDefinitionResponseTest {
     @Test
     fun `fromJson - should return OpenAIWordDefinitionResponse with empty definitions`() {
         // Given
-        val jsonString = """
+        val jsonString =
+            """
             {
                 "definitions": []
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When
         val openAIWordDefinitionResponse = OpenAIWordDefinitionResponse.fromJson(jsonString)
@@ -60,7 +62,8 @@ class OpenAIWordDefinitionResponseTest {
     @Test
     fun `fromJson - should raise error when json is invalid`() {
         // Given
-        val jsonString1 = """
+        val jsonString1 =
+            """
             {
                 "definitions": [
                     {
@@ -69,8 +72,9 @@ class OpenAIWordDefinitionResponseTest {
                     }
                 ]
             }
-        """.trimIndent()
-        val jsonString2 = """
+            """.trimIndent()
+        val jsonString2 =
+            """
             {
                 "definitions": [
                     {
@@ -79,8 +83,9 @@ class OpenAIWordDefinitionResponseTest {
                     }
                 ]
             }
-        """.trimIndent()
-        val jsonString3 = """
+            """.trimIndent()
+        val jsonString3 =
+            """
             {
                 "definitions": [
                     {
@@ -89,7 +94,7 @@ class OpenAIWordDefinitionResponseTest {
                     }
                 ]
             }
-        """.trimIndent()
+            """.trimIndent()
 
         // When & Then
         assertThrows<MissingFieldException> { OpenAIWordDefinitionResponse.fromJson(jsonString1) }

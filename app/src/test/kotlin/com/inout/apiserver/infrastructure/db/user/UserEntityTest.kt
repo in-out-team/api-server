@@ -3,27 +3,31 @@ package com.inout.apiserver.infrastructure.db.user
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDateTime
+import java.time.Instant
 
 class UserEntityTest {
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
     @Test
     fun `toDomain - raises error when id is null`() {
         // given
-        val userEntity = UserEntity(
-            email = "test@email.com",
-            password = "password",
-            nickname = "nickname",
-        )
+        val userEntity =
+            UserEntity(
+                email = "test@email.com",
+                password = "password",
+                nickname = "nickname",
+            )
 
         // when & then
-        val error = assertThrows<InOutRequireNotNullException> {
-            userEntity.toDomain()
-        }
+        val error =
+            assertThrows<InOutRequireNotNullException> {
+                userEntity.toDomain()
+            }
         assertEquals("User id is null", error.message)
         assertEquals("IORNN_USER_1", error.code)
     }
@@ -33,15 +37,16 @@ class UserEntityTest {
         // given
         val email = "test@email.com"
         val nickname = "nickname"
-        val userEntity = UserEntity(
-            email = email,
-            password = "password",
-            nickname = nickname,
-        ).apply {
-            id = 1L
-            createdAt = now
-            updatedAt = now
-        }
+        val userEntity =
+            UserEntity(
+                email = email,
+                password = "password",
+                nickname = nickname,
+            ).apply {
+                id = 1L
+                createdAt = now
+                updatedAt = now
+            }
 
         // when
         val user = userEntity.toDomain()
@@ -61,14 +66,15 @@ class UserEntityTest {
         // given
         val email = "test@email.com"
         val nickname = "nickname"
-        val user = User(
-            id = 1L,
-            email = email,
-            password = "password",
-            nickname = nickname,
-            createdAt = now,
-            updatedAt = now,
-        )
+        val user =
+            User(
+                id = 1L,
+                email = email,
+                password = "password",
+                nickname = nickname,
+                createdAt = now,
+                updatedAt = now,
+            )
 
         // when
         val userEntity = UserEntity.of(user)
@@ -88,11 +94,12 @@ class UserEntityTest {
         // given
         val email = "test@email.com"
         val nickname = "nickname"
-        val userCreateObject = UserCreateObject(
-            email = email,
-            password = "password",
-            nickname = nickname,
-        )
+        val userCreateObject =
+            UserCreateObject(
+                email = email,
+                password = "password",
+                nickname = nickname,
+            )
 
         // when
         val userEntity = UserEntity.fromCreateObject(userCreateObject)

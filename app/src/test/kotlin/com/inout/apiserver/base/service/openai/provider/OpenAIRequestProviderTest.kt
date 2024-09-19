@@ -1,11 +1,12 @@
 package com.inout.apiserver.base.service.openai.provider
 
 import com.aallam.openai.api.chat.ChatResponseFormat
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class OpenAIRequestProviderTest {
     private val openAIRequestProvider = OpenAIRequestProvider()
+
     @Test
     fun `genWordInfoRequest should return ChatCompletionRequest with correct systemDefinition and queryMessage`() {
         // Given
@@ -19,7 +20,8 @@ class OpenAIRequestProviderTest {
         // Then
         assertEquals("gpt-3.5-turbo", chatCompletionRequest.model.id)
         assertEquals(ChatResponseFormat.JsonObject, chatCompletionRequest.responseFormat)
-        val expectedContent = """
+        val expectedContent =
+            """
             You are an $fromLanguage to $toLanguage dictionary listing the definitions of given word or phrase.
             response format must be JSON with following key value pairs:
             - definitions: list of definition objects
@@ -49,7 +51,7 @@ class OpenAIRequestProviderTest {
             
             Respond 0 definition objects if provided $fromLanguage word or phrase does not exist in $toLanguage.
             - ex) for "tteokbokki", since it is not an original English word, 0 definition objects should be returned.
-        """.trimIndent()
+            """.trimIndent()
         assertEquals(expectedContent, chatCompletionRequest.messages[0].content)
     }
 }

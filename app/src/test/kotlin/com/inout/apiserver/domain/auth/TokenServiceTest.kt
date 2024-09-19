@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ContextConfiguration
 import java.lang.reflect.Method
-import java.util.*
+import java.util.Date
 
 @SpringBootTest
 @ContextConfiguration(classes = [TokenService::class, JwtConfig::class])
@@ -32,9 +32,10 @@ class TokenServiceTest(
      * which leverages the 3rd party library to get the claims from the token
      */
     private fun useTokenServiceGetClaimsWithToken(token: String): Claims {
-        val getClaimsMethod: Method = TokenService::class.java
-            .getDeclaredMethod("getClaims", String::class.java)
-            .apply { isAccessible = true }
+        val getClaimsMethod: Method =
+            TokenService::class.java
+                .getDeclaredMethod("getClaims", String::class.java)
+                .apply { isAccessible = true }
         return getClaimsMethod.invoke(tokenService, token) as Claims
     }
 

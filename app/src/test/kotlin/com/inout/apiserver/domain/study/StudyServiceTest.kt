@@ -4,18 +4,21 @@ import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import java.time.LocalDateTime
+import java.time.Instant
 
 class StudyServiceTest {
     private val studyRepository = mockk<StudyRepository>()
     private val studyService = StudyService(studyRepository)
-    private val now = LocalDateTime.now()
+    private val now = Instant.now()
 
     private fun createStudies(count: Int): List<Study> {
         return (1..count).map {
@@ -24,7 +27,7 @@ class StudyServiceTest {
                 userId = 1L,
                 wordDefinitionId = it.toLong(),
                 createdAt = now,
-                updatedAt = now
+                updatedAt = now,
             )
         }
     }
@@ -119,22 +122,25 @@ class StudyServiceTest {
         @Test
         fun `should throw ConflictException when study already exists`() {
             // given
-            val studyCreateObject = StudyCreateObject(
-                userId = 1L,
-                wordDefinitionId = 1L
-            )
-            every { studyRepository.findByUserIdAndWordDefinitionId(1L, 1L) } returns Study(
-                id = 1L,
-                userId = 1L,
-                wordDefinitionId = 1L,
-                createdAt = now,
-                updatedAt = now
-            )
+            val studyCreateObject =
+                StudyCreateObject(
+                    userId = 1L,
+                    wordDefinitionId = 1L,
+                )
+            every { studyRepository.findByUserIdAndWordDefinitionId(1L, 1L) } returns
+                Study(
+                    id = 1L,
+                    userId = 1L,
+                    wordDefinitionId = 1L,
+                    createdAt = now,
+                    updatedAt = now,
+                )
 
             // when
-            val exception = assertThrows(ConflictException::class.java) {
-                studyService.createStudy(studyCreateObject)
-            }
+            val exception =
+                assertThrows(ConflictException::class.java) {
+                    studyService.createStudy(studyCreateObject)
+                }
 
             // then
             assertEquals("Study already exists", exception.message)
@@ -144,18 +150,20 @@ class StudyServiceTest {
         @Test
         fun `should create study when it does not exist`() {
             // given
-            val studyCreateObject = StudyCreateObject(
-                userId = 1L,
-                wordDefinitionId = 1L
-            )
+            val studyCreateObject =
+                StudyCreateObject(
+                    userId = 1L,
+                    wordDefinitionId = 1L,
+                )
             every { studyRepository.findByUserIdAndWordDefinitionId(1L, 1L) } returns null
-            every { studyRepository.save(any()) } returns Study(
-                id = 1L,
-                userId = 1L,
-                wordDefinitionId = 1L,
-                createdAt = now,
-                updatedAt = now
-            )
+            every { studyRepository.save(any()) } returns
+                Study(
+                    id = 1L,
+                    userId = 1L,
+                    wordDefinitionId = 1L,
+                    createdAt = now,
+                    updatedAt = now,
+                )
 
             // when
             val sut = studyService.createStudy(studyCreateObject)

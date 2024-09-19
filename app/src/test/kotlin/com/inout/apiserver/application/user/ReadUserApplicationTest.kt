@@ -1,11 +1,12 @@
 package com.inout.apiserver.application.user
 
 import com.inout.apiserver.domain.user.User
-import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.error.NotFoundException
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class ReadUserApplicationTest {
@@ -19,9 +20,10 @@ class ReadUserApplicationTest {
         every { userService.getUserById(id) } returns null
 
         // when
-        val exception = assertThrows(NotFoundException::class.java) {
-            readUserApplication.run(id)
-        }
+        val exception =
+            assertThrows(NotFoundException::class.java) {
+                readUserApplication.run(id)
+            }
 
         // then
         assertEquals("User not found", exception.message)
@@ -31,7 +33,15 @@ class ReadUserApplicationTest {
     fun `run - should return user response`() {
         // given
         val id = 1L
-        val user = User(id = id, email = "email@1.com", nickname = "nickname1", password = "password1", createdAt = null, updatedAt = null)
+        val user =
+            User(
+                id = id,
+                email = "email@1.com",
+                nickname = "nickname1",
+                password = "password1",
+                createdAt = null,
+                updatedAt = null,
+            )
         every { userService.getUserById(id) } returns user
 
         // when
