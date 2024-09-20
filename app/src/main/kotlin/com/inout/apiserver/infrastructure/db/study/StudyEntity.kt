@@ -41,6 +41,15 @@ data class StudyEntity(
             wordDefinitionId = wordDefinitionId,
             createdAt = createdAt,
             updatedAt = updatedAt,
+            state = state,
+            due = due,
+            stability = stability,
+            difficulty = difficulty,
+            elapsedDays = elapsedDays,
+            scheduledDays = scheduledDays,
+            reps = reps,
+            lapses = lapses,
+            lastReview = lastReview,
         )
     }
 

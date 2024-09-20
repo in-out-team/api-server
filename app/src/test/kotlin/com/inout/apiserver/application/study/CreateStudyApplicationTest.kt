@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.study
 
+import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.study.Study
@@ -10,6 +11,7 @@ import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
+import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -45,14 +47,24 @@ class CreateStudyApplicationTest {
         }
     }
 
-    private fun createStudyWithWord(
+    private fun createStudy(
         word: Word,
         userId: Long,
     ): Study {
+        val fsrsCard = Card.createEmptyCard()
         return Study(
             id = 1L,
             userId = userId,
             wordDefinitionId = word.definitions.first().id,
+            state = FsrsCardState.of(fsrsCard.state),
+            due = fsrsCard.due,
+            stability = fsrsCard.stability,
+            difficulty = fsrsCard.difficulty,
+            elapsedDays = fsrsCard.elapsedDays,
+            scheduledDays = fsrsCard.scheduledDays,
+            reps = fsrsCard.reps,
+            lapses = fsrsCard.lapses,
+            lastReview = fsrsCard.lastReview,
             createdAt = now,
             updatedAt = now,
         )
@@ -117,7 +129,7 @@ class CreateStudyApplicationTest {
             )
         val word = createWords(1).first()
         val userId = 1L
-        val study = createStudyWithWord(word, userId)
+        val study = createStudy(word, userId)
         every { wordService.getWordByWordDefinitionId(request.wordDefinitionId) } returns word
         every { studyService.createStudy(any()) } returns study
 

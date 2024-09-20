@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.study
 
+import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.study.Study
@@ -8,6 +9,7 @@ import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.InternalServerErrorException
+import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -49,11 +51,21 @@ class ReadStudiesApplicationTest {
         count: Int,
         userId: Long,
     ): List<Study> {
+        val fsrsCard = Card.createEmptyCard()
         return (1..count).map { i ->
             Study(
                 id = i.toLong(),
                 userId = userId,
                 wordDefinitionId = i.toLong(),
+                state = FsrsCardState.of(fsrsCard.state),
+                due = fsrsCard.due,
+                stability = fsrsCard.stability,
+                difficulty = fsrsCard.difficulty,
+                elapsedDays = fsrsCard.elapsedDays,
+                scheduledDays = fsrsCard.scheduledDays,
+                reps = fsrsCard.reps,
+                lapses = fsrsCard.lapses,
+                lastReview = fsrsCard.lastReview,
                 createdAt = now,
                 updatedAt = now,
             )
