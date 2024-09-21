@@ -6,9 +6,12 @@ import com.inout.apiserver.domain.study.StudyCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
 import com.inout.fsrs.model.Card
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import java.time.Instant
@@ -33,6 +36,9 @@ data class StudyEntity(
     val reps: Int,
     val lapses: Int,
     val lastReview: Instant?,
+    @OneToMany(cascade = [CascadeType.ALL])
+    @JoinColumn(name = "study_id")
+    val reviewLogs: List<StudyReviewLogEntity>,
 ) : BaseEntity() {
     fun toDomain(): Study {
         return Study(
@@ -50,6 +56,7 @@ data class StudyEntity(
             reps = reps,
             lapses = lapses,
             lastReview = lastReview,
+            reviewLogs = reviewLogs.map { it.toDomain() },
         )
     }
 
@@ -69,6 +76,7 @@ data class StudyEntity(
                 reps = fsrsCard.reps,
                 lapses = fsrsCard.lapses,
                 lastReview = fsrsCard.lastReview,
+                reviewLogs = emptyList(),
             )
         }
     }
