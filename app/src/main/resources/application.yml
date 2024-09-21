@@ -12,6 +12,8 @@ spring:
         format_sql: true
         show-sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
 # disable spring security's basic auth
 security:
   basic:

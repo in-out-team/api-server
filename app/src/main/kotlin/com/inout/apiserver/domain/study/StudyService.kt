@@ -17,15 +17,19 @@ class StudyService(
         pageable: Pageable,
     ): Page<Study> {
         //  TODO: ignore sort for now
-        val sortIgnoredPageRequest = PageRequest.of(
-            pageable.pageNumber,
-            pageable.pageSize
-        )
+        val sortIgnoredPageRequest =
+            PageRequest.of(
+                pageable.pageNumber,
+                pageable.pageSize,
+            )
 
         return studyRepository.findAllByUserId(userId, sortIgnoredPageRequest)
     }
 
-    fun getByUserIdAndWordDefinitionId(userId: Long, wordDefinitionId: Long): Study? {
+    fun getByUserIdAndWordDefinitionId(
+        userId: Long,
+        wordDefinitionId: Long,
+    ): Study? {
         return studyRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)
     }
 
@@ -36,7 +40,7 @@ class StudyService(
     fun createStudy(studyCreateObject: StudyCreateObject): Study {
         getByUserIdAndWordDefinitionId(
             userId = studyCreateObject.userId,
-            wordDefinitionId = studyCreateObject.wordDefinitionId
+            wordDefinitionId = studyCreateObject.wordDefinitionId,
         )?.let {
             throw ConflictException(message = "Study already exists", code = "STUDY_1")
         }

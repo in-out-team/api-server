@@ -1,7 +1,9 @@
 package com.inout.apiserver.domain.study
 
+import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -21,11 +23,21 @@ class StudyServiceTest {
     private val now = Instant.now()
 
     private fun createStudies(count: Int): List<Study> {
+        val fsrsCard = Card.createEmptyCard()
         return (1..count).map {
             Study(
                 id = it.toLong(),
                 userId = 1L,
                 wordDefinitionId = it.toLong(),
+                state = FsrsCardState.of(fsrsCard.state),
+                due = fsrsCard.due,
+                stability = fsrsCard.stability,
+                difficulty = fsrsCard.difficulty,
+                elapsedDays = fsrsCard.elapsedDays,
+                scheduledDays = fsrsCard.scheduledDays,
+                reps = fsrsCard.reps,
+                lapses = fsrsCard.lapses,
+                lastReview = fsrsCard.lastReview,
                 createdAt = now,
                 updatedAt = now,
             )
@@ -128,13 +140,7 @@ class StudyServiceTest {
                     wordDefinitionId = 1L,
                 )
             every { studyRepository.findByUserIdAndWordDefinitionId(1L, 1L) } returns
-                Study(
-                    id = 1L,
-                    userId = 1L,
-                    wordDefinitionId = 1L,
-                    createdAt = now,
-                    updatedAt = now,
-                )
+                createStudies(1).first()
 
             // when
             val exception =
@@ -156,14 +162,7 @@ class StudyServiceTest {
                     wordDefinitionId = 1L,
                 )
             every { studyRepository.findByUserIdAndWordDefinitionId(1L, 1L) } returns null
-            every { studyRepository.save(any()) } returns
-                Study(
-                    id = 1L,
-                    userId = 1L,
-                    wordDefinitionId = 1L,
-                    createdAt = now,
-                    updatedAt = now,
-                )
+            every { studyRepository.save(any()) } returns createStudies(1).first()
 
             // when
             val sut = studyService.createStudy(studyCreateObject)

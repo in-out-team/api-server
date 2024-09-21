@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.study
 
+import com.inout.apiserver.domain.study.StudyCreateObject
 import com.inout.apiserver.infrastructure.db.DbTestSupport
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -16,6 +17,18 @@ class StudyRepositoryTest(
     private val studyRepository: StudyRepository,
     private val studyJpaRepository: StudyJpaRepository,
 ) : DbTestSupport() {
+    private fun createUnsavedStudyEntity(
+        userId: Long,
+        wordDefinitionId: Long,
+    ): StudyEntity {
+        return StudyEntity.fromCreateObject(
+            StudyCreateObject(
+                userId = userId,
+                wordDefinitionId = wordDefinitionId,
+            ),
+        )
+    }
+
     @Nested
     inner class Save {
         @Test
@@ -23,11 +36,11 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = StudyEntity(userId = userId, wordDefinitionId = wordDefinitionId)
+            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
             studyJpaRepository.save(studyEntity)
 
             // when
-            val sut = StudyEntity(userId = userId, wordDefinitionId = wordDefinitionId)
+            val sut = createUnsavedStudyEntity(userId, wordDefinitionId)
 
             // then
             assertThatThrownBy { studyRepository.save(sut) }
@@ -40,13 +53,17 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = StudyEntity(userId = userId, wordDefinitionId = wordDefinitionId)
+            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
 
             // when
             val sut = studyRepository.save(studyEntity)
 
             // then
             assertNotNull(sut.id)
+            assertEquals(userId, sut.userId)
+            assertEquals(wordDefinitionId, sut.wordDefinitionId)
+            assertNotNull(sut.createdAt)
+            assertNotNull(sut.updatedAt)
         }
     }
 
@@ -67,7 +84,7 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = StudyEntity(userId = userId, wordDefinitionId = wordDefinitionId)
+            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
             studyJpaRepository.save(studyEntity)
 
             // when
@@ -94,7 +111,7 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = StudyEntity(userId = userId, wordDefinitionId = wordDefinitionId)
+            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
             val savedStudy = studyJpaRepository.save(studyEntity)
 
             // when
@@ -124,7 +141,7 @@ class StudyRepositoryTest(
         fun `should return page of study entity`() {
             // given
             val userId = 1L
-            val studies = (1..10).map { StudyEntity(userId = userId, wordDefinitionId = it.toLong()) }
+            val studies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
             studyJpaRepository.saveAll(studies)
 
             // when
