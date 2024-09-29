@@ -77,6 +77,13 @@ class StudyService(
     }
 
     fun createDailyStudySet(dailyStudySetCreateObject: DailyStudySetCreateObject): DailyStudySet {
+        getDailyStudySet(
+            userId = dailyStudySetCreateObject.userId,
+            date = dailyStudySetCreateObject.date,
+        )?.let {
+            throw ConflictException(message = "Daily study set already exists", code = "STUDY_5")
+        }
+
         return dailyStudySetRepository.save(DailyStudySetEntity.fromCreateObject(dailyStudySetCreateObject))
     }
 }

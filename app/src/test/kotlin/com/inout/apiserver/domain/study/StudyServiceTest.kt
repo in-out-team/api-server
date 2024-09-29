@@ -2,6 +2,7 @@ package com.inout.apiserver.domain.study
 
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
 import com.inout.fsrs.model.Card
 import io.mockk.every
@@ -16,10 +17,13 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 class StudyServiceTest {
     private val studyRepository = mockk<StudyRepository>()
-    private val studyService = StudyService(studyRepository)
+    private val dailyStudySetRepository = mockk<DailyStudySetRepository>()
+    private val studyService = StudyService(studyRepository, dailyStudySetRepository)
     private val now = Instant.now()
 
     private fun createStudies(count: Int): List<Study> {
@@ -43,6 +47,15 @@ class StudyServiceTest {
                 updatedAt = now,
             )
         }
+    }
+
+    private fun createDailyStudySet(
+        userId: Long,
+        date: Instant,
+        studyIds: List<Long>,
+    ): DailyStudySet {
+        val localDate = LocalDate.ofInstant(date, date.atZone(ZoneId.systemDefault()).offset)
+        return DailyStudySet(id = 1L, userId = userId, studyIds = studyIds, date = localDate)
     }
 
     @Nested
@@ -174,6 +187,136 @@ class StudyServiceTest {
             assertEquals(1L, sut.wordDefinitionId)
             assertEquals(now, sut.createdAt)
             assertEquals(now, sut.updatedAt)
+        }
+    }
+
+    @Nested
+    inner class GetStudiesPastDue {
+        @Test
+        fun `should return empty list when count is 0 or less`() {
+            listOf(0, -1).forEach { count ->
+                // when
+                val sut = studyService.getStudiesPastDue(1L, now, count)
+
+                // then
+                assertTrue(sut.isEmpty())
+            }
+        }
+
+        @Test
+        fun `should return list of studies`() {
+            // given
+            val studies = createStudies(3)
+            every { studyRepository.findAllPastDueStudiesBy(1L, now, any()) } returns PageImpl(studies)
+
+            // when
+            val sut = studyService.getStudiesPastDue(1L, now, 3)
+
+            // then
+            assertEquals(3, sut.size)
+            assertEquals(studies, sut)
+        }
+    }
+
+    @Nested
+    inner class GetStudiesByIds {
+        @Test
+        fun `should return empty list when ids is empty`() {
+            // given
+            every { studyRepository.findAllByIds(emptyList()) } returns emptyList()
+
+            // when
+            val sut = studyService.getStudiesByIds(emptyList())
+
+            // then
+            assertTrue(sut.isEmpty())
+        }
+
+        @Test
+        fun `should return list of studies`() {
+            // given
+            val studies = createStudies(3)
+            val ids = studies.map { it.id!! }
+            every { studyRepository.findAllByIds(ids) } returns studies
+
+            // when
+            val sut = studyService.getStudiesByIds(ids)
+
+            // then
+            assertEquals(3, sut.size)
+            assertEquals(studies, sut)
+        }
+    }
+
+    @Nested
+    inner class GetDailyStudySet {
+        @Test
+        fun `should return null when daily study set does not exist`() {
+            // given
+            every { dailyStudySetRepository.findByUserIdAndDate(1L, any()) } returns null
+
+            // when
+            val sut = studyService.getDailyStudySet(1L, LocalDate.now())
+
+            // then
+            assertNull(sut)
+        }
+
+        @Test
+        fun `should return daily study set when it exists`() {
+            // given
+            val dailyStudySet = createDailyStudySet(1L, now, listOf(1L, 2L))
+            every { dailyStudySetRepository.findByUserIdAndDate(1L, any()) } returns dailyStudySet
+
+            // when
+            val sut = studyService.getDailyStudySet(1L, LocalDate.now())
+
+            // then
+            assertEquals(dailyStudySet, sut)
+        }
+    }
+
+    @Nested
+    inner class CreateDailyStudySet {
+        @Test
+        fun `should throw ConflictException when daily study set already exists`() {
+            // given
+            val dailyStudySetCreateObject =
+                DailyStudySetCreateObject(
+                    userId = 1L,
+                    date = LocalDate.now(),
+                )
+            every { dailyStudySetRepository.findByUserIdAndDate(1L, any()) } returns
+                createDailyStudySet(1L, now, listOf(1L, 2L))
+
+            // when
+            val exception =
+                assertThrows(ConflictException::class.java) {
+                    studyService.createDailyStudySet(dailyStudySetCreateObject)
+                }
+
+            // then
+            assertEquals("Daily study set already exists", exception.message)
+            assertEquals("STUDY_5", exception.code)
+        }
+
+        @Test
+        fun `should create daily study set when it does not exist`() {
+            // given
+            val dailyStudySetCreateObject =
+                DailyStudySetCreateObject(
+                    userId = 1L,
+                    date = LocalDate.now(),
+                )
+            every { dailyStudySetRepository.findByUserIdAndDate(1L, any()) } returns null
+            val dailyStudySet = createDailyStudySet(1L, now, listOf(1L, 2L))
+            every { dailyStudySetRepository.save(any()) } returns dailyStudySet
+
+            // when
+            val sut = studyService.createDailyStudySet(dailyStudySetCreateObject)
+
+            // then
+            assertEquals(dailyStudySet, sut)
         }
     }
 }

@@ -8,17 +8,23 @@ import io.hypersistence.utils.hibernate.type.array.ListArrayType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
+import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.Type
 import java.time.LocalDate
 
 @Entity
-@Table(name = "daily_study_sets")
+@Table(
+    name = "daily_study_sets",
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["user_id", "date"]),
+    ],
+)
 data class DailyStudySetEntity(
     val userId: Long,
+    val date: LocalDate,
     @Column(columnDefinition = "bigint[]", nullable = false, updatable = true, name = "study_ids")
     @Type(ListArrayType::class)
     val studyIds: List<Long>,
-    val date: LocalDate,
 ) : BaseEntity() {
     fun toDomain(): DailyStudySet {
         return DailyStudySet(
