@@ -65,6 +65,7 @@ class CreateStudyApplicationTest {
             reps = fsrsCard.reps,
             lapses = fsrsCard.lapses,
             lastReview = fsrsCard.lastReview,
+            reviewLogs = emptyList(),
             createdAt = now,
             updatedAt = now,
         )
