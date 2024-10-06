@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("org.springframework.boot") version "3.2.4"
     id("io.spring.dependency-management") version "1.1.4"
@@ -23,6 +21,7 @@ tasks.register<Wrapper>("wrapper") {
 
 tasks.test {
     useJUnitPlatform()
+    systemProperties["user.timezone"] = "UTC"
 }
 
 dependencies {
@@ -39,7 +38,6 @@ dependencies {
     implementation("io.ktor:ktor-client-okhttp:2.3.11")
     runtimeOnly("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
 
-
     // serialization
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -54,6 +52,7 @@ dependencies {
 
     // db
     runtimeOnly("org.postgresql:postgresql")
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
 
     // logins
     // google api client
@@ -63,5 +62,5 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("io.mockk:mockk:1.13.10")
-    testImplementation("com.h2database:h2")
+    testImplementation("org.postgresql:postgresql")
 }

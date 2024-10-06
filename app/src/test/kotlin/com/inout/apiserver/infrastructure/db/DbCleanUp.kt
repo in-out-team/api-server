@@ -26,11 +26,8 @@ class DbCleanUp(
     @Transactional
     fun execute() {
         em.flush()
-        em.createNativeQuery("SET REFERENTIAL_INTEGRITY FALSE").executeUpdate() // set foreign key checks off
-        tableNames.forEach {
-            em.createNativeQuery("TRUNCATE TABLE %s".format(it)).executeUpdate()
-            em.createNativeQuery("ALTER TABLE %s ALTER COLUMN id RESTART WITH 1".format(it)).executeUpdate()
+        tableNames.forEach { tableName ->
+            em.createNativeQuery("TRUNCATE TABLE $tableName RESTART IDENTITY CASCADE").executeUpdate()
         }
-        em.createNativeQuery("SET REFERENTIAL_INTEGRITY TRUE").executeUpdate() // set foreign key checks on
     }
 }
