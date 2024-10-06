@@ -37,7 +37,8 @@ class ReadOrCreateDailyStudySetApplication(
         }
 
         var dailyStudySet = studyService.getDailyStudySet(userId, date)
-        if (date != LocalDate.now()) {
+        val isNotToday = date != now
+        if (isNotToday && dailyStudySet == null) {
             throw NotFoundException(message = "DailyStudySet not found", code = "STUDY_4")
         }
 
@@ -48,12 +49,19 @@ class ReadOrCreateDailyStudySetApplication(
         val endOfDay = now.atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC)
         val due = endOfDay.atZone(ZoneId.systemDefault()).toInstant()
         val studies =
-            studyService.getStudiesByIds(dailyStudySet.studyIds) +
-                studyService.getStudiesPastDue(
-                    userId,
-                    due,
-                    DEFAULT_STUDY_SET_SIZE - dailyStudySet.studyIds.size,
-                )
+            studyService.getStudiesByIds(dailyStudySet.studyIds).let {
+                it +
+                    if (isNotToday) {
+                        emptyList()
+                    } else {
+                        studyService.getStudiesPastDue(
+                            userId,
+                            due,
+                            DEFAULT_STUDY_SET_SIZE - it.size,
+                        )
+                    }
+            }
+
         val wordDefinitionIds = studies.map { it.wordDefinitionId }
         val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
         val wordByDefinitionIdMap = mutableMapOf<Long, Word>()
@@ -62,7 +70,7 @@ class ReadOrCreateDailyStudySetApplication(
         }
 
         return Result(
-            dailyStudySet = dailyStudySet.copy(studyIds = dailyStudySet.studyIds + studies.map { it.id }),
+            dailyStudySet = dailyStudySet.copy(studyIds = studies.map { it.id }),
             studyWords =
                 studies.map { study ->
                     StudyWord(

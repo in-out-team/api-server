@@ -21,6 +21,7 @@ tasks.register<Wrapper>("wrapper") {
 
 tasks.test {
     useJUnitPlatform()
+    systemProperties["user.timezone"] = "UTC"
 }
 
 dependencies {
