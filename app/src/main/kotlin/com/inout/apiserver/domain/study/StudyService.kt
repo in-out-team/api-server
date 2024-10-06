@@ -11,12 +11,17 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 @Service
 class StudyService(
     private val studyRepository: StudyRepository,
     private val dailyStudySetRepository: DailyStudySetRepository,
 ) {
+    companion object {
+        const val DEFAULT_STUDY_SET_SIZE = 20 // TODO: later fix with user's settings
+    }
+
     fun getAllByUserId(
         userId: Long,
         pageable: Pageable,
@@ -74,6 +79,24 @@ class StudyService(
         date: LocalDate,
     ): DailyStudySet? {
         return dailyStudySetRepository.findByUserIdAndDate(userId, date)
+    }
+
+    fun getStudiesByDailyStudySet(dailyStudySet: DailyStudySet): List<Study> {
+        val todayDate = LocalDate.now()
+        val dailyStudySetStudies = studyRepository.findAllByIds(dailyStudySet.studyIds)
+        if (dailyStudySet.date.isBefore(todayDate)) {
+            return dailyStudySetStudies
+        }
+
+        val endOfDay = todayDate.atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC)
+        val due = endOfDay.atZone(ZoneOffset.UTC).toInstant()
+        val studiesPastDue =
+            getStudiesPastDue(
+                userId = dailyStudySet.userId,
+                due = due,
+                count = DEFAULT_STUDY_SET_SIZE - dailyStudySetStudies.size,
+            )
+        return dailyStudySetStudies + studiesPastDue
     }
 
     fun createDailyStudySet(dailyStudySetCreateObject: DailyStudySetCreateObject): DailyStudySet {

@@ -319,4 +319,40 @@ class StudyServiceTest {
             assertEquals(dailyStudySet, sut)
         }
     }
+
+    @Nested
+    inner class GetStudiesByDailyStudySet {
+        @Test
+        fun `should return daily study set studies when date is before today`() {
+            // given
+            val studies = createStudies(2)
+            val dailyStudySet =
+                createDailyStudySet(1L, now, studies.map { it.id }).copy(date = LocalDate.now().minusDays(1))
+            every { studyRepository.findAllByIds(dailyStudySet.studyIds) } returns studies
+
+            // when
+            val sut = studyService.getStudiesByDailyStudySet(dailyStudySet)
+
+            // then
+            assertEquals(2, sut.size)
+            assertEquals(studies, sut)
+        }
+
+        @Test
+        fun `should return daily study set studies and past due studies when date is today`() {
+            // given
+            val studies = createStudies(2)
+            val dailyStudySet = createDailyStudySet(1L, now, studies.map { it.id })
+            every { studyRepository.findAllByIds(dailyStudySet.studyIds) } returns studies
+            val pastDueStudies = createStudies(1)
+            every { studyRepository.findAllPastDueStudiesBy(any(), any(), any()) } returns PageImpl(pastDueStudies)
+
+            // when
+            val sut = studyService.getStudiesByDailyStudySet(dailyStudySet)
+
+            // then
+            assertEquals(3, sut.size)
+            assertEquals(studies + pastDueStudies, sut)
+        }
+    }
 }
