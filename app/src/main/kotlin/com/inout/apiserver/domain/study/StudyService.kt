@@ -1,10 +1,16 @@
 package com.inout.apiserver.domain.study
 
+import com.inout.apiserver.base.enums.FsrsCardRating
+import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.StudyEntity
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.fsrs.FSRS
+import com.inout.fsrs.model.FSRSParameters
+import com.inout.fsrs.model.enums.Grade
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -50,13 +56,19 @@ class StudyService(
     fun getStudiesPastDue(
         userId: Long,
         due: Instant,
+        excludeIds: List<Long>,
         count: Int,
     ): List<Study> {
         if (count <= 0) {
             return emptyList()
         }
 
-        return studyRepository.findAllPastDueStudiesBy(userId, due, PageRequest.of(0, count)).content
+        return studyRepository.findAllPastDueStudiesBy(
+            userId = userId,
+            due = due,
+            excludeIds = excludeIds,
+            pageable = PageRequest.of(0, count),
+        ).content
     }
 
     fun getStudiesByIds(ids: List<Long>): List<Study> {
@@ -74,11 +86,55 @@ class StudyService(
         return studyRepository.save(StudyEntity.fromCreateObject(studyCreateObject))
     }
 
+    // TODO: write test case
+    fun rateStudy(
+        study: Study,
+        rating: FsrsCardRating,
+    ): Study {
+        val fsrsParam = FSRSParameters()
+        val fsrs = FSRS(fsrsParam)
+        val fsrsCard = study.toFsrsCard()
+        val recordLog = fsrs.repeat(fsrsCard, study.due)
+        val newRecordLogItem =
+            recordLog.logs[Grade.fromRating(FsrsCardRating.toFsrsRating(rating))]
+                ?: throw InternalServerErrorException(message = "FSRS Repeat Error", code = "STUDY_6")
+        val updatedFsrsCard = newRecordLogItem.card
+        val newFsrsReviewLog = newRecordLogItem.log
+
+        val ratedStudy =
+            study.copy(
+                state = FsrsCardState.of(updatedFsrsCard.state),
+                due = updatedFsrsCard.due,
+                stability = updatedFsrsCard.stability,
+                difficulty = updatedFsrsCard.difficulty,
+                elapsedDays = updatedFsrsCard.elapsedDays,
+                scheduledDays = updatedFsrsCard.scheduledDays,
+                reps = updatedFsrsCard.reps,
+                lapses = updatedFsrsCard.lapses,
+                lastReview = updatedFsrsCard.lastReview,
+                reviewLogs = study.reviewLogs + StudyReviewLog.newFrom(newFsrsReviewLog),
+            )
+        return studyRepository.save(StudyEntity.fromDomain(ratedStudy))
+    }
+
     fun getDailyStudySet(
         userId: Long,
         date: LocalDate,
     ): DailyStudySet? {
         return dailyStudySetRepository.findByUserIdAndDate(userId, date)
+    }
+
+    fun getDailyStudySetById(id: Long): DailyStudySet? {
+        return dailyStudySetRepository.findById(id)
+    }
+
+    // TODO: write test case
+    fun addStudyToDailyStudySet(
+        dailyStudySet: DailyStudySet,
+        study: Study,
+    ): DailyStudySet {
+        val updatedStudyIds = (dailyStudySet.studyIds + study.id).toSet().toList()
+        return dailyStudySetRepository.save(DailyStudySetEntity.fromDomain(dailyStudySet.copy(studyIds = updatedStudyIds)))
     }
 
     fun getStudiesByDailyStudySet(dailyStudySet: DailyStudySet): List<Study> {
@@ -94,6 +150,7 @@ class StudyService(
             getStudiesPastDue(
                 userId = dailyStudySet.userId,
                 due = due,
+                excludeIds = dailyStudySet.studyIds,
                 count = DEFAULT_STUDY_SET_SIZE - dailyStudySetStudies.size,
             )
         return dailyStudySetStudies + studiesPastDue

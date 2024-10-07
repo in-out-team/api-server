@@ -196,7 +196,7 @@ class StudyServiceTest {
         fun `should return empty list when count is 0 or less`() {
             listOf(0, -1).forEach { count ->
                 // when
-                val sut = studyService.getStudiesPastDue(1L, now, count)
+                val sut = studyService.getStudiesPastDue(1L, now, emptyList(), count)
 
                 // then
                 assertTrue(sut.isEmpty())
@@ -207,10 +207,10 @@ class StudyServiceTest {
         fun `should return list of studies`() {
             // given
             val studies = createStudies(3)
-            every { studyRepository.findAllPastDueStudiesBy(1L, now, any()) } returns PageImpl(studies)
+            every { studyRepository.findAllPastDueStudiesBy(1L, now, emptyList(), any()) } returns PageImpl(studies)
 
             // when
-            val sut = studyService.getStudiesPastDue(1L, now, 3)
+            val sut = studyService.getStudiesPastDue(1L, now, emptyList(), 3)
 
             // then
             assertEquals(3, sut.size)
@@ -345,7 +345,7 @@ class StudyServiceTest {
             val dailyStudySet = createDailyStudySet(1L, now, studies.map { it.id })
             every { studyRepository.findAllByIds(dailyStudySet.studyIds) } returns studies
             val pastDueStudies = createStudies(1)
-            every { studyRepository.findAllPastDueStudiesBy(any(), any(), any()) } returns PageImpl(pastDueStudies)
+            every { studyRepository.findAllPastDueStudiesBy(any(), any(), any(), any()) } returns PageImpl(pastDueStudies)
 
             // when
             val sut = studyService.getStudiesByDailyStudySet(dailyStudySet)

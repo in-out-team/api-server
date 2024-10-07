@@ -197,6 +197,7 @@ class StudyRepositoryTest(
         }
     }
 
+    // TODO: write test case
     @Nested
     inner class FindAllPastDueStudiesBy {
         @Test
@@ -211,7 +212,7 @@ class StudyRepositoryTest(
 
             // when
             val pageable = PageRequest.of(0, 10)
-            val sut = studyRepository.findAllPastDueStudiesBy(userId, due, pageable)
+            val sut = studyRepository.findAllPastDueStudiesBy(userId, due, emptyList(), pageable)
 
             // then
             assertEquals(10, sut.totalElements)
@@ -230,9 +231,9 @@ class StudyRepositoryTest(
             // when
             val due = Instant.now()
             val pageable1 = PageRequest.of(0, 6)
-            val sut1 = studyRepository.findAllPastDueStudiesBy(userId, due, pageable1)
+            val sut1 = studyRepository.findAllPastDueStudiesBy(userId, due, emptyList(), pageable1)
             val pageable2 = PageRequest.of(1, 6)
-            val sut2 = studyRepository.findAllPastDueStudiesBy(userId, due, pageable2)
+            val sut2 = studyRepository.findAllPastDueStudiesBy(userId, due, emptyList(), pageable2)
 
             // then
             assertEquals(10, sut1.totalElements)

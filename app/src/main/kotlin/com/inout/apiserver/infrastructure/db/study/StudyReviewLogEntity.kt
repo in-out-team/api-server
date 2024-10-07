@@ -39,7 +39,7 @@ data class StudyReviewLogEntity(
     }
 
     companion object {
-        fun of(studyReviewLog: StudyReviewLog): StudyReviewLogEntity {
+        fun fromDomain(studyReviewLog: StudyReviewLog): StudyReviewLogEntity {
             return StudyReviewLogEntity(
                 rating = studyReviewLog.rating,
                 state = studyReviewLog.state,
@@ -51,7 +51,7 @@ data class StudyReviewLogEntity(
                 scheduledDays = studyReviewLog.scheduledDays,
                 review = studyReviewLog.review,
             ).apply {
-                id = studyReviewLog.id
+                id = if (studyReviewLog.id <= 0) null else studyReviewLog.id
                 // TODO: check if this makes any unexpected changes on createdAt/updatedAt
             }
         }

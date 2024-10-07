@@ -14,6 +14,8 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.DynamicInsert
+import org.hibernate.annotations.DynamicUpdate
 import java.time.Instant
 
 @Entity
@@ -23,6 +25,8 @@ import java.time.Instant
         UniqueConstraint(columnNames = ["user_id", "word_definition_id"]),
     ],
 )
+@DynamicUpdate
+@DynamicInsert
 data class StudyEntity(
     val userId: Long,
     val wordDefinitionId: Long,
@@ -78,6 +82,27 @@ data class StudyEntity(
                 lastReview = fsrsCard.lastReview,
                 reviewLogs = emptyList(),
             )
+        }
+
+        fun fromDomain(study: Study): StudyEntity {
+            return StudyEntity(
+                userId = study.userId,
+                wordDefinitionId = study.wordDefinitionId,
+                state = study.state,
+                due = study.due,
+                stability = study.stability,
+                difficulty = study.difficulty,
+                elapsedDays = study.elapsedDays,
+                scheduledDays = study.scheduledDays,
+                reps = study.reps,
+                lapses = study.lapses,
+                lastReview = study.lastReview,
+                reviewLogs = study.reviewLogs.map { StudyReviewLogEntity.fromDomain(it) },
+            ).apply {
+                id = if (study.id <= 0) null else study.id
+                createdAt = study.createdAt
+                updatedAt = study.updatedAt
+            }
         }
     }
 }

@@ -18,4 +18,8 @@ class DailyStudySetRepository(
     ): DailyStudySet? {
         return dailyStudySetJpaRepository.findByUserIdAndDate(userId, date)?.toDomain()
     }
+
+    fun findById(id: Long): DailyStudySet? {
+        return dailyStudySetJpaRepository.findById(id).map { it.toDomain() }.orElse(null)
+    }
 }

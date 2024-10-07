@@ -19,5 +19,14 @@ enum class FsrsCardRating(val value: Int) {
                 Rating.Good -> GOOD
                 Rating.Easy -> EASY
             }
+
+        fun toFsrsRating(rating: FsrsCardRating): Rating =
+            when (rating) {
+                MANUAL -> Rating.Manual
+                AGAIN -> Rating.Again
+                HARD -> Rating.Hard
+                GOOD -> Rating.Good
+                EASY -> Rating.Easy
+            }
     }
 }

@@ -17,5 +17,13 @@ enum class FsrsCardState(val value: Int) {
                 State.Review -> REVIEW
                 State.Relearning -> RELEARNING
             }
+
+        fun toFsrsState(fsrsCardState: FsrsCardState): State =
+            when (fsrsCardState) {
+                NEW -> State.New
+                LEARNING -> State.Learning
+                REVIEW -> State.Review
+                RELEARNING -> State.Relearning
+            }
     }
 }

@@ -21,4 +21,11 @@ interface StudyJpaRepository : JpaRepository<StudyEntity, Long> {
         due: Instant,
         pageable: Pageable,
     ): Page<StudyEntity>
+
+    fun findAllByUserIdAndDueLessThanAndIdNotInOrderByDue(
+        userId: Long,
+        due: Instant,
+        excludeIds: List<Long>,
+        pageable: Pageable,
+    ): Page<StudyEntity>
 }

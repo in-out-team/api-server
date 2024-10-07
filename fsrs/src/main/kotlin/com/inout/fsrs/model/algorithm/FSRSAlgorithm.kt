@@ -5,6 +5,7 @@ import com.inout.fsrs.model.FSRSParameters
 import com.inout.fsrs.model.enums.Grade
 import com.inout.fsrs.schedule.SchedulingCard
 import java.util.Random
+import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -51,6 +52,8 @@ open class FSRSAlgorithm(params: FSRSParameters) {
         lastStability: Double,
         retrievability: Double,
     ) {
+        val nextForgetStability = nextForgetStability(lastDifficulty, lastStability, retrievability)
+        val nextRecallStability = nextRecallStability(lastDifficulty, lastStability, retrievability, Grade.Again)
         schedulingCard.again.difficulty = nextDifficulty(lastDifficulty, Grade.Again)
         schedulingCard.again.stability = nextForgetStability(lastDifficulty, lastStability, retrievability)
         schedulingCard.hard.difficulty = nextDifficulty(lastDifficulty, Grade.Hard)
@@ -66,9 +69,11 @@ open class FSRSAlgorithm(params: FSRSParameters) {
     }
 
     private fun initDifficulty(grade: Grade): Double {
-        return minOf(
-            maxOf(param.weights[4] - (grade.value - 3) * param.weights[5], 1.0),
-            10.0,
+        return abs(
+            minOf(
+                maxOf(param.weights[4] - (grade.value - 3) * param.weights[5], 1.0),
+                10.0,
+            ),
         )
     }
 
@@ -77,7 +82,7 @@ open class FSRSAlgorithm(params: FSRSParameters) {
         grade: Grade,
     ): Double {
         val newDifficulty = lastDifficulty - param.weights[6] * (grade.value - 3)
-        val meanReversion = param.weights[7] * param.weights[4] + (1 - param.weights[7]) * newDifficulty
+        val meanReversion = +(param.weights[7] * param.weights[4] + (1 - param.weights[7]) * newDifficulty)
 
         return minOf(maxOf(meanReversion, 1.0), 10.0)
     }
@@ -87,10 +92,12 @@ open class FSRSAlgorithm(params: FSRSParameters) {
         lastStability: Double,
         retrievability: Double,
     ): Double {
-        return param.weights[11] *
-            (lastDifficulty.pow(-param.weights[12])) *
-            ((lastStability + 1).pow(param.weights[13]) - 1) *
-            exp((1 - retrievability) * param.weights[14])
+        return abs(
+            param.weights[11] *
+                (lastDifficulty.pow(-param.weights[12])) *
+                ((lastStability + 1).pow(param.weights[13]) - 1) *
+                exp((1 - retrievability) * param.weights[14]),
+        )
     }
 
     private fun nextRecallStability(
@@ -101,13 +108,15 @@ open class FSRSAlgorithm(params: FSRSParameters) {
     ): Double {
         val hardPenalty = if (grade == Grade.Hard) param.weights[15] else 1.0
         val easyBound = if (grade == Grade.Easy) param.weights[16] else 1.0
-        return lastStability * (
-            1 +
-                exp(param.weights[8]) *
-                (11 - lastDifficulty) *
-                (lastStability.pow(-param.weights[9])) *
-                ((exp((1 - retrievability) * param.weights[10])) - 1) *
-                hardPenalty * easyBound
+        return abs(
+            lastStability * (
+                1 +
+                    exp(param.weights[8]) *
+                    (11 - lastDifficulty) *
+                    (lastStability.pow(-param.weights[9])) *
+                    ((exp((1 - retrievability) * param.weights[10])) - 1) *
+                    hardPenalty * easyBound
+            ),
         )
     }
 
@@ -136,6 +145,6 @@ open class FSRSAlgorithm(params: FSRSParameters) {
         elapsedDays: Int,
         stability: Double,
     ): Double {
-        return (1 + (FACTOR * elapsedDays) / stability).pow(DECAY)
+        return abs(1 + (FACTOR * elapsedDays) / stability).pow(DECAY)
     }
 }
