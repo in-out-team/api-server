@@ -197,7 +197,6 @@ class StudyRepositoryTest(
         }
     }
 
-    // TODO: write test case
     @Nested
     inner class FindAllPastDueStudiesBy {
         @Test
@@ -245,6 +244,28 @@ class StudyRepositoryTest(
             assertEquals(4, sut2.numberOfElements)
             assertEquals(4, sut2.content.size)
             assertEquals(false, sut2.hasNext())
+        }
+
+        @Test
+        fun `should exclude studies of excludeIds`() {
+            // given
+            val userId = 1L
+            val studies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
+            val savedStudies = studyJpaRepository.saveAll(studies)
+            val due = Instant.now()
+            val excludeIds = savedStudies.shuffled().take(5).map { it.id!! }
+
+            // when
+            val pageable = PageRequest.of(0, 10)
+            val sut = studyRepository.findAllPastDueStudiesBy(userId, due, excludeIds, pageable)
+
+            // then
+            assertEquals(5, sut.totalElements)
+            assertEquals(5, sut.numberOfElements)
+            assertEquals(5, sut.content.size)
+            sut.content.forEach { study ->
+                assertTrue(excludeIds.contains(study.id).not())
+            }
         }
     }
 }

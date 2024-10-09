@@ -1,12 +1,18 @@
 package com.inout.apiserver.domain.study
 
+import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
+import com.inout.apiserver.infrastructure.db.study.StudyEntity
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.fsrs.FSRS
 import com.inout.fsrs.model.Card
+import com.inout.fsrs.model.FSRSParameters
+import com.inout.fsrs.model.enums.Grade
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -353,6 +359,46 @@ class StudyServiceTest {
             // then
             assertEquals(3, sut.size)
             assertEquals(studies + pastDueStudies, sut)
+        }
+    }
+
+    @Nested
+    inner class RateStudy {
+        @Test
+        fun `should return rated study`() {
+            // given
+            val study = createStudies(1).first()
+            val rating = FsrsCardRating.EASY
+
+            val fsrsParam = FSRSParameters()
+            val fsrs = FSRS(fsrsParam)
+            val fsrsCard = study.toFsrsCard()
+            val recordLog = fsrs.repeat(fsrsCard, study.due)
+            val newRecordLogItem =
+                checkNotNull(recordLog.logs[Grade.fromRating(FsrsCardRating.toFsrsRating(rating))])
+            val updatedFsrsCard = newRecordLogItem.card
+            val newFsrsReviewLog = newRecordLogItem.log
+            val ratedStudy =
+                study.copy(
+                    state = FsrsCardState.of(updatedFsrsCard.state),
+                    due = updatedFsrsCard.due,
+                    stability = updatedFsrsCard.stability,
+                    difficulty = updatedFsrsCard.difficulty,
+                    elapsedDays = updatedFsrsCard.elapsedDays,
+                    scheduledDays = updatedFsrsCard.scheduledDays,
+                    reps = updatedFsrsCard.reps,
+                    lapses = updatedFsrsCard.lapses,
+                    lastReview = updatedFsrsCard.lastReview,
+                    reviewLogs = study.reviewLogs + StudyReviewLog.newFrom(newFsrsReviewLog),
+                )
+            every { studyRepository.save(StudyEntity.fromDomain(ratedStudy)) } returns ratedStudy
+
+            // when
+            val sut = studyService.rateStudy(study, rating)
+
+            // then
+            assertEquals(ratedStudy, sut)
+            verify(exactly = 1) { studyRepository.save(StudyEntity.fromDomain(ratedStudy)) }
         }
     }
 }

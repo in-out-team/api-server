@@ -8,7 +8,6 @@ import com.inout.apiserver.error.NotFoundException
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
-// TODO: write test case
 @Component
 @Transactional
 class RateStudyWordApplication(

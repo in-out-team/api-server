@@ -86,7 +86,6 @@ class StudyService(
         return studyRepository.save(StudyEntity.fromCreateObject(studyCreateObject))
     }
 
-    // TODO: write test case
     fun rateStudy(
         study: Study,
         rating: FsrsCardRating,
@@ -128,11 +127,14 @@ class StudyService(
         return dailyStudySetRepository.findById(id)
     }
 
-    // TODO: write test case
     fun addStudyToDailyStudySet(
         dailyStudySet: DailyStudySet,
         study: Study,
     ): DailyStudySet {
+        if (dailyStudySet.studyIds.contains(study.id)) {
+            throw ConflictException(message = "Study already exists in daily study set", code = "STUDY_7")
+        }
+
         val updatedStudyIds = (dailyStudySet.studyIds + study.id).toSet().toList()
         return dailyStudySetRepository.save(DailyStudySetEntity.fromDomain(dailyStudySet.copy(studyIds = updatedStudyIds)))
     }

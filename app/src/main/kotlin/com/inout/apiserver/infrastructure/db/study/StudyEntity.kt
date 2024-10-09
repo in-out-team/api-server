@@ -10,6 +10,7 @@ import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
@@ -40,7 +41,19 @@ data class StudyEntity(
     val reps: Int,
     val lapses: Int,
     val lastReview: Instant?,
-    @OneToMany(cascade = [CascadeType.ALL])
+    /**
+     * FIXME:
+     * - using eager fetch is temporary solution for now to solve the below issue:
+     * ```
+     * org.springframework.orm.jpa.JpaSystemException: failed to lazily initialize a collection of role:
+     * com.inout.apiserver.infrastructure.db.study.StudyEntity.reviewLogs: could not initialize proxy - no Session
+     * ```
+     * check sources:
+     * - https://stackoverflow.com/questions/11746499/how-to-solve-the-failed-to-lazily-initialize-a-collection-of-role-hibernate-ex
+     * -----------------------
+     * in here, toDomain() triggers reviewLogs.map { it.toDomain() } which is a lazy loading
+     */
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "study_id")
     val reviewLogs: List<StudyReviewLogEntity>,
 ) : BaseEntity() {

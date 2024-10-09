@@ -52,8 +52,6 @@ open class FSRSAlgorithm(params: FSRSParameters) {
         lastStability: Double,
         retrievability: Double,
     ) {
-        val nextForgetStability = nextForgetStability(lastDifficulty, lastStability, retrievability)
-        val nextRecallStability = nextRecallStability(lastDifficulty, lastStability, retrievability, Grade.Again)
         schedulingCard.again.difficulty = nextDifficulty(lastDifficulty, Grade.Again)
         schedulingCard.again.stability = nextForgetStability(lastDifficulty, lastStability, retrievability)
         schedulingCard.hard.difficulty = nextDifficulty(lastDifficulty, Grade.Hard)
@@ -81,8 +79,8 @@ open class FSRSAlgorithm(params: FSRSParameters) {
         lastDifficulty: Double,
         grade: Grade,
     ): Double {
-        val newDifficulty = lastDifficulty - param.weights[6] * (grade.value - 3)
-        val meanReversion = +(param.weights[7] * param.weights[4] + (1 - param.weights[7]) * newDifficulty)
+        val newDifficulty = lastDifficulty - (param.weights[6] * (grade.value - 3))
+        val meanReversion = abs(param.weights[7] * param.weights[4] + (1 - param.weights[7]) * newDifficulty)
 
         return minOf(maxOf(meanReversion, 1.0), 10.0)
     }
