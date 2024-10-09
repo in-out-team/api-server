@@ -43,5 +43,15 @@ data class DailyStudySetEntity(
                 date = dailyStudySetCreateObject.date,
             )
         }
+
+        fun fromDomain(dailyStudySet: DailyStudySet): DailyStudySetEntity {
+            return DailyStudySetEntity(
+                userId = dailyStudySet.userId,
+                studyIds = dailyStudySet.studyIds,
+                date = dailyStudySet.date,
+            ).apply {
+                id = if (dailyStudySet.id <= 0) null else dailyStudySet.id
+            }
+        }
     }
 }

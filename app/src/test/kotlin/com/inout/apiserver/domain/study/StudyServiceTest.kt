@@ -1,12 +1,18 @@
 package com.inout.apiserver.domain.study
 
+import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
+import com.inout.apiserver.infrastructure.db.study.StudyEntity
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.fsrs.FSRS
 import com.inout.fsrs.model.Card
+import com.inout.fsrs.model.FSRSParameters
+import com.inout.fsrs.model.enums.Grade
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -196,7 +202,7 @@ class StudyServiceTest {
         fun `should return empty list when count is 0 or less`() {
             listOf(0, -1).forEach { count ->
                 // when
-                val sut = studyService.getStudiesPastDue(1L, now, count)
+                val sut = studyService.getStudiesPastDue(1L, now, emptyList(), count)
 
                 // then
                 assertTrue(sut.isEmpty())
@@ -207,10 +213,10 @@ class StudyServiceTest {
         fun `should return list of studies`() {
             // given
             val studies = createStudies(3)
-            every { studyRepository.findAllPastDueStudiesBy(1L, now, any()) } returns PageImpl(studies)
+            every { studyRepository.findAllPastDueStudiesBy(1L, now, emptyList(), any()) } returns PageImpl(studies)
 
             // when
-            val sut = studyService.getStudiesPastDue(1L, now, 3)
+            val sut = studyService.getStudiesPastDue(1L, now, emptyList(), 3)
 
             // then
             assertEquals(3, sut.size)
@@ -317,6 +323,82 @@ class StudyServiceTest {
 
             // then
             assertEquals(dailyStudySet, sut)
+        }
+    }
+
+    @Nested
+    inner class GetStudiesByDailyStudySet {
+        @Test
+        fun `should return daily study set studies when date is before today`() {
+            // given
+            val studies = createStudies(2)
+            val dailyStudySet =
+                createDailyStudySet(1L, now, studies.map { it.id }).copy(date = LocalDate.now().minusDays(1))
+            every { studyRepository.findAllByIds(dailyStudySet.studyIds) } returns studies
+
+            // when
+            val sut = studyService.getStudiesByDailyStudySet(dailyStudySet)
+
+            // then
+            assertEquals(2, sut.size)
+            assertEquals(studies, sut)
+        }
+
+        @Test
+        fun `should return daily study set studies and past due studies when date is today`() {
+            // given
+            val studies = createStudies(2)
+            val dailyStudySet = createDailyStudySet(1L, now, studies.map { it.id })
+            every { studyRepository.findAllByIds(dailyStudySet.studyIds) } returns studies
+            val pastDueStudies = createStudies(1)
+            every { studyRepository.findAllPastDueStudiesBy(any(), any(), any(), any()) } returns PageImpl(pastDueStudies)
+
+            // when
+            val sut = studyService.getStudiesByDailyStudySet(dailyStudySet)
+
+            // then
+            assertEquals(3, sut.size)
+            assertEquals(studies + pastDueStudies, sut)
+        }
+    }
+
+    @Nested
+    inner class RateStudy {
+        @Test
+        fun `should return rated study`() {
+            // given
+            val study = createStudies(1).first()
+            val rating = FsrsCardRating.EASY
+
+            val fsrsParam = FSRSParameters()
+            val fsrs = FSRS(fsrsParam)
+            val fsrsCard = study.toFsrsCard()
+            val recordLog = fsrs.repeat(fsrsCard, study.due)
+            val newRecordLogItem =
+                checkNotNull(recordLog.logs[Grade.fromRating(FsrsCardRating.toFsrsRating(rating))])
+            val updatedFsrsCard = newRecordLogItem.card
+            val newFsrsReviewLog = newRecordLogItem.log
+            val ratedStudy =
+                study.copy(
+                    state = FsrsCardState.of(updatedFsrsCard.state),
+                    due = updatedFsrsCard.due,
+                    stability = updatedFsrsCard.stability,
+                    difficulty = updatedFsrsCard.difficulty,
+                    elapsedDays = updatedFsrsCard.elapsedDays,
+                    scheduledDays = updatedFsrsCard.scheduledDays,
+                    reps = updatedFsrsCard.reps,
+                    lapses = updatedFsrsCard.lapses,
+                    lastReview = updatedFsrsCard.lastReview,
+                    reviewLogs = study.reviewLogs + StudyReviewLog.newFrom(newFsrsReviewLog),
+                )
+            every { studyRepository.save(StudyEntity.fromDomain(ratedStudy)) } returns ratedStudy
+
+            // when
+            val sut = studyService.rateStudy(study, rating)
+
+            // then
+            assertEquals(ratedStudy, sut)
+            verify(exactly = 1) { studyRepository.save(StudyEntity.fromDomain(ratedStudy)) }
         }
     }
 }

@@ -90,7 +90,7 @@ class WordEntityTest {
             )
 
         // when
-        val wordEntity = WordEntity.of(word)
+        val wordEntity = WordEntity.fromDomain(word)
 
         // then
         assertTrue(wordEntity is WordEntity)

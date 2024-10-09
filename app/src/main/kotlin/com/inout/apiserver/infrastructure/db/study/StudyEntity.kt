@@ -10,10 +10,13 @@ import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
+import org.hibernate.annotations.DynamicInsert
+import org.hibernate.annotations.DynamicUpdate
 import java.time.Instant
 
 @Entity
@@ -23,6 +26,8 @@ import java.time.Instant
         UniqueConstraint(columnNames = ["user_id", "word_definition_id"]),
     ],
 )
+@DynamicUpdate
+@DynamicInsert
 data class StudyEntity(
     val userId: Long,
     val wordDefinitionId: Long,
@@ -36,7 +41,19 @@ data class StudyEntity(
     val reps: Int,
     val lapses: Int,
     val lastReview: Instant?,
-    @OneToMany(cascade = [CascadeType.ALL])
+    /**
+     * FIXME:
+     * - using eager fetch is temporary solution for now to solve the below issue:
+     * ```
+     * org.springframework.orm.jpa.JpaSystemException: failed to lazily initialize a collection of role:
+     * com.inout.apiserver.infrastructure.db.study.StudyEntity.reviewLogs: could not initialize proxy - no Session
+     * ```
+     * check sources:
+     * - https://stackoverflow.com/questions/11746499/how-to-solve-the-failed-to-lazily-initialize-a-collection-of-role-hibernate-ex
+     * -----------------------
+     * in here, toDomain() triggers reviewLogs.map { it.toDomain() } which is a lazy loading
+     */
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "study_id")
     val reviewLogs: List<StudyReviewLogEntity>,
 ) : BaseEntity() {
@@ -78,6 +95,27 @@ data class StudyEntity(
                 lastReview = fsrsCard.lastReview,
                 reviewLogs = emptyList(),
             )
+        }
+
+        fun fromDomain(study: Study): StudyEntity {
+            return StudyEntity(
+                userId = study.userId,
+                wordDefinitionId = study.wordDefinitionId,
+                state = study.state,
+                due = study.due,
+                stability = study.stability,
+                difficulty = study.difficulty,
+                elapsedDays = study.elapsedDays,
+                scheduledDays = study.scheduledDays,
+                reps = study.reps,
+                lapses = study.lapses,
+                lastReview = study.lastReview,
+                reviewLogs = study.reviewLogs.map { StudyReviewLogEntity.fromDomain(it) },
+            ).apply {
+                id = if (study.id <= 0) null else study.id
+                createdAt = study.createdAt
+                updatedAt = study.updatedAt
+            }
         }
     }
 }

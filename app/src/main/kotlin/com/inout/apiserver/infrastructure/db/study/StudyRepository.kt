@@ -39,9 +39,21 @@ class StudyRepository(
     fun findAllPastDueStudiesBy(
         userId: Long,
         due: Instant,
+        excludeIds: List<Long>,
         pageable: Pageable,
-    ): Page<Study> {
-        return studyJpaRepository.findAllByUserIdAndDueLessThanOrderByDue(userId, due, pageable)
-            .map { it.toDomain() }
-    }
+    ): Page<Study> =
+        if (excludeIds.isEmpty()) {
+            studyJpaRepository.findAllByUserIdAndDueLessThanOrderByDue(
+                userId = userId,
+                due = due,
+                pageable = pageable,
+            )
+        } else {
+            studyJpaRepository.findAllByUserIdAndDueLessThanAndIdNotInOrderByDue(
+                userId = userId,
+                due = due,
+                excludeIds = excludeIds,
+                pageable = pageable,
+            )
+        }.map { it.toDomain() }
 }

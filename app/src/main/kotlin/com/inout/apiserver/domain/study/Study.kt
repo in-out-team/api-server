@@ -1,6 +1,7 @@
 package com.inout.apiserver.domain.study
 
 import com.inout.apiserver.base.enums.FsrsCardState
+import com.inout.fsrs.model.Card
 import java.time.Instant
 
 data class Study(
@@ -20,4 +21,17 @@ data class Study(
     val reviewLogs: List<StudyReviewLog>,
     val createdAt: Instant?,
     val updatedAt: Instant?,
-)
+) {
+    fun toFsrsCard(): Card =
+        Card(
+            state = FsrsCardState.toFsrsState(state),
+            due = due,
+            stability = stability,
+            difficulty = difficulty,
+            elapsedDays = elapsedDays,
+            scheduledDays = scheduledDays,
+            reps = reps,
+            lapses = lapses,
+            lastReview = lastReview,
+        )
+}

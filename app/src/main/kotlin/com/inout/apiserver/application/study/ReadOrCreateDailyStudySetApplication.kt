@@ -10,18 +10,12 @@ import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import org.springframework.stereotype.Component
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.ZoneOffset
 
 @Component
 class ReadOrCreateDailyStudySetApplication(
     private val studyService: StudyService,
     private val wordService: WordService,
 ) {
-    companion object {
-        const val DEFAULT_STUDY_SET_SIZE = 20 // TODO: later fix with user's settings
-    }
-
     data class Result(
         val dailyStudySet: DailyStudySet,
         val studyWords: List<StudyWord>,
@@ -46,22 +40,7 @@ class ReadOrCreateDailyStudySetApplication(
             dailyStudySet = studyService.createDailyStudySet(DailyStudySetCreateObject(userId, date))
         }
 
-        val endOfDay = now.atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC)
-        val due = endOfDay.atZone(ZoneId.systemDefault()).toInstant()
-        val studies =
-            studyService.getStudiesByIds(dailyStudySet.studyIds).let {
-                it +
-                    if (isNotToday) {
-                        emptyList()
-                    } else {
-                        studyService.getStudiesPastDue(
-                            userId,
-                            due,
-                            DEFAULT_STUDY_SET_SIZE - it.size,
-                        )
-                    }
-            }
-
+        val studies = studyService.getStudiesByDailyStudySet(dailyStudySet)
         val wordDefinitionIds = studies.map { it.wordDefinitionId }
         val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
         val wordByDefinitionIdMap = mutableMapOf<Long, Word>()

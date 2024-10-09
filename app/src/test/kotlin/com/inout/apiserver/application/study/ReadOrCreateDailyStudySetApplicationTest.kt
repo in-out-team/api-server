@@ -26,7 +26,8 @@ class ReadOrCreateDailyStudySetApplicationTest {
 
     private fun mockCreateEmptyDailyStudySet() {
         every { studyService.getStudiesByIds(any()) } returns emptyList()
-        every { studyService.getStudiesPastDue(any(), any(), any()) } returns listOf(StudyFactory.createStudy())
+        val study = StudyFactory.createStudy()
+        every { studyService.getStudiesByDailyStudySet(any()) } returns listOf(study)
         every { wordService.getWordsByWordDefinitionIds(any()) } returns listOf(WordFactory.createWord())
         every { studyService.createDailyStudySet(any()) } returns
             DailyStudySet(
@@ -38,6 +39,8 @@ class ReadOrCreateDailyStudySetApplicationTest {
     }
 
     private fun mockStudyServiceGetDailyStudySet() {
+        every { studyService.getStudiesByDailyStudySet(any()) } returns listOf(StudyFactory.createStudy())
+        every { wordService.getWordsByWordDefinitionIds(any()) } returns listOf(WordFactory.createWord())
         every { studyService.getDailyStudySet(any(), any()) } returns
             DailyStudySet(
                 id = 1L,
@@ -45,8 +48,6 @@ class ReadOrCreateDailyStudySetApplicationTest {
                 date = LocalDate.now(),
                 studyIds = listOf(1L),
             )
-        every { studyService.getStudiesByIds(any()) } returns listOf(StudyFactory.createStudy())
-        every { wordService.getWordsByWordDefinitionIds(any()) } returns listOf(WordFactory.createWord())
     }
 
     @Test

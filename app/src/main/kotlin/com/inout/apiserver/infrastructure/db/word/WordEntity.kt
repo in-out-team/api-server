@@ -46,7 +46,7 @@ data class WordEntity(
     }
 
     companion object {
-        fun of(word: Word): WordEntity {
+        fun fromDomain(word: Word): WordEntity {
             return WordEntity(
                 name = word.name,
                 fromLanguage = word.fromLanguage,
