@@ -26,7 +26,7 @@ class RateStudyWordApplication(
     ): Result {
         val dailyStudySet = studyService.getDailyStudySetById(dailyStudySetId)
         if (dailyStudySet == null || dailyStudySet.userId != userId) {
-            throw NotFoundException(message = "Daily study set not found", code = "STUDY_1")
+            throw NotFoundException(message = "Daily study set not found", code = "STUDY_4")
         }
         val studies = studyService.getStudiesByDailyStudySet(dailyStudySet)
         val targetStudy =
