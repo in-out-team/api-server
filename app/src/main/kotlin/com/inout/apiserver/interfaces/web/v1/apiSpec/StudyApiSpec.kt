@@ -149,18 +149,10 @@ interface StudyApiSpec {
                 ],
             ),
             ApiResponse(
-                responseCode = "404.1",
-                description = "학습 단어 평가 실패 (code: STUDY_4) - 존재하지 않는 학습셋",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = HttpException::class),
-                    ),
-                ],
-            ),
-            ApiResponse(
-                responseCode = "404.2",
-                description = "학습 단어 평가 실패 (code: STUDY_2) - 존재하지 않는 학습 단어",
+                responseCode = "404",
+                description =
+                    "학습 단어 평가 실패 (code: STUDY_2) - 존재하지 않는 학습 단어<br/>" +
+                        "학습 단어 평가 실패 (code: STUDY_4) - 존재하지 않는 학습셋",
                 content = [
                     Content(
                         mediaType = "application/json",
