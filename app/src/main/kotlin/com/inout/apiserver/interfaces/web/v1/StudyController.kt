@@ -62,7 +62,7 @@ class StudyController(
     ): ResponseEntity<DailyStudySetResponse> {
         val dailyStudySetResult = readOrCreateDailyStudySetApplication.run(user.id, date)
         return ResponseEntity(
-            DailyStudySetResponse.of(dailyStudySetResult.dailyStudySet.date, dailyStudySetResult.studyWords),
+            DailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
             HttpStatus.OK,
         )
     }
