@@ -4,6 +4,7 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import org.springframework.data.domain.Page
@@ -13,12 +14,13 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class WordService(
-    private val wordRepository: WordRepository
+    private val wordRepository: WordRepository,
+    private val sentenceRepository: SentenceRepository,
 ) {
     fun getWordByNameAndFromLanguageAndToLanguage(
         name: String,
         fromLanguage: LanguageType,
-        toLanguage: LanguageType
+        toLanguage: LanguageType,
     ): Word? {
         return wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)
     }
@@ -32,7 +34,7 @@ class WordService(
         getWordByNameAndFromLanguageAndToLanguage(
             name = wordCreateObject.name,
             fromLanguage = wordCreateObject.fromLanguage,
-            toLanguage = wordCreateObject.toLanguage
+            toLanguage = wordCreateObject.toLanguage,
         )?.let {
             throw ConflictException(message = "Word already exists", code = "WORD_1")
         }
@@ -45,7 +47,7 @@ class WordService(
         toLanguage: LanguageType,
         prefix: String,
         lexicalCategory: LexicalCategoryType?,
-        pageable: Pageable
+        pageable: Pageable,
     ): Page<Word> {
         return wordRepository.findWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategory, pageable)
     }
@@ -60,5 +62,9 @@ class WordService(
         val ids = wordDefinitionIds.toSet()
         return wordRepository.findAllByWordDefinitionIds(wordDefinitionIds)
             .map { word -> word.copy(definitions = word.definitions.filter { it.id in ids }) }
+    }
+
+    fun getSentencesByWordDefinitionId(wordDefinitionId: Long): List<Sentence> {
+        return sentenceRepository.findAllByWordDefinitionId(wordDefinitionId)
     }
 }
