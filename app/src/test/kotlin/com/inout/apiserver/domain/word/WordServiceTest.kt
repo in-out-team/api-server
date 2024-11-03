@@ -4,6 +4,7 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -19,7 +20,8 @@ import java.time.Instant
 
 class WordServiceTest {
     private val wordRepository = mockk<WordRepository>()
-    private val wordService = WordService(wordRepository)
+    private val sentenceRepository = mockk<SentenceRepository>()
+    private val wordService = WordService(wordRepository, sentenceRepository)
     private val now = Instant.now()
 
     private fun wordsList() =
