@@ -3,6 +3,7 @@ package com.inout.apiserver.base.service.openai
 import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
+import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
@@ -68,5 +69,18 @@ class OpenAIService(
         val chatMessageContent = response.choices.first().message.messageContent as TextContent
 
         return OpenAIWordDefinitionResponse.fromJson(chatMessageContent.content)
+    }
+
+    fun fetchWordDefinitionSentence(
+        word: String,
+        meaning: String,
+        fromLanguage: String = "English",
+        toLanguage: String = "Korean",
+    ): OpenAIWordDefinitionSentenceResponse {
+        val chatCompletionRequest =
+            openAIRequestProvider.genWordDefinitionSentenceInfoRequest(word, meaning, fromLanguage, toLanguage)
+        val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
+        val chatMessageContent = response.choices.first().message.messageContent as TextContent
+        return OpenAIWordDefinitionSentenceResponse.fromJson(chatMessageContent.content)
     }
 }
