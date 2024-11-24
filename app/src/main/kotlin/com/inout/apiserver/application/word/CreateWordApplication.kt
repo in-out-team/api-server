@@ -17,19 +17,26 @@ class CreateWordApplication(
 ) {
     // TODO: need to accept user
     fun run(request: CreateWordRequest): WordResponse {
-        wordService.getWordByNameAndFromLanguageAndToLanguage(
-            name = request.name,
-            fromLanguage = request.fromLanguage,
-            toLanguage = request.toLanguage,
-        )?.let {
-            throw ConflictException(message = "Word already exists", code = "WORD_1")
-        }
+        wordService
+            .getWordByNameAndFromLanguageAndToLanguage(
+                name = request.name,
+                fromLanguage = request.fromLanguage,
+                toLanguage = request.toLanguage,
+            )?.let {
+                throw ConflictException(message = "Word already exists", code = "WORD_1")
+            }
 
         val openAIWordDefinitionResponse =
             openAIService.fetchWordDefinition(
                 word = request.name,
-                fromLanguage = request.fromLanguage.name.lowercase().replaceFirstChar { it.uppercase() },
-                toLanguage = request.toLanguage.name.lowercase().replaceFirstChar { it.uppercase() },
+                fromLanguage =
+                    request.fromLanguage.name
+                        .lowercase()
+                        .replaceFirstChar { it.uppercase() },
+                toLanguage =
+                    request.toLanguage.name
+                        .lowercase()
+                        .replaceFirstChar { it.uppercase() },
             )
 
         val wordCreateObject =

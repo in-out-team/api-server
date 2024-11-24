@@ -1,5 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1
 
+import com.inout.apiserver.application.word.CreateSentenceApplication
 import com.inout.apiserver.application.word.CreateWordApplication
 import com.inout.apiserver.application.word.ReadSentencesApplication
 import com.inout.apiserver.application.word.ReadWordsApplication
@@ -12,6 +13,9 @@ import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import jakarta.validation.Valid
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
@@ -26,11 +30,17 @@ class WordController(
     private val createWordApplication: CreateWordApplication,
     private val readWordsApplication: ReadWordsApplication,
     private val readSentencesApplication: ReadSentencesApplication,
+    private val createSentenceApplication: CreateSentenceApplication,
 ) : WordApiSpec {
     override fun createWord(
         @RequestBody @Valid request: CreateWordRequest,
     ): ResponseEntity<WordResponse> {
-        return ResponseEntity(createWordApplication.run(request), CREATED)
+        val wordResponse = createWordApplication.run(request)
+        // TODO: send it to some sort of queue implemented later (e.g. Kafka)
+        CoroutineScope(Dispatchers.IO).launch {
+            createSentenceApplication.run(wordResponse.id)
+        }
+        return ResponseEntity(wordResponse, CREATED)
     }
 
     override fun readWordsWithMatchingPrefix(

@@ -63,4 +63,5 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("io.mockk:mockk:1.13.10")
     testImplementation("org.postgresql:postgresql")
+    testImplementation(kotlin("test"))
 }
