@@ -1,7 +1,7 @@
 package com.inout.apiserver.domain.study
 
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.helper.BaseIntegrationTest
+import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.StudyEntity
@@ -12,13 +12,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 
+@InOutSpringBootTest
 class StudyServiceIntgTest(
     // services
     private val studyService: StudyService,
     // repositories
     private val dailyStudySetRepository: DailyStudySetRepository,
     private val studyRepository: StudyRepository,
-) : BaseIntegrationTest() {
+) {
     @Nested
     inner class AddStudyToDailyStudySet {
         @Test

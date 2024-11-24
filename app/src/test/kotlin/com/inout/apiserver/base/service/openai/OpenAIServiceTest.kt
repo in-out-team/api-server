@@ -1,14 +1,15 @@
 package com.inout.apiserver.base.service.openai
 
-import com.inout.apiserver.helper.BaseIntegrationTest
+import com.inout.apiserver.helper.InOutSpringBootTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 @Disabled
+@InOutSpringBootTest
 class OpenAIServiceTest(
     private val openAIService: OpenAIService,
-) : BaseIntegrationTest() {
+) {
     @Test
     fun `fetchWordDefinition - should return OpenAIWordDefinitionResponse`() {
         // Given

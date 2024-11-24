@@ -7,7 +7,7 @@ import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.helper.BaseIntegrationTest
+import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.StudyEntity
@@ -22,6 +22,7 @@ import org.junit.jupiter.api.assertThrows
 import java.time.Instant
 import java.time.LocalDate
 
+@InOutSpringBootTest
 class RateStudyWordApplicationTest(
     // usecase
     private val rateStudyWordApplication: RateStudyWordApplication,
@@ -29,7 +30,7 @@ class RateStudyWordApplicationTest(
     private val dailyStudySetRepository: DailyStudySetRepository,
     private val wordRepository: WordRepository,
     private val studyRepository: StudyRepository,
-) : BaseIntegrationTest() {
+) {
     private fun createDailyStudySet(userId: Long) =
         dailyStudySetRepository.save(
             DailyStudySetEntity.fromCreateObject(
