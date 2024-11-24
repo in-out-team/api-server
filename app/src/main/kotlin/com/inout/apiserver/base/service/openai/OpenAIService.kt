@@ -66,7 +66,10 @@ class OpenAIService(
          *   ]
          * }
          */
-        val chatMessageContent = response.choices.first().message.messageContent as TextContent
+        val chatMessageContent =
+            response.choices
+                .first()
+                .message.messageContent as TextContent
 
         return OpenAIWordDefinitionResponse.fromJson(chatMessageContent.content)
     }
@@ -80,7 +83,10 @@ class OpenAIService(
         val chatCompletionRequest =
             openAIRequestProvider.genWordDefinitionSentenceInfoRequest(word, meaning, fromLanguage, toLanguage)
         val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
-        val chatMessageContent = response.choices.first().message.messageContent as TextContent
+        val chatMessageContent =
+            response.choices
+                .first()
+                .message.messageContent as TextContent
         return OpenAIWordDefinitionSentenceResponse.fromJson(chatMessageContent.content)
     }
 }
