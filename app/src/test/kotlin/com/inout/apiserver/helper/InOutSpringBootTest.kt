@@ -15,4 +15,4 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
         DatabaseCleanupListener::class,
     ],
 )
-abstract class BaseIntegrationTest
+annotation class InOutSpringBootTest

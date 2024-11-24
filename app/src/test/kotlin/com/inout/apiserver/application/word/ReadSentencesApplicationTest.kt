@@ -4,7 +4,7 @@ import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.helper.BaseIntegrationTest
+import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordEntity
@@ -13,13 +13,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
+@InOutSpringBootTest
 class ReadSentencesApplicationTest(
     // services
     private val wordService: WordService,
     // repositories
     private val sentenceRepository: SentenceRepository,
     private val wordRepository: WordRepository,
-) : BaseIntegrationTest() {
+) {
     fun createWord() = wordRepository.save(WordEntity.fromDomain(WordFactory.createWord()))
 
     fun createSentence(wordDefinitionId: Long) =
