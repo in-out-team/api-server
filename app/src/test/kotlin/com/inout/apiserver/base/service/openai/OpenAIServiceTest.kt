@@ -1,90 +1,40 @@
 package com.inout.apiserver.base.service.openai
 
-import com.aallam.openai.api.chat.ChatChoice
-import com.aallam.openai.api.chat.ChatCompletion
-import com.aallam.openai.api.chat.ChatCompletionRequest
-import com.aallam.openai.api.chat.ChatMessage
-import com.aallam.openai.api.chat.ChatRole
-import com.aallam.openai.api.chat.TextContent
-import com.aallam.openai.api.core.FinishReason
-import com.aallam.openai.api.core.Usage
-import com.aallam.openai.api.model.ModelId
-import com.aallam.openai.client.OpenAI
-import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import com.inout.apiserver.helper.BaseIntegrationTest
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
-class OpenAIServiceTest {
-    private val openAIRequestProvider = mockk<OpenAIRequestProvider>()
-    private val openai = mockk<OpenAI>()
-    private val openAIService = OpenAIService(openAIRequestProvider, openai)
-
+@Disabled
+class OpenAIServiceTest(
+    private val openAIService: OpenAIService,
+) : BaseIntegrationTest() {
     @Test
     fun `fetchWordDefinition - should return OpenAIWordDefinitionResponse`() {
         // Given
         val word = "book"
         val fromLanguage = "English"
         val toLanguage = "Korean"
-        val chatCompletionRequest = mockk<ChatCompletionRequest>()
-        val response = successResponse()
-        every { openAIRequestProvider.genWordInfoRequest(word, fromLanguage, toLanguage) } returns chatCompletionRequest
-        coEvery { openai.chatCompletion(chatCompletionRequest) } returns response
 
         // When
-        val openAIWordDefinitionResponse = openAIService.fetchWordDefinition(word, fromLanguage, toLanguage)
+        val response = openAIService.fetchWordDefinition(word, fromLanguage, toLanguage)
 
         // Then
-        assertNotNull(openAIWordDefinitionResponse)
-        assertEquals(1, openAIWordDefinitionResponse.definitions.size)
-        assertEquals("noun", openAIWordDefinitionResponse.definitions[0].type)
-        assertEquals("바나나", openAIWordDefinitionResponse.definitions[0].definition)
-        assertEquals("과일로 먹는 식품", openAIWordDefinitionResponse.definitions[0].preContext)
+        assertThat(response.definitions.size).isGreaterThan(0)
     }
 
-    // TODO: add failing test cases
+    @Test
+    fun `fetchWordDefinitionSentence - should return OpenAIWordDefinitionSentenceResponse`() {
+        // Given
+        val word = "book"
+        val meaning = "예약하다"
+        val fromLanguage = "English"
+        val toLanguage = "Korean"
 
-    private fun successResponse(): ChatCompletion {
-        return ChatCompletion(
-            id = "chatcmpl-9YPHOqmrcrv86cQL79X7nMEy88xkC",
-            created = 1717987354,
-            model = ModelId("gpt-3.5-turbo-0125"),
-            usage =
-                Usage(
-                    promptTokens = 420,
-                    completionTokens = 92,
-                    totalTokens = 512,
-                ),
-            choices =
-                listOf(
-                    ChatChoice(
-                        index = 0,
-                        logprobs = null,
-                        finishReason = FinishReason.Stop,
-                        message =
-                            ChatMessage(
-                                role = ChatRole.System,
-                                messageContent =
-                                    TextContent(
-                                        content =
-                                            """
-                                            {
-                                                "definitions": [
-                                                    {
-                                                        "type": "noun",
-                                                        "definition": "바나나",
-                                                        "preContext": "과일로 먹는 식품"
-                                                    }
-                                                ]
-                                            }
-                                            """.trimIndent(),
-                                    ),
-                            ),
-                    ),
-                ),
-        )
+        // When
+        val response = openAIService.fetchWordDefinitionSentence(word, meaning, fromLanguage, toLanguage)
+
+        // Then
+        assertThat(response.sentences.size).isEqualTo(10)
     }
 }

@@ -65,4 +65,49 @@ class OpenAIRequestProvider {
             responseFormat = chatCompletionResponseFormat,
         )
     }
+
+    fun genWordDefinitionSentenceInfoRequest(
+        word: String,
+        meaning: String,
+        fromLanguage: String = "English",
+        toLanguage: String = "Korean",
+    ): ChatCompletionRequest {
+        val systemDefinition =
+            ChatMessage(
+                role = ChatRole.System,
+                content =
+                    """
+                    You are an English to Korean dictionary which has list of example sentences .
+                    Generate 10 example sentences in English using the given word and it's meaning in Korean.
+                    
+                    Each sentence should:
+                    0. Must include the given word and provide sentence which uses the given meaning
+                     - ex: If given word and meaning is "book" and "책", there must only be sentences using the meaning "책". Sentences using "book" with meaning "예약하다" is strictly prohibited
+                    1. Be unique in context, avoiding repetitive themes
+                    2. Contain approximately 10 words
+                    3. Be grammatically correct
+                    4. Include both the example sentence and its translation
+                    5. Listing plural form (if noun) is allowed.
+                    
+                    Ensure the sentences cover a wide range of situations and uses of the word.
+                    
+                    Response format must be JSON with following key value pairs:
+                    - sentences: list of sentence objects
+                    - sentence object:
+                     - content: example sentence of the given word in English
+                     - translation: sentence in Korean
+                    """.trimIndent(),
+            )
+        val queryMessage =
+            ChatMessage(
+                role = ChatRole.User,
+                content = word,
+            )
+
+        return ChatCompletionRequest(
+            model = chatCompletionModel,
+            messages = listOf(systemDefinition, queryMessage),
+            responseFormat = chatCompletionResponseFormat,
+        )
+    }
 }

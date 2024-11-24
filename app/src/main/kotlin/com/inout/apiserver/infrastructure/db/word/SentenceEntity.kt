@@ -18,30 +18,31 @@ import jakarta.persistence.Table
 data class SentenceEntity(
     val wordDefinitionId: Long,
     val content: String,
+    val translation: String,
 ) : BaseEntity() {
-    fun toDomain(): Sentence {
-        return Sentence(
+    fun toDomain(): Sentence =
+        Sentence(
             id = id ?: throw InOutRequireNotNullException("Sentence id is null", "IORNN_SENTENCE_1"),
             wordDefinitionId = wordDefinitionId,
             content = content,
+            translation = translation,
         )
-    }
 
     companion object {
-        fun of(sentence: Sentence): SentenceEntity {
-            return SentenceEntity(
+        fun of(sentence: Sentence): SentenceEntity =
+            SentenceEntity(
                 wordDefinitionId = sentence.wordDefinitionId,
                 content = sentence.content,
+                translation = sentence.translation,
             ).apply {
                 id = sentence.id
             }
-        }
 
-        fun fromCreateObject(sentenceCreateObject: SentenceCreateObject): SentenceEntity {
-            return SentenceEntity(
+        fun fromCreateObject(sentenceCreateObject: SentenceCreateObject): SentenceEntity =
+            SentenceEntity(
                 wordDefinitionId = sentenceCreateObject.wordDefinitionId,
                 content = sentenceCreateObject.content,
+                translation = sentenceCreateObject.translation,
             )
-        }
     }
 }

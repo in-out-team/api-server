@@ -28,6 +28,7 @@ class ReadSentencesApplicationTest(
                 SentenceCreateObject(
                     wordDefinitionId = wordDefinitionId,
                     content = "sentence content",
+                    translation = "sentence translation",
                 ),
             ),
         )
