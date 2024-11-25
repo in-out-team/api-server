@@ -1,41 +1,50 @@
 package com.inout.apiserver.base.service.openai
 
+import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.ints.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import org.springframework.jdbc.core.JdbcTemplate
 
-@Disabled
 @InOutSpringBootTest
 class OpenAIServiceTest(
     private val openAIService: OpenAIService,
-) {
-    @Test
-    fun `fetchWordDefinition - should return OpenAIWordDefinitionResponse`() {
-        // Given
-        val word = "book"
-        val fromLanguage = "English"
-        val toLanguage = "Korean"
+    // etc
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        beforeEach {
+            jdbcTemplate.cleanUp()
+        }
 
-        // When
-        val response = openAIService.fetchWordDefinition(word, fromLanguage, toLanguage)
+        xdescribe("fetchWordDefinition") {
+            it("should return OpenAIWordDefinitionResponse") {
+                // Given
+                val word = "book"
+                val fromLanguage = "English"
+                val toLanguage = "Korean"
 
-        // Then
-        assertThat(response.definitions.size).isGreaterThan(0)
-    }
+                // When
+                val response = openAIService.fetchWordDefinition(word, fromLanguage, toLanguage)
 
-    @Test
-    fun `fetchWordDefinitionSentence - should return OpenAIWordDefinitionSentenceResponse`() {
-        // Given
-        val word = "book"
-        val meaning = "예약하다"
-        val fromLanguage = "English"
-        val toLanguage = "Korean"
+                // Then
+                response.definitions.size shouldBeGreaterThan 0
+            }
+        }
 
-        // When
-        val response = openAIService.fetchWordDefinitionSentence(word, meaning, fromLanguage, toLanguage)
+        xdescribe("fetchWordDefinitionSentence") {
+            it("should return OpenAIWordDefinitionSentenceResponse") {
+                // Given
+                val word = "book"
+                val meaning = "예약하다"
+                val fromLanguage = "English"
+                val toLanguage = "Korean"
 
-        // Then
-        assertThat(response.sentences.size).isEqualTo(10)
-    }
-}
+                // When
+                val response = openAIService.fetchWordDefinitionSentence(word, meaning, fromLanguage, toLanguage)
+
+                // Then
+                response.sentences.size shouldBe 10
+            }
+        }
+    })

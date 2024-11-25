@@ -12,7 +12,6 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
     listeners = [
         DependencyInjectionTestExecutionListener::class,
         DirtiesContextTestExecutionListener::class,
-        DatabaseCleanupListener::class,
     ],
 )
 annotation class InOutSpringBootTest

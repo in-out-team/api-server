@@ -6,78 +6,91 @@ import com.inout.apiserver.base.service.openai.dto.Sentence
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.helper.BaseIntegrationTest
+import com.inout.apiserver.extension.cleanUp
+import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.anyString
-import org.mockito.Mockito.doReturn
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.jdbc.core.JdbcTemplate
 
+@InOutSpringBootTest
 class CreateSentenceApplicationTest(
     private val createSentenceApplication: CreateSentenceApplication,
     private val wordRepository: WordRepository,
     @SpyBean
     private val openAIService: OpenAIService,
     private val wordService: WordService,
-) : BaseIntegrationTest() {
-    private fun createWord() =
-        wordRepository.save(
-            WordEntity.fromDomain(
-                WordFactory.createWord(),
-            ),
-        )
+    // etc
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        fun createWord() =
+            wordRepository.save(
+                WordEntity.fromDomain(
+                    WordFactory.createWord(),
+                ),
+            )
 
-    @Test
-    fun `should raise error if word is not found`() {
-        // given
-        val wordId = 0L
+        beforeEach {
+            jdbcTemplate.cleanUp()
+        }
 
-        // when
-        val exception =
-            assertThrows<NotFoundException> {
-                createSentenceApplication.run(wordId)
+        describe("CreateSentenceApplication") {
+            context("when word is not found") {
+                it("should raise error") {
+                    // given
+                    val wordId = 0L
+
+                    // when
+                    val exception =
+                        shouldThrow<NotFoundException> {
+                            createSentenceApplication.run(wordId)
+                        }
+
+                    // then
+                    exception.message shouldBe "Word not found"
+                    exception.code shouldBe "WORD_4"
+                }
             }
 
-        // then
-        assertEquals("Word not found", exception.message)
-        assertEquals("WORD_4", exception.code)
-    }
+            context("when word is found") {
+                it("should create sentences for word") {
+                    // given
+                    val word = createWord()
+                    word.definitions.size shouldBe 1
+                    val wordId = word.id
+                    val wordDefinition = word.definitions.first()
 
-    @Test
-    fun `should create sentences for word`() {
-        // given
-        val word = createWord()
-        assertEquals(1, word.definitions.size)
-        val wordId = word.id
-        val wordDefinition = word.definitions.first()
-
-        doReturn(
-            OpenAIWordDefinitionSentenceResponse(
-                sentences =
-                    listOf(
-                        Sentence(
-                            content = "content",
-                            translation = "translation",
+                    doReturn(
+                        OpenAIWordDefinitionSentenceResponse(
+                            sentences =
+                                listOf(
+                                    Sentence(
+                                        content = "content",
+                                        translation = "translation",
+                                    ),
+                                ),
                         ),
-                    ),
-            ),
-        ).`when`(openAIService).fetchWordDefinitionSentence(
-            anyString(),
-            anyString(),
-            anyString(),
-            anyString(),
-        )
+                    ).`when`(openAIService).fetchWordDefinitionSentence(
+                        any(),
+                        any(),
+                        any(),
+                        any(),
+                    )
 
-        // when
-        createSentenceApplication.run(wordId)
+                    // when
+                    createSentenceApplication.run(wordId)
 
-        // then
-        val sentences = wordService.getSentencesByWordDefinitionId(word.definitions.first().id)
-        assertEquals(1, sentences.size)
-        assertEquals("content", sentences.first().content)
-        assertEquals("translation", sentences.first().translation)
-    }
-}
+                    // then
+                    val sentences = wordService.getSentencesByWordDefinitionId(wordDefinition.id)
+                    sentences.size shouldBe 1
+                    sentences.first().content shouldBe "content"
+                    sentences.first().translation shouldBe "translation"
+                }
+            }
+        }
+    })

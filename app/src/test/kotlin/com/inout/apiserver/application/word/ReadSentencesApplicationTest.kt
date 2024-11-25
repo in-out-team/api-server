@@ -4,14 +4,16 @@ import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
+import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class ReadSentencesApplicationTest(
@@ -20,51 +22,59 @@ class ReadSentencesApplicationTest(
     // repositories
     private val sentenceRepository: SentenceRepository,
     private val wordRepository: WordRepository,
-) {
-    fun createWord() = wordRepository.save(WordEntity.fromDomain(WordFactory.createWord()))
+    // etc
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        fun createWord() = wordRepository.save(WordEntity.fromDomain(WordFactory.createWord()))
 
-    fun createSentence(wordDefinitionId: Long) =
-        sentenceRepository.save(
-            SentenceEntity.fromCreateObject(
-                SentenceCreateObject(
-                    wordDefinitionId = wordDefinitionId,
-                    content = "sentence content",
-                    translation = "sentence translation",
+        fun createSentence(wordDefinitionId: Long) =
+            sentenceRepository.save(
+                SentenceEntity.fromCreateObject(
+                    SentenceCreateObject(
+                        wordDefinitionId = wordDefinitionId,
+                        content = "sentence content",
+                        translation = "sentence translation",
+                    ),
                 ),
-            ),
-        )
+            )
 
-    @Test
-    fun `should raise error when sentences not found`() {
-        // given
-        val wordDefinitionId = 1L
+        beforeEach {
+            jdbcTemplate.cleanUp()
+        }
 
-        // when
-        val exception =
-            assertThrows<NotFoundException> {
-                ReadSentencesApplication(wordService).run(wordDefinitionId)
+        describe("when sentences not found") {
+            it("should raise error") {
+                // given
+                val wordDefinitionId = 1L
+
+                // when
+                val exception =
+                    assertThrows<NotFoundException> {
+                        ReadSentencesApplication(wordService).run(wordDefinitionId)
+                    }
+
+                // then
+                exception.message shouldBe "Sentences not found for word definition id: $wordDefinitionId"
+                exception.code shouldBe "WORD_3"
             }
+        }
 
-        // then
-        assertEquals("Sentences not found for word definition id: $wordDefinitionId", exception.message)
-        assertEquals("WORD_3", exception.code)
-    }
+        describe("when sentences found") {
+            it("should return sentences") {
+                // given
+                val word = createWord()
+                val wordDefinitionId = word.definitions.first().id
+                val sentence = createSentence(wordDefinitionId)
 
-    @Test
-    fun `should return sentences`() {
-        // given
-        val word = createWord()
-        val wordDefinitionId = word.definitions.first().id
-        val sentence = createSentence(wordDefinitionId)
+                // when
+                val result = ReadSentencesApplication(wordService).run(wordDefinitionId)
 
-        // when
-        val result = ReadSentencesApplication(wordService).run(wordDefinitionId)
-
-        // then
-        assertEquals(1, result.size)
-        val resultSentence = result.first()
-        assertEquals(sentence.id, resultSentence.id)
-        assertEquals(wordDefinitionId, resultSentence.wordDefinitionId)
-        assertEquals("sentence content", resultSentence.content)
-    }
-}
+                // then
+                result.size shouldBe 1
+                val resultSentence = result.first()
+                sentence.id shouldBe resultSentence.id
+                wordDefinitionId shouldBe resultSentence.wordDefinitionId
+                "sentence content" shouldBe resultSentence.content
+            }
+        }
+    })
