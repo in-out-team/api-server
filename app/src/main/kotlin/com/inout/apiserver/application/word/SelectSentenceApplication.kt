@@ -1,6 +1,7 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.domain.word.UserSentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
@@ -15,7 +16,7 @@ class SelectSentenceApplication(
         wordDefinitionId: Long,
         sentenceId: Long,
         user: User,
-    ) {
+    ): UserSentence {
         val sentence =
             wordService
                 .getWordById(wordId)
@@ -25,13 +26,12 @@ class SelectSentenceApplication(
                     wordService.getSentencesByWordDefinitionId(wordDefinition.id).firstOrNull { it.id == sentenceId }
                 } ?: throw NotFoundException(message = "Sentence Not Found", code = "WORD_5")
 
-        val createdUserSentence =
-            wordService.createUserSentence(
-                UserSentenceCreateObject(
-                    userId = user.id,
-                    wordDefinitionId = wordDefinitionId,
-                    sentenceId = sentence.id,
-                ),
-            )
+        return wordService.createUserSentence(
+            UserSentenceCreateObject(
+                userId = user.id,
+                wordDefinitionId = wordDefinitionId,
+                sentenceId = sentence.id,
+            ),
+        )
     }
 }

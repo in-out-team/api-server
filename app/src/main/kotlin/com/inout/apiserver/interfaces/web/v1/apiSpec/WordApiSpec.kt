@@ -8,6 +8,7 @@ import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
+import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -175,5 +176,5 @@ interface WordApiSpec {
         @PathVariable wordDefinitionId: Long,
         @PathVariable sentenceId: Long,
         @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<List<SentenceResponse>>
+    ): ResponseEntity<UserSentenceResponse>
 }

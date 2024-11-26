@@ -12,6 +12,7 @@ import com.inout.apiserver.interfaces.web.v1.apiSpec.WordApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
+import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import jakarta.validation.Valid
@@ -80,7 +81,8 @@ class WordController(
         wordDefinitionId: Long,
         sentenceId: Long,
         user: User,
-    ): ResponseEntity<List<SentenceResponse>> {
-        TODO()
-    }
+    ) = ResponseEntity(
+        UserSentenceResponse.of(selectSentenceApplication.run(wordId, wordDefinitionId, sentenceId, user)),
+        CREATED,
+    )
 }

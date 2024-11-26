@@ -2,10 +2,21 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceRepository
+import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
+import com.inout.apiserver.infrastructure.db.word.WordEntity
+import com.inout.apiserver.infrastructure.db.word.WordRepository
+import org.springframework.stereotype.Component
 import java.time.Instant
 
-class WordFactory {
+@Component
+class WordFactory(
+    private val wordRepository: WordRepository,
+    private val sentenceRepository: SentenceRepository,
+) {
     companion object {
+        @Deprecated("Use member function createWord instead")
         fun createWord(
             id: Long = 1L,
             name: String = "book",
@@ -34,4 +45,39 @@ class WordFactory {
             )
         }
     }
+
+    fun createWord(
+        name: String = "book",
+        fromLanguage: LanguageType = LanguageType.ENGLISH,
+        toLanguage: LanguageType = LanguageType.KOREAN,
+        wordDefinitions: List<WordDefinitionEntity> =
+            listOf(
+                WordDefinitionEntity(
+                    lexicalCategory = LexicalCategoryType.NOUN,
+                    meaning = "책",
+                    preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                ),
+            ),
+    ): Word =
+        wordRepository.save(
+            WordEntity(
+                name = name,
+                fromLanguage = fromLanguage,
+                toLanguage = toLanguage,
+                definitions = wordDefinitions,
+            ),
+        )
+
+    fun createSentence(
+        wordDefinitionId: Long,
+        content: String = "I read a book",
+        translation: String = "나는 책을 읽었다",
+    ): Sentence =
+        sentenceRepository.save(
+            SentenceEntity(
+                wordDefinitionId = wordDefinitionId,
+                content = content,
+                translation = translation,
+            ),
+        )
 }
