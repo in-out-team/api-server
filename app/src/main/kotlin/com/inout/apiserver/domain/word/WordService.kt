@@ -6,6 +6,8 @@ import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
+import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import org.springframework.data.domain.Page
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional
 class WordService(
     private val wordRepository: WordRepository,
     private val sentenceRepository: SentenceRepository,
+    private val userSentenceRepository: UserSentenceRepository,
 ) {
     fun getWordByNameAndFromLanguageAndToLanguage(
         name: String,
@@ -66,4 +69,16 @@ class WordService(
 
     fun getSentencesByWordDefinitionId(wordDefinitionId: Long): List<Sentence> =
         sentenceRepository.findAllByWordDefinitionId(wordDefinitionId)
+
+    fun createUserSentence(userSentenceCreateObject: UserSentenceCreateObject): UserSentence {
+        userSentenceRepository
+            .findByUserIdAndSentenceId(
+                userId = userSentenceCreateObject.userId,
+                sentenceId = userSentenceCreateObject.sentenceId,
+            )?.let {
+                throw ConflictException(message = "User Sentence already exists", code = "WORD_6")
+            }
+
+        return userSentenceRepository.save(UserSentenceEntity.fromCreateObject(userSentenceCreateObject))
+    }
 }

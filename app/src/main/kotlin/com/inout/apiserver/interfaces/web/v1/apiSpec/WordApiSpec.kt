@@ -2,6 +2,8 @@ package com.inout.apiserver.interfaces.web.v1.apiSpec
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.config.web.RequestUser
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
@@ -17,6 +19,7 @@ import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -164,5 +167,13 @@ interface WordApiSpec {
     fun readSentencesByWordDefinitionId(
         @RequestParam(required = true)
         wordDefinitionId: Long,
+    ): ResponseEntity<List<SentenceResponse>>
+
+    @PostMapping("/{wordId}/word-definitions/{wordDefinitionId}/sentences/{sentenceId}/select")
+    fun selectSentence(
+        @PathVariable wordId: Long,
+        @PathVariable wordDefinitionId: Long,
+        @PathVariable sentenceId: Long,
+        @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<List<SentenceResponse>>
 }

@@ -7,11 +7,10 @@ import org.springframework.stereotype.Repository
 class SentenceRepository(
     private val sentenceJpaRepository: SentenceJpaRepository,
 ) {
-    fun save(sentence: SentenceEntity): Sentence {
-        return sentenceJpaRepository.save(sentence).toDomain()
-    }
+    fun save(sentence: SentenceEntity): Sentence = sentenceJpaRepository.save(sentence).toDomain()
 
-    fun findAllByWordDefinitionId(wordDefinitionId: Long): List<Sentence> {
-        return sentenceJpaRepository.findAllByWordDefinitionId(wordDefinitionId).map { it.toDomain() }
-    }
+    fun findAllByWordDefinitionId(wordDefinitionId: Long): List<Sentence> =
+        sentenceJpaRepository.findAllByWordDefinitionId(wordDefinitionId).map {
+            it.toDomain()
+        }
 }

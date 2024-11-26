@@ -4,8 +4,10 @@ import com.inout.apiserver.application.word.CreateSentenceApplication
 import com.inout.apiserver.application.word.CreateWordApplication
 import com.inout.apiserver.application.word.ReadSentencesApplication
 import com.inout.apiserver.application.word.ReadWordsApplication
+import com.inout.apiserver.application.word.SelectSentenceApplication
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.interfaces.web.v1.apiSpec.WordApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
@@ -31,6 +33,7 @@ class WordController(
     private val readWordsApplication: ReadWordsApplication,
     private val readSentencesApplication: ReadSentencesApplication,
     private val createSentenceApplication: CreateSentenceApplication,
+    private val selectSentenceApplication: SelectSentenceApplication,
 ) : WordApiSpec {
     override fun createWord(
         @RequestBody @Valid request: CreateWordRequest,
@@ -70,5 +73,14 @@ class WordController(
             sentences.map { SentenceResponse.of(it) },
             OK,
         )
+    }
+
+    override fun selectSentence(
+        wordId: Long,
+        wordDefinitionId: Long,
+        sentenceId: Long,
+        user: User,
+    ): ResponseEntity<List<SentenceResponse>> {
+        TODO()
     }
 }
