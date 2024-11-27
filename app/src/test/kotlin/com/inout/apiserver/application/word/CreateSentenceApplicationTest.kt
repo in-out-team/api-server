@@ -35,7 +35,7 @@ class CreateSentenceApplicationTest(
                 ),
             )
 
-        beforeEach {
+        afterEach {
             jdbcTemplate.cleanUp()
         }
 

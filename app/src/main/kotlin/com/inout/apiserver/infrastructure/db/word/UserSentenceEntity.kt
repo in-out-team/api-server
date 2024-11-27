@@ -13,9 +13,12 @@ import jakarta.persistence.Table
     name = "user_sentences",
     indexes = [
         Index(
-            columnList = "user_id, word_definition_id, sentence_id",
-            name = "idx_user_sentences_user_id_word_definition_id_sentence_id",
-            unique = true,
+            columnList = "user_id, word_definition_id",
+            name = "idx_user_sentences_user_id_word_definition_id",
+        ),
+        Index(
+            columnList = "user_id, sentence_id",
+            name = "idx_user_sentences_user_id_sentence_id",
         ),
     ],
 )

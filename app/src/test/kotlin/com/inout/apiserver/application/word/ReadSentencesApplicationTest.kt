@@ -38,7 +38,7 @@ class ReadSentencesApplicationTest(
                 ),
             )
 
-        beforeEach {
+        afterEach {
             jdbcTemplate.cleanUp()
         }
 

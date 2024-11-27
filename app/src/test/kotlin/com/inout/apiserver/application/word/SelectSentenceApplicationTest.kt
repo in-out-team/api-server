@@ -32,52 +32,16 @@ class SelectSentenceApplicationTest(
         }
 
         describe("wrong argument provided") {
-            it("should raise error if word of wordId does not exist") {
-                // given
-                val wordId = 1L
-                val wordDefinitionId = 1L
-                val sentenceId = 1L
-
-                // when
-                val exception =
-                    shouldThrow<NotFoundException> {
-                        selectSentenceApplication.run(wordId, wordDefinitionId, sentenceId, user!!)
-                    }
-
-                // then
-                exception.message shouldBe "Sentence Not Found"
-                exception.code shouldBe "WORD_5"
-            }
-
-            it("should raise error if wordDefinition of wordDefinitionId does not exist in word of wordId") {
+            it("should raise error if sentenceId does not exist") {
                 // given
                 val word = wordFactory.createWord()
-                val wordId = word.id
-                val wordDefinitionId = word.definitions.first().id + 1L
-                val sentenceId = 1L
-
-                // when
-                val exception =
-                    shouldThrow<NotFoundException> {
-                        selectSentenceApplication.run(wordId, wordDefinitionId, sentenceId, user!!)
-                    }
-
-                // then
-                exception.message shouldBe "Sentence Not Found"
-                exception.code shouldBe "WORD_5"
-            }
-
-            it("should raise error if sentence of sentenceId does not exist in wordDefinition of wordDefinitionId") {
-                // given
-                val word = wordFactory.createWord()
-                val wordId = word.id
                 val wordDefinitionId = word.definitions.first().id
                 val sentenceId = wordFactory.createSentence(wordDefinitionId = wordDefinitionId).id + 1L
 
                 // when
                 val exception =
                     shouldThrow<NotFoundException> {
-                        selectSentenceApplication.run(wordId, wordDefinitionId, sentenceId, user!!)
+                        selectSentenceApplication.run(sentenceId, user!!)
                     }
 
                 // then
@@ -90,7 +54,6 @@ class SelectSentenceApplicationTest(
             it("should raise error if user has already selected sentence") {
                 // given
                 val word = wordFactory.createWord()
-                val wordId = word.id
                 val wordDefinitionId = word.definitions.first().id
                 val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                 val sentenceId = sentence.id
@@ -105,7 +68,7 @@ class SelectSentenceApplicationTest(
                 // when
                 val exception =
                     shouldThrow<ConflictException> {
-                        selectSentenceApplication.run(wordId, wordDefinitionId, sentenceId, user!!)
+                        selectSentenceApplication.run(sentenceId, user!!)
                     }
 
                 // then
@@ -118,13 +81,12 @@ class SelectSentenceApplicationTest(
             it("should create UserSentence") {
                 // given
                 val word = wordFactory.createWord()
-                val wordId = word.id
                 val wordDefinitionId = word.definitions.first().id
                 val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                 val sentenceId = sentence.id
 
                 // when
-                val userSentence = selectSentenceApplication.run(wordId, wordDefinitionId, sentenceId, user!!)
+                val userSentence = selectSentenceApplication.run(sentenceId, user!!)
 
                 // then
                 userSentence.userId shouldBe user!!.id

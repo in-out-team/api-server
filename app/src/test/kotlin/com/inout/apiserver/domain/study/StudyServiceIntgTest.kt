@@ -23,7 +23,7 @@ class StudyServiceIntgTest(
     // etc
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
-        beforeEach {
+        afterEach {
             jdbcTemplate.cleanUp()
         }
 

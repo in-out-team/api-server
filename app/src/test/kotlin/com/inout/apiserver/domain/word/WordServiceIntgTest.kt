@@ -15,7 +15,7 @@ class WordServiceIntgTest(
     private val wordService: WordService,
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
-        beforeEach {
+        afterEach {
             jdbcTemplate.cleanUp()
         }
 

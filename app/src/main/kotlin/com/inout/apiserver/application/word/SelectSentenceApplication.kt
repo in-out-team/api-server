@@ -12,24 +12,19 @@ class SelectSentenceApplication(
     private val wordService: WordService,
 ) {
     fun run(
-        wordId: Long,
-        wordDefinitionId: Long,
         sentenceId: Long,
         user: User,
     ): UserSentence {
         val sentence =
-            wordService
-                .getWordById(wordId)
-                ?.let { word ->
-                    word.definitions.firstOrNull { it.id == wordDefinitionId }
-                }?.let { wordDefinition ->
-                    wordService.getSentencesByWordDefinitionId(wordDefinition.id).firstOrNull { it.id == sentenceId }
-                } ?: throw NotFoundException(message = "Sentence Not Found", code = "WORD_5")
+            wordService.getSentenceById(sentenceId) ?: throw NotFoundException(
+                message = "Sentence Not Found",
+                code = "WORD_5",
+            )
 
         return wordService.createUserSentence(
             UserSentenceCreateObject(
                 userId = user.id,
-                wordDefinitionId = wordDefinitionId,
+                wordDefinitionId = sentence.wordDefinitionId,
                 sentenceId = sentence.id,
             ),
         )

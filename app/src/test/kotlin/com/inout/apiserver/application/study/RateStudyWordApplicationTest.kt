@@ -65,7 +65,7 @@ class RateStudyWordApplicationTest(
             ),
         )
 
-        beforeEach {
+        afterEach {
             jdbcTemplate.cleanUp()
         }
 

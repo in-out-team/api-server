@@ -81,4 +81,6 @@ class WordService(
 
         return userSentenceRepository.save(UserSentenceEntity.fromCreateObject(userSentenceCreateObject))
     }
+
+    fun getSentenceById(id: Long): Sentence? = sentenceRepository.findById(id)
 }
