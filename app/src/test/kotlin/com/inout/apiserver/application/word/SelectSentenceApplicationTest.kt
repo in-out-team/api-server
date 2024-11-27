@@ -46,7 +46,7 @@ class SelectSentenceApplicationTest(
 
                 // then
                 exception.message shouldBe "Sentence Not Found"
-                exception.code shouldBe "WORD_5"
+                exception.code shouldBe "SENTENCE_1"
             }
         }
 
@@ -73,7 +73,7 @@ class SelectSentenceApplicationTest(
 
                 // then
                 exception.message shouldBe "User Sentence already exists"
-                exception.code shouldBe "WORD_6"
+                exception.code shouldBe "SENTENCE_2"
             }
         }
 

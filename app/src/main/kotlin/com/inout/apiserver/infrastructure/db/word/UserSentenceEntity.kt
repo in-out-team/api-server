@@ -34,6 +34,17 @@ data class UserSentenceEntity(
                 wordDefinitionId = userSentenceCreateObject.wordDefinitionId,
                 sentenceId = userSentenceCreateObject.sentenceId,
             )
+
+        fun of(userSentence: UserSentence): UserSentenceEntity =
+            UserSentenceEntity(
+                userId = userSentence.userId,
+                wordDefinitionId = userSentence.wordDefinitionId,
+                sentenceId = userSentence.sentenceId,
+            ).apply {
+                id = userSentence.id
+                createdAt = userSentence.createdAt
+                updatedAt = userSentence.updatedAt
+            }
     }
 
     fun toDomain(): UserSentence =
@@ -42,5 +53,7 @@ data class UserSentenceEntity(
             userId = userId,
             wordDefinitionId = wordDefinitionId,
             sentenceId = sentenceId,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
         )
 }

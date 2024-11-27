@@ -18,7 +18,7 @@ class SelectSentenceApplication(
         val sentence =
             wordService.getSentenceById(sentenceId) ?: throw NotFoundException(
                 message = "Sentence Not Found",
-                code = "WORD_5",
+                code = "SENTENCE_1",
             )
 
         return wordService.createUserSentence(
