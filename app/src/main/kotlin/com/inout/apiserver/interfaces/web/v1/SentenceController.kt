@@ -7,6 +7,7 @@ import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
+import com.inout.apiserver.interfaces.web.v1.response.SentencesResponse
 import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -68,11 +69,15 @@ class SentenceController(
     )
     fun readSentencesByWordDefinitionId(
         @RequestParam(required = true) wordDefinitionId: Long,
-    ): ResponseEntity<List<SentenceResponse>> {
-        val sentences = readSentencesApplication.run(wordDefinitionId)
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<SentencesResponse> {
+        val (selectedSentences, notSelectedSentences) = readSentencesApplication.run(wordDefinitionId, user)
 
         return ResponseEntity(
-            sentences.map { SentenceResponse.of(it) },
+            SentencesResponse.of(
+                selectedSentences = selectedSentences,
+                unselectedSentences = notSelectedSentences,
+            ),
             OK,
         )
     }

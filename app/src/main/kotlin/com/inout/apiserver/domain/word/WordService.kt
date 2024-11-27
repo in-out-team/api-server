@@ -89,6 +89,11 @@ class WordService(
         sentenceId: Long,
     ): UserSentence? = userSentenceRepository.findByUserIdAndSentenceId(userId, sentenceId)
 
+    fun getUserSentencesBy(
+        userId: Long,
+        wordDefinitionId: Long,
+    ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionId(userId, wordDefinitionId)
+
     fun deleteUserSentence(userSentence: UserSentence) {
         userSentenceRepository.delete(UserSentenceEntity.of(userSentence))
     }
