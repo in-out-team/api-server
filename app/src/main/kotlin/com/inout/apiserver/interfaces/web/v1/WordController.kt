@@ -2,14 +2,12 @@ package com.inout.apiserver.interfaces.web.v1
 
 import com.inout.apiserver.application.word.CreateSentenceApplication
 import com.inout.apiserver.application.word.CreateWordApplication
-import com.inout.apiserver.application.word.ReadSentencesApplication
 import com.inout.apiserver.application.word.ReadWordsApplication
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.interfaces.web.v1.apiSpec.WordApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
-import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import jakarta.validation.Valid
@@ -29,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController
 class WordController(
     private val createWordApplication: CreateWordApplication,
     private val readWordsApplication: ReadWordsApplication,
-    private val readSentencesApplication: ReadSentencesApplication,
     private val createSentenceApplication: CreateSentenceApplication,
 ) : WordApiSpec {
     override fun createWord(
@@ -59,15 +56,6 @@ class WordController(
                 hasMore = pageable.next().offset < count,
                 count = count,
             ),
-            OK,
-        )
-    }
-
-    override fun readSentencesByWordDefinitionId(wordDefinitionId: Long): ResponseEntity<List<SentenceResponse>> {
-        val sentences = readSentencesApplication.run(wordDefinitionId)
-
-        return ResponseEntity(
-            sentences.map { SentenceResponse.of(it) },
             OK,
         )
     }

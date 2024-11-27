@@ -5,7 +5,6 @@ import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
-import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -125,44 +124,4 @@ interface WordApiSpec {
         @RequestParam(required = false)
         lexicalCategory: LexicalCategoryType?,
     ): ResponseEntity<ResponsePaginationWrapper<WordWithDefinitionsResponse>>
-
-    @GetMapping("/sentences")
-    @Operation(
-        summary = "단어 정의에 해당하는 문장 조회",
-        description = "단어 정의에 해당하는 문장을 조회합니다.",
-        parameters = [
-            Parameter(
-                name = "wordDefinitionId",
-                description = "단어 정의 ID",
-                required = true,
-                schema = Schema(implementation = Long::class),
-            ),
-        ],
-        responses = [
-            ApiResponse(
-                responseCode = "200",
-                description = "단어 정의에 해당하는 문장 조회 성공",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = SentenceResponse::class),
-                    ),
-                ],
-            ),
-            ApiResponse(
-                responseCode = "404",
-                description = "단어 정의에 해당하는 문장이 없음",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = HttpException::class),
-                    ),
-                ],
-            ),
-        ],
-    )
-    fun readSentencesByWordDefinitionId(
-        @RequestParam(required = true)
-        wordDefinitionId: Long,
-    ): ResponseEntity<List<SentenceResponse>>
 }
