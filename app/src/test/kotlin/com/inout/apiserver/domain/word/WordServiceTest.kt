@@ -5,6 +5,7 @@ import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
+import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -21,7 +22,8 @@ import java.time.Instant
 class WordServiceTest {
     private val wordRepository = mockk<WordRepository>()
     private val sentenceRepository = mockk<SentenceRepository>()
-    private val wordService = WordService(wordRepository, sentenceRepository)
+    private val userSentenceRepository = mockk<UserSentenceRepository>()
+    private val wordService = WordService(wordRepository, sentenceRepository, userSentenceRepository)
     private val now = Instant.now()
 
     private fun wordsList() =
@@ -312,7 +314,13 @@ class WordServiceTest {
         fun `should return List of Words`() {
             // Given
             val words = wordsList()
-            val wordDefinitionIds = words.first().definitions.map { it.id } + words.last().definitions.first().id
+            val wordDefinitionIds =
+                words.first().definitions.map { it.id } +
+                    words
+                        .last()
+                        .definitions
+                        .first()
+                        .id
             every { wordRepository.findAllByWordDefinitionIds(wordDefinitionIds) } returns words
 
             // When
@@ -324,7 +332,14 @@ class WordServiceTest {
             assertEquals(words.first().definitions.map { it.id }, firstWord.definitions.map { it.id })
             val lastWord = sut.last()
             assertEquals(1, lastWord.definitions.size)
-            assertEquals(words.last().definitions.first().id, lastWord.definitions.first().id)
+            assertEquals(
+                words
+                    .last()
+                    .definitions
+                    .first()
+                    .id,
+                lastWord.definitions.first().id,
+            )
         }
     }
 }
