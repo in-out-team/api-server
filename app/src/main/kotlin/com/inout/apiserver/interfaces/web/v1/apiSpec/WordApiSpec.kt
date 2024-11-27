@@ -2,13 +2,9 @@ package com.inout.apiserver.interfaces.web.v1.apiSpec
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.config.web.RequestUser
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
-import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
-import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordResponse
 import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -20,7 +16,6 @@ import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
@@ -129,52 +124,4 @@ interface WordApiSpec {
         @RequestParam(required = false)
         lexicalCategory: LexicalCategoryType?,
     ): ResponseEntity<ResponsePaginationWrapper<WordWithDefinitionsResponse>>
-
-    @GetMapping("/sentences")
-    @Operation(
-        summary = "단어 정의에 해당하는 문장 조회",
-        description = "단어 정의에 해당하는 문장을 조회합니다.",
-        parameters = [
-            Parameter(
-                name = "wordDefinitionId",
-                description = "단어 정의 ID",
-                required = true,
-                schema = Schema(implementation = Long::class),
-            ),
-        ],
-        responses = [
-            ApiResponse(
-                responseCode = "200",
-                description = "단어 정의에 해당하는 문장 조회 성공",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = SentenceResponse::class),
-                    ),
-                ],
-            ),
-            ApiResponse(
-                responseCode = "404",
-                description = "단어 정의에 해당하는 문장이 없음",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = HttpException::class),
-                    ),
-                ],
-            ),
-        ],
-    )
-    fun readSentencesByWordDefinitionId(
-        @RequestParam(required = true)
-        wordDefinitionId: Long,
-    ): ResponseEntity<List<SentenceResponse>>
-
-    @PostMapping("/{wordId}/word-definitions/{wordDefinitionId}/sentences/{sentenceId}/select")
-    fun selectSentence(
-        @PathVariable wordId: Long,
-        @PathVariable wordDefinitionId: Long,
-        @PathVariable sentenceId: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<UserSentenceResponse>
 }

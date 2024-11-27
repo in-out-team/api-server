@@ -7,11 +7,10 @@ data class SentenceResponse(
     val content: String,
 ) {
     companion object {
-        fun of(sentence: Sentence): SentenceResponse {
-            return SentenceResponse(
+        fun of(sentence: Sentence): SentenceResponse =
+            SentenceResponse(
                 id = sentence.id,
                 content = sentence.content,
             )
-        }
     }
 }

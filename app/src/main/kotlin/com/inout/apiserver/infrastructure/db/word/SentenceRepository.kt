@@ -13,4 +13,6 @@ class SentenceRepository(
         sentenceJpaRepository.findAllByWordDefinitionId(wordDefinitionId).map {
             it.toDomain()
         }
+
+    fun findById(id: Long): Sentence? = sentenceJpaRepository.findById(id).map { it.toDomain() }.orElse(null)
 }

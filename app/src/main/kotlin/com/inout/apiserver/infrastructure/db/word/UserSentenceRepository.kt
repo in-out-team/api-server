@@ -9,6 +9,8 @@ class UserSentenceRepository(
 ) {
     fun save(userSentence: UserSentenceEntity): UserSentence = userSentenceJpaRepository.save(userSentence).toDomain()
 
+    fun delete(userSentence: UserSentenceEntity) = userSentenceJpaRepository.delete(userSentence)
+
     fun findByUserIdAndWordDefinitionIdAndSentenceId(
         userId: Long,
         wordDefinitionId: Long,

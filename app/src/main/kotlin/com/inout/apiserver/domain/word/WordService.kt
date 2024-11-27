@@ -76,9 +76,25 @@ class WordService(
                 userId = userSentenceCreateObject.userId,
                 sentenceId = userSentenceCreateObject.sentenceId,
             )?.let {
-                throw ConflictException(message = "User Sentence already exists", code = "WORD_6")
+                throw ConflictException(message = "User Sentence already exists", code = "SENTENCE_2")
             }
 
         return userSentenceRepository.save(UserSentenceEntity.fromCreateObject(userSentenceCreateObject))
+    }
+
+    fun getSentenceById(id: Long): Sentence? = sentenceRepository.findById(id)
+
+    fun getUserSentenceBy(
+        userId: Long,
+        sentenceId: Long,
+    ): UserSentence? = userSentenceRepository.findByUserIdAndSentenceId(userId, sentenceId)
+
+    fun getUserSentencesBy(
+        userId: Long,
+        wordDefinitionId: Long,
+    ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionId(userId, wordDefinitionId)
+
+    fun deleteUserSentence(userSentence: UserSentence) {
+        userSentenceRepository.delete(UserSentenceEntity.of(userSentence))
     }
 }

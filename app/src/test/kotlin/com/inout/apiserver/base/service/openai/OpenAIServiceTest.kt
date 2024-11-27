@@ -13,7 +13,7 @@ class OpenAIServiceTest(
     // etc
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
-        beforeEach {
+        afterEach {
             jdbcTemplate.cleanUp()
         }
 

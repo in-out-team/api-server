@@ -13,9 +13,12 @@ import jakarta.persistence.Table
     name = "user_sentences",
     indexes = [
         Index(
-            columnList = "user_id, word_definition_id, sentence_id",
-            name = "idx_user_sentences_user_id_word_definition_id_sentence_id",
-            unique = true,
+            columnList = "user_id, word_definition_id",
+            name = "idx_user_sentences_user_id_word_definition_id",
+        ),
+        Index(
+            columnList = "user_id, sentence_id",
+            name = "idx_user_sentences_user_id_sentence_id",
         ),
     ],
 )
@@ -31,6 +34,17 @@ data class UserSentenceEntity(
                 wordDefinitionId = userSentenceCreateObject.wordDefinitionId,
                 sentenceId = userSentenceCreateObject.sentenceId,
             )
+
+        fun of(userSentence: UserSentence): UserSentenceEntity =
+            UserSentenceEntity(
+                userId = userSentence.userId,
+                wordDefinitionId = userSentence.wordDefinitionId,
+                sentenceId = userSentence.sentenceId,
+            ).apply {
+                id = userSentence.id
+                createdAt = userSentence.createdAt
+                updatedAt = userSentence.updatedAt
+            }
     }
 
     fun toDomain(): UserSentence =
@@ -39,5 +53,7 @@ data class UserSentenceEntity(
             userId = userId,
             wordDefinitionId = wordDefinitionId,
             sentenceId = sentenceId,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
         )
 }
