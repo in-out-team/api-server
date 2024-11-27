@@ -1,7 +1,5 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Sentence
@@ -12,7 +10,6 @@ import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
@@ -33,25 +30,7 @@ class ReadSentencesApplicationTest(
 
         beforeEach {
             user = userFactory.createUser()
-            word =
-                wordFactory.createWord(
-                    name = "book",
-                    fromLanguage = LanguageType.ENGLISH,
-                    toLanguage = LanguageType.KOREAN,
-                    wordDefinitions =
-                        listOf(
-                            WordDefinitionEntity(
-                                lexicalCategory = LexicalCategoryType.NOUN,
-                                meaning = "책",
-                                preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
-                            ),
-                            WordDefinitionEntity(
-                                lexicalCategory = LexicalCategoryType.VERB,
-                                meaning = "예약하다",
-                                preContext = "특정한 날짜나 시간에 미리 자리를 확보하다",
-                            ),
-                        ),
-                )
+            word = wordFactory.createWord()
         }
 
         afterEach {
@@ -79,10 +58,12 @@ class ReadSentencesApplicationTest(
             var sentences: List<Sentence>? = null
 
             beforeEach {
+                val wordDefinition = word!!.definitions.first()
                 sentences =
-                    word!!.definitions.map {
-                        wordFactory.createSentence(it.id, "sentence content", "sentence translation")
-                    }
+                    listOf(
+                        wordFactory.createSentence(wordDefinition.id, "sentence1", "sentence1 translation"),
+                        wordFactory.createSentence(wordDefinition.id, "sentence2", "sentence2 translation"),
+                    )
             }
 
             it("should return sentences") {

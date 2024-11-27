@@ -17,7 +17,7 @@ class ReadSentencesApplication(
         wordDefinitionId: Long,
         user: User,
     ): Pair<List<Sentence>, List<Sentence>> {
-        val sentences = wordService.getSentencesByWordDefinitionId(wordDefinitionId).toSet()
+        val sentences = wordService.getSentencesByWordDefinitionId(wordDefinitionId)
         if (sentences.isEmpty()) {
             throw NotFoundException(
                 message = "Sentences not found for word definition id: $wordDefinitionId",
@@ -26,6 +26,6 @@ class ReadSentencesApplication(
         }
 
         val userSentences = wordService.getUserSentencesBy(user.id, wordDefinitionId)
-        return sentences.partition { sentence -> userSentences.any { it.sentenceId == sentence.id } }
+        return sentences.partition { sentence -> userSentences.any { it.id == sentence.id } }
     }
 }
