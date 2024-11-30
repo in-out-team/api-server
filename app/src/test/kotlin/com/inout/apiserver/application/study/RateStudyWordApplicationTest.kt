@@ -4,17 +4,12 @@ import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.domain.study.DailyStudySetCreateObject
 import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.StudyEntity
-import com.inout.apiserver.infrastructure.db.study.StudyRepository
-import com.inout.apiserver.infrastructure.db.word.WordEntity
-import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.comparables.shouldBeGreaterThan
@@ -31,8 +26,9 @@ class RateStudyWordApplicationTest(
     private val rateStudyWordApplication: RateStudyWordApplication,
     // repositories
     private val dailyStudySetRepository: DailyStudySetRepository,
-    private val wordRepository: WordRepository,
-    private val studyRepository: StudyRepository,
+    // factories
+    private val studyFactory: StudyFactory,
+    private val wordFactory: WordFactory,
     // etc
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
@@ -45,25 +41,6 @@ class RateStudyWordApplicationTest(
                     ),
                 ),
             )
-
-        fun createWord() =
-            wordRepository.save(
-                WordEntity.fromDomain(
-                    WordFactory.createWord(),
-                ),
-            )
-
-        fun createStudy(
-            word: Word,
-            userId: Long,
-        ) = studyRepository.save(
-            StudyEntity.fromDomain(
-                StudyFactory.createStudy(
-                    userId = userId,
-                    wordDefinitionId = word.definitions.first().id,
-                ),
-            ),
-        )
 
         afterEach {
             jdbcTemplate.cleanUp()
@@ -139,8 +116,8 @@ class RateStudyWordApplicationTest(
                 val dailyStudySetId = 1L
                 val rating = FsrsCardRating.EASY
                 createDailyStudySet(userId)
-                val word = createWord()
-                val study = createStudy(word, userId)
+                val word = wordFactory.createWord()
+                val study = studyFactory.createStudy(userId = userId, wordDefinitionId = word.definitions.first().id)
 
                 // when
                 val result = rateStudyWordApplication.run(userId, dailyStudySetId, study.id, rating).studyWord.study
@@ -171,8 +148,8 @@ class RateStudyWordApplicationTest(
                         ),
                     )
                 dailyStudySet.studyIds shouldBe emptyList()
-                val word = createWord()
-                val study = createStudy(word, userId)
+                val word = wordFactory.createWord()
+                val study = studyFactory.createStudy(userId = userId, wordDefinitionId = word.definitions.first().id)
 
                 // when
                 rateStudyWordApplication.run(userId, dailyStudySetId, study.id, rating)
