@@ -13,8 +13,8 @@ enum class LexicalCategoryType {
     ;
 
     companion object {
-        fun of(value: String): LexicalCategoryType {
-            return when (value.lowercase()) {
+        fun of(value: String): LexicalCategoryType =
+            when (value.lowercase()) {
                 "noun" -> NOUN
                 "verb" -> VERB
                 "adjective" -> ADJECTIVE
@@ -25,6 +25,5 @@ enum class LexicalCategoryType {
                 "interjection" -> INTERJECTION
                 else -> UNKNOWN
             }
-        }
     }
 }

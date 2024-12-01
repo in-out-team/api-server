@@ -26,7 +26,8 @@ class OpenAIRequestProvider {
                     response format must be JSON with following key value pairs:
                     - definitions: list of definition objects
                     - definition object:
-                     - type: lexical category (noun, verb, adjective, etc.) in english
+                     - type: lexical category in English
+                       - lexical categories: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection
                      - definition: meaning of the word in $toLanguage
                      - preContext: context which helps user understand the use case of provided definition
                     
