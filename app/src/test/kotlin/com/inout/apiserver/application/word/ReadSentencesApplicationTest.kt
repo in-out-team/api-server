@@ -10,13 +10,18 @@ import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
+import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class ReadSentencesApplicationTest(
+    private val readSentencesApplication: ReadSentencesApplication,
+    // repositories
+    private val userSentenceRepository: UserSentenceRepository,
     // services
     private val wordService: WordService,
     // factories
@@ -66,16 +71,16 @@ class ReadSentencesApplicationTest(
                     )
             }
 
-            it("should return sentences") {
+            it("should choose sentences if no previous selection exists") {
                 // given
                 val wordDefinitionId = word!!.definitions.first().id
+                userSentenceRepository.findAllByUserIdAndWordDefinitionId(user!!.id, wordDefinitionId).size shouldBe 0
 
                 // when
-                val result = ReadSentencesApplication(wordService).run(wordDefinitionId, user!!)
+                val result = readSentencesApplication.run(wordDefinitionId, user!!)
 
                 // then
-                result.first.size shouldBe 0
-                result.second.size shouldBe 2
+                result.first.size shouldBeGreaterThan 0
             }
 
             it("should return selected sentences as first") {
@@ -91,7 +96,7 @@ class ReadSentencesApplicationTest(
                 )
 
                 // when
-                val result = ReadSentencesApplication(wordService).run(wordDefinitionId, user!!)
+                val result = readSentencesApplication.run(wordDefinitionId, user!!)
 
                 // then
                 result.first.size shouldBe 1

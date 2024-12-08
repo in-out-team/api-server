@@ -70,8 +70,27 @@ class CreateSentenceApplicationTest(
                             sentences =
                                 listOf(
                                     Sentence(
-                                        content = "content",
-                                        translation = "translation",
+                                        content = "I read a book",
+                                        translation = "나는 책을 읽었다",
+                                        lexicalCategories =
+                                            listOf(
+                                                Sentence.LexicalCategoryMap(
+                                                    word = "I",
+                                                    lexicalCategory = "pronoun",
+                                                ),
+                                                Sentence.LexicalCategoryMap(
+                                                    word = "read",
+                                                    lexicalCategory = "verb",
+                                                ),
+                                                Sentence.LexicalCategoryMap(
+                                                    word = "a",
+                                                    lexicalCategory = "article",
+                                                ),
+                                                Sentence.LexicalCategoryMap(
+                                                    word = "book",
+                                                    lexicalCategory = "noun",
+                                                ),
+                                            ),
                                     ),
                                 ),
                         ),
@@ -88,8 +107,9 @@ class CreateSentenceApplicationTest(
                     // then
                     val sentences = wordService.getSentencesByWordDefinitionId(wordDefinition.id)
                     sentences.size shouldBe 1
-                    sentences.first().content shouldBe "content"
-                    sentences.first().translation shouldBe "translation"
+                    sentences.first().content shouldBe "I read a book"
+                    sentences.first().translation shouldBe "나는 책을 읽었다"
+                    sentences.first().lexicalCategories.size shouldBe 4
                 }
             }
         }

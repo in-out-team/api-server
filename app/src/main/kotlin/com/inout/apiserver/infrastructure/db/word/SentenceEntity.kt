@@ -1,12 +1,16 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
+import io.hypersistence.utils.hibernate.type.json.JsonType
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Index
 import jakarta.persistence.Table
+import org.hibernate.annotations.Type
 
 @Entity
 @Table(
@@ -19,13 +23,22 @@ data class SentenceEntity(
     val wordDefinitionId: Long,
     val content: String,
     val translation: String,
+    @Type(JsonType::class)
+    @Column(columnDefinition = "jsonb")
+    val lexicalCategories: List<LexicalCategoryInfo>,
 ) : BaseEntity() {
+    data class LexicalCategoryInfo(
+        val word: String,
+        val lexicalCategory: LexicalCategoryType,
+    )
+
     fun toDomain(): Sentence =
         Sentence(
             id = id ?: throw InOutRequireNotNullException("Sentence id is null", "IORNN_SENTENCE_1"),
             wordDefinitionId = wordDefinitionId,
             content = content,
             translation = translation,
+            lexicalCategories = lexicalCategories,
         )
 
     companion object {
@@ -34,6 +47,7 @@ data class SentenceEntity(
                 wordDefinitionId = sentence.wordDefinitionId,
                 content = sentence.content,
                 translation = sentence.translation,
+                lexicalCategories = sentence.lexicalCategories,
             ).apply {
                 id = sentence.id
             }
@@ -43,6 +57,7 @@ data class SentenceEntity(
                 wordDefinitionId = sentenceCreateObject.wordDefinitionId,
                 content = sentenceCreateObject.content,
                 translation = sentenceCreateObject.translation,
+                lexicalCategories = sentenceCreateObject.lexicalCategories,
             )
     }
 }

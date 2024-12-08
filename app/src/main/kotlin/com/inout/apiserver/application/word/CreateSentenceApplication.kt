@@ -1,10 +1,12 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -43,6 +45,13 @@ class CreateSentenceApplication(
                         wordDefinitionId = wordDefinition.id,
                         content = it.content,
                         translation = it.translation,
+                        lexicalCategories =
+                            it.lexicalCategories.map { lexicalCategoryMap ->
+                                SentenceEntity.LexicalCategoryInfo(
+                                    word = lexicalCategoryMap.word,
+                                    lexicalCategory = LexicalCategoryType.of(lexicalCategoryMap.lexicalCategory),
+                                )
+                            },
                     )
                 wordService.createSentence(sentenceCreateObject)
             }

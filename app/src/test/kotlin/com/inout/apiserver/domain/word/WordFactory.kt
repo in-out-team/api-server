@@ -72,12 +72,32 @@ class WordFactory(
         wordDefinitionId: Long,
         content: String = "I read a book",
         translation: String = "나는 책을 읽었다",
+        lexicalCategories: List<SentenceEntity.LexicalCategoryInfo> =
+            listOf(
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "I",
+                    lexicalCategory = LexicalCategoryType.PRONOUN,
+                ),
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "read",
+                    lexicalCategory = LexicalCategoryType.VERB,
+                ),
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "a",
+                    lexicalCategory = LexicalCategoryType.ARTICLE,
+                ),
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "book",
+                    lexicalCategory = LexicalCategoryType.NOUN,
+                ),
+            ),
     ): Sentence =
         sentenceRepository.save(
             SentenceEntity(
                 wordDefinitionId = wordDefinitionId,
                 content = content,
                 translation = translation,
+                lexicalCategories = lexicalCategories,
             ),
         )
 }

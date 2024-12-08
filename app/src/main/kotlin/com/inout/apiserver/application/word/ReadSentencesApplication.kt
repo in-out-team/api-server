@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component
 class ReadSentencesApplication(
     private val wordService: WordService,
 ) {
+    companion object {
+        private const val TARGET_SENTENCES_COUNT = 3
+    }
+
     /**
      * return sentences of first: selected by user, second: not selected by user
      */
@@ -17,6 +21,7 @@ class ReadSentencesApplication(
         wordDefinitionId: Long,
         user: User,
     ): Pair<List<Sentence>, List<Sentence>> {
+        // TODO: need to separate sentences for read practice and writing practice
         val sentences = wordService.getSentencesByWordDefinitionId(wordDefinitionId)
         if (sentences.isEmpty()) {
             throw NotFoundException(
@@ -25,7 +30,17 @@ class ReadSentencesApplication(
             )
         }
 
-        val userSentences = wordService.getUserSentencesBy(user.id, wordDefinitionId)
+        val userSentences = wordService.getUserSentencesBy(user.id, wordDefinitionId).toMutableList()
+        if (userSentences.isEmpty()) {
+            wordService
+                .loadUserSentences(
+                    user.id,
+                    sentences
+                        .shuffled()
+                        .take(minOf(TARGET_SENTENCES_COUNT, (sentences.size / 3).coerceAtLeast(1))),
+                ).also { userSentences.addAll(it) }
+        }
+
         return sentences.partition { sentence -> userSentences.any { it.id == sentence.id } }
     }
 }
