@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.WordService
@@ -21,8 +22,7 @@ class ReadSentencesApplication(
         wordDefinitionId: Long,
         user: User,
     ): Pair<List<Sentence>, List<Sentence>> {
-        // TODO: need to separate sentences for read practice and writing practice
-        val sentences = wordService.getSentencesByWordDefinitionId(wordDefinitionId)
+        val sentences = wordService.getSentencesByWordDefinitionIdAndType(wordDefinitionId, SentenceType.READING)
         if (sentences.isEmpty()) {
             throw NotFoundException(
                 message = "Sentences not found for word definition id: $wordDefinitionId",

@@ -2,6 +2,7 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
@@ -91,10 +92,12 @@ class WordFactory(
                     lexicalCategory = LexicalCategoryType.NOUN,
                 ),
             ),
+        type: SentenceType = SentenceType.READING,
     ): Sentence =
         sentenceRepository.save(
             SentenceEntity(
                 wordDefinitionId = wordDefinitionId,
+                type = type,
                 content = content,
                 translation = translation,
                 lexicalCategories = lexicalCategories,

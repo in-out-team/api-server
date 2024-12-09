@@ -1,6 +1,7 @@
 package com.inout.apiserver.infrastructure.db.word
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.error.InOutRequireNotNullException
@@ -21,6 +22,7 @@ import org.hibernate.annotations.Type
 )
 data class SentenceEntity(
     val wordDefinitionId: Long,
+    val type: SentenceType,
     val content: String,
     val translation: String,
     @Type(JsonType::class)
@@ -42,19 +44,10 @@ data class SentenceEntity(
         )
 
     companion object {
-        fun of(sentence: Sentence): SentenceEntity =
-            SentenceEntity(
-                wordDefinitionId = sentence.wordDefinitionId,
-                content = sentence.content,
-                translation = sentence.translation,
-                lexicalCategories = sentence.lexicalCategories,
-            ).apply {
-                id = sentence.id
-            }
-
         fun fromCreateObject(sentenceCreateObject: SentenceCreateObject): SentenceEntity =
             SentenceEntity(
                 wordDefinitionId = sentenceCreateObject.wordDefinitionId,
+                type = sentenceCreateObject.type,
                 content = sentenceCreateObject.content,
                 translation = sentenceCreateObject.translation,
                 lexicalCategories = sentenceCreateObject.lexicalCategories,

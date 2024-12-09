@@ -1,9 +1,9 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.domain.word.SentenceCreateObject
-import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
@@ -20,7 +20,7 @@ class CreateSentenceApplication(
         val word =
             wordService.getWordById(wordId) ?: throw NotFoundException(message = "Word not found", code = "WORD_4")
         // TODO: need to bulk create sentences
-        word.definitions.forEach { wordDefinition: WordDefinition ->
+        word.definitions.forEach { wordDefinition ->
             wordService.getSentencesByWordDefinitionId(wordDefinition.id).let {
                 if (it.isNotEmpty()) return@forEach
             }
@@ -39,14 +39,15 @@ class CreateSentenceApplication(
                             .replaceFirstChar { it.uppercase() },
                 )
 
-            openAIWordDefinitionSentenceResponse.sentences.forEach {
+            openAIWordDefinitionSentenceResponse.sentences.forEachIndexed { index, sentence ->
                 val sentenceCreateObject =
                     SentenceCreateObject(
                         wordDefinitionId = wordDefinition.id,
-                        content = it.content,
-                        translation = it.translation,
+                        type = if (index % 2 == 0) SentenceType.READING else SentenceType.WRITING,
+                        content = sentence.content,
+                        translation = sentence.translation,
                         lexicalCategories =
-                            it.lexicalCategories.map { lexicalCategoryMap ->
+                            sentence.lexicalCategories.map { lexicalCategoryMap ->
                                 SentenceEntity.LexicalCategoryInfo(
                                     word = lexicalCategoryMap.word,
                                     lexicalCategory = LexicalCategoryType.of(lexicalCategoryMap.lexicalCategory),
