@@ -22,4 +22,11 @@ data class OpenAIWordDefinitionSentenceResponse(
 data class Sentence(
     val content: String,
     val translation: String,
-)
+    val lexicalCategories: List<LexicalCategoryMap>,
+) {
+    @Serializable
+    data class LexicalCategoryMap(
+        val word: String,
+        val lexicalCategory: String,
+    )
+}

@@ -2,6 +2,7 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
@@ -72,12 +73,34 @@ class WordFactory(
         wordDefinitionId: Long,
         content: String = "I read a book",
         translation: String = "나는 책을 읽었다",
+        lexicalCategories: List<SentenceEntity.LexicalCategoryInfo> =
+            listOf(
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "I",
+                    lexicalCategory = LexicalCategoryType.PRONOUN,
+                ),
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "read",
+                    lexicalCategory = LexicalCategoryType.VERB,
+                ),
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "a",
+                    lexicalCategory = LexicalCategoryType.ARTICLE,
+                ),
+                SentenceEntity.LexicalCategoryInfo(
+                    word = "book",
+                    lexicalCategory = LexicalCategoryType.NOUN,
+                ),
+            ),
+        type: SentenceType = SentenceType.READING,
     ): Sentence =
         sentenceRepository.save(
             SentenceEntity(
                 wordDefinitionId = wordDefinitionId,
+                type = type,
                 content = content,
                 translation = translation,
+                lexicalCategories = lexicalCategories,
             ),
         )
 }

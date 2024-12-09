@@ -97,6 +97,12 @@ class OpenAIRequestProvider {
                     - sentence object:
                      - content: example sentence of the given word in English
                      - translation: sentence in Korean
+                     - lexicalCategories: lexical category object for each word of the content
+                       - lexical category object:
+                         - word: word in the sentence
+                         - lexicalCategory: lexical category of the word
+                         - possible lexical category: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, article
+                       - ex) for "I'm reading a book", [{word: "I'm", lexicalCategory: "pronoun"}, {word: "reading", lexicalCategory: "verb"}, {word: "a", lexicalCategory: "article"}, {word: "book", lexicalCategory: "noun"}]
                     """.trimIndent(),
             )
         val queryMessage =

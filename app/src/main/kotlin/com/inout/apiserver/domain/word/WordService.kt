@@ -2,6 +2,8 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
@@ -70,6 +72,11 @@ class WordService(
     fun getSentencesByWordDefinitionId(wordDefinitionId: Long): List<Sentence> =
         sentenceRepository.findAllByWordDefinitionId(wordDefinitionId)
 
+    fun getSentencesByWordDefinitionIdAndType(
+        wordDefinitionId: Long,
+        type: SentenceType,
+    ): List<Sentence> = sentenceRepository.findAllByWordDefinitionIdAndType(wordDefinitionId, type)
+
     fun createUserSentence(userSentenceCreateObject: UserSentenceCreateObject): UserSentence {
         userSentenceRepository
             .findByUserIdAndSentenceId(
@@ -96,5 +103,39 @@ class WordService(
 
     fun deleteUserSentence(userSentence: UserSentence) {
         userSentenceRepository.delete(UserSentenceEntity.of(userSentence))
+    }
+
+    fun loadUserSentences(
+        userId: Long,
+        sentences: List<Sentence>,
+    ): List<UserSentence> {
+        // TODO:
+        //  - need to add test case
+        //  - need to add validation for sentences (size > 0)
+        if (sentences.map { it.wordDefinitionId }.distinct().size != 1) {
+            throw BadRequestException(
+                message = "Cannot load user sentences for different word definitions",
+                code = "SENTENCE_4",
+            )
+        }
+
+        val userSentences =
+            userSentenceRepository.findAllByUserIdAndWordDefinitionId(
+                userId = userId,
+                wordDefinitionId = sentences.first().wordDefinitionId,
+            )
+        if (userSentences.isNotEmpty()) {
+            return userSentences
+        }
+
+        return sentences.map { sentence ->
+            createUserSentence(
+                UserSentenceCreateObject(
+                    userId = userId,
+                    wordDefinitionId = sentence.wordDefinitionId,
+                    sentenceId = sentence.id,
+                ),
+            )
+        }
     }
 }

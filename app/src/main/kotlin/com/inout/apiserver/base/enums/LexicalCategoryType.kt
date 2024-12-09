@@ -9,7 +9,7 @@ enum class LexicalCategoryType {
     PREPOSITION,
     CONJUNCTION,
     INTERJECTION,
-    UNKNOWN,
+    ARTICLE,
     ;
 
     companion object {
@@ -23,7 +23,8 @@ enum class LexicalCategoryType {
                 "preposition" -> PREPOSITION
                 "conjunction" -> CONJUNCTION
                 "interjection" -> INTERJECTION
-                else -> UNKNOWN
+                "article" -> ARTICLE
+                else -> throw IllegalArgumentException("Unknown LexicalCategoryType: $value")
             }
     }
 }
