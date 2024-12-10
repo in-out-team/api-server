@@ -15,8 +15,8 @@ import io.kotest.matchers.shouldBe
 import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
-class SelectSentenceApplicationTest(
-    private val selectSentenceApplication: SelectSentenceApplication,
+class SelectReadingSentenceApplicationTest(
+    private val selectReadingSentenceApplication: SelectReadingSentenceApplication,
     private val wordService: WordService,
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
@@ -41,7 +41,7 @@ class SelectSentenceApplicationTest(
                 // when
                 val exception =
                     shouldThrow<NotFoundException> {
-                        selectSentenceApplication.run(sentenceId, user!!)
+                        selectReadingSentenceApplication.run(sentenceId, user!!)
                     }
 
                 // then
@@ -68,7 +68,7 @@ class SelectSentenceApplicationTest(
                 // when
                 val exception =
                     shouldThrow<ConflictException> {
-                        selectSentenceApplication.run(sentenceId, user!!)
+                        selectReadingSentenceApplication.run(sentenceId, user!!)
                     }
 
                 // then
@@ -86,7 +86,7 @@ class SelectSentenceApplicationTest(
                 val sentenceId = sentence.id
 
                 // when
-                val userSentence = selectSentenceApplication.run(sentenceId, user!!)
+                val userSentence = selectReadingSentenceApplication.run(sentenceId, user!!)
 
                 // then
                 userSentence.userId shouldBe user!!.id

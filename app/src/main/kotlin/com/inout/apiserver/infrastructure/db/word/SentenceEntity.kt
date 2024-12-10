@@ -38,6 +38,7 @@ data class SentenceEntity(
         Sentence(
             id = id ?: throw InOutRequireNotNullException("Sentence id is null", "IORNN_SENTENCE_1"),
             wordDefinitionId = wordDefinitionId,
+            type = type,
             content = content,
             translation = translation,
             lexicalCategories = lexicalCategories,

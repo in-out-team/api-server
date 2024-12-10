@@ -18,8 +18,8 @@ import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
-class ReadSentencesApplicationTest(
-    private val readSentencesApplication: ReadSentencesApplication,
+class GetReadingSentencesApplicationTest(
+    private val getReadingSentencesApplication: GetReadingSentencesApplication,
     // repositories
     private val userSentenceRepository: UserSentenceRepository,
     // services
@@ -50,7 +50,7 @@ class ReadSentencesApplicationTest(
                 // when
                 val exception =
                     assertThrows<NotFoundException> {
-                        ReadSentencesApplication(wordService).run(wordDefinitionId, user!!)
+                        GetReadingSentencesApplication(wordService).run(wordDefinitionId, user!!)
                     }
 
                 // then
@@ -77,7 +77,7 @@ class ReadSentencesApplicationTest(
                 userSentenceRepository.findAllByUserIdAndWordDefinitionId(user!!.id, wordDefinitionId).size shouldBe 0
 
                 // when
-                val result = readSentencesApplication.run(wordDefinitionId, user!!)
+                val result = getReadingSentencesApplication.run(wordDefinitionId, user!!)
 
                 // then
                 result.first.size shouldBeGreaterThan 0
@@ -96,7 +96,7 @@ class ReadSentencesApplicationTest(
                 )
 
                 // when
-                val result = readSentencesApplication.run(wordDefinitionId, user!!)
+                val result = getReadingSentencesApplication.run(wordDefinitionId, user!!)
 
                 // then
                 result.first.size shouldBe 1

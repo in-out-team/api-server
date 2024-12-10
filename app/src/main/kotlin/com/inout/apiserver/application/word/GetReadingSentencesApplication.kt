@@ -8,7 +8,7 @@ import com.inout.apiserver.error.NotFoundException
 import org.springframework.stereotype.Component
 
 @Component
-class ReadSentencesApplication(
+class GetReadingSentencesApplication(
     private val wordService: WordService,
 ) {
     companion object {

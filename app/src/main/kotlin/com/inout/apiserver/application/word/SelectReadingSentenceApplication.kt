@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.word.UserSentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
@@ -9,7 +10,7 @@ import com.inout.apiserver.error.NotFoundException
 import org.springframework.stereotype.Component
 
 @Component
-class SelectSentenceApplication(
+class SelectReadingSentenceApplication(
     private val wordService: WordService,
 ) {
     companion object {
@@ -21,7 +22,7 @@ class SelectSentenceApplication(
         user: User,
     ): UserSentence {
         val sentence =
-            wordService.getSentenceById(sentenceId) ?: throw NotFoundException(
+            wordService.getSentenceByIdAndType(sentenceId, SentenceType.READING) ?: throw NotFoundException(
                 message = "Sentence Not Found",
                 code = "SENTENCE_1",
             )

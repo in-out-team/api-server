@@ -16,8 +16,8 @@ import io.kotest.matchers.shouldBe
 import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
-class UnselectSentenceApplicationTest(
-    private val unselectSentenceApplication: UnselectSentenceApplication,
+class UnselectReadingSentenceApplicationTest(
+    private val unselectReadingSentenceApplication: UnselectReadingSentenceApplication,
     private val wordService: WordService,
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
@@ -41,7 +41,7 @@ class UnselectSentenceApplicationTest(
                 // when
                 val exception =
                     shouldThrow<NotFoundException> {
-                        unselectSentenceApplication.run(sentenceId, user!!)
+                        unselectReadingSentenceApplication.run(sentenceId, user!!)
                     }
 
                 // then
@@ -69,7 +69,7 @@ class UnselectSentenceApplicationTest(
 
             it("should delete user sentence") {
                 // when
-                unselectSentenceApplication.run(sentence!!.id, user!!)
+                unselectReadingSentenceApplication.run(sentence!!.id, user!!)
 
                 // then
                 wordService.getUserSentenceBy(user!!.id, sentence!!.id) shouldBe null

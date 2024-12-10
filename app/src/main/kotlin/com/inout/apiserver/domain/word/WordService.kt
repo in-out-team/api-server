@@ -89,7 +89,10 @@ class WordService(
         return userSentenceRepository.save(UserSentenceEntity.fromCreateObject(userSentenceCreateObject))
     }
 
-    fun getSentenceById(id: Long): Sentence? = sentenceRepository.findById(id)
+    fun getSentenceByIdAndType(
+        id: Long,
+        type: SentenceType,
+    ): Sentence? = sentenceRepository.findById(id)?.takeIf { it.type == type }
 
     fun getUserSentenceBy(
         userId: Long,
