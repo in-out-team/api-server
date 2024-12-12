@@ -2,6 +2,7 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.Instant
 
 @InOutSpringBootTest
 class WordServiceTest(
@@ -26,11 +26,6 @@ class WordServiceTest(
     private val wordService: WordService,
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
-        val now = Instant.now()
-
-        beforeEach {
-        }
-
         afterEach {
             jdbcTemplate.cleanUp()
         }
@@ -221,6 +216,7 @@ class WordServiceTest(
                     UserSentenceCreateObject(
                         userId = 1L,
                         wordDefinitionId = 1L,
+                        type = SentenceType.READING,
                         sentenceId = 1L,
                     )
                 wordService.createUserSentence(userSentenceCreateObject)
@@ -237,20 +233,22 @@ class WordServiceTest(
                     UserSentenceCreateObject(
                         userId = 1L,
                         wordDefinitionId = 1L,
+                        type = SentenceType.READING,
                         sentenceId = 1L,
                     )
 
                 // When
-                val sut = wordService.createUserSentence(userSentenceCreateObject)
+                val result = wordService.createUserSentence(userSentenceCreateObject)
 
                 // Then
-                sut.userId shouldBe userSentenceCreateObject.userId
-                sut.wordDefinitionId shouldBe userSentenceCreateObject.wordDefinitionId
-                sut.sentenceId shouldBe userSentenceCreateObject.sentenceId
+                result.userId shouldBe userSentenceCreateObject.userId
+                result.wordDefinitionId shouldBe userSentenceCreateObject.wordDefinitionId
+                result.type shouldBe userSentenceCreateObject.type
+                result.sentenceId shouldBe userSentenceCreateObject.sentenceId
                 userSentenceRepository.findByUserIdAndSentenceId(
                     userId = userSentenceCreateObject.userId,
                     sentenceId = userSentenceCreateObject.sentenceId,
-                ) shouldBe sut
+                ) shouldBe result
             }
         }
     })

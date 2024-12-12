@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Sentence
@@ -55,7 +56,7 @@ class GetReadingSentencesApplicationTest(
 
                 // then
                 exception.message shouldBe "Sentences not found for word definition id: $wordDefinitionId"
-                exception.code shouldBe "WORD_3"
+                exception.code shouldBe "SENTENCE_1"
             }
         }
 
@@ -74,7 +75,12 @@ class GetReadingSentencesApplicationTest(
             it("should choose sentences if no previous selection exists") {
                 // given
                 val wordDefinitionId = word!!.definitions.first().id
-                userSentenceRepository.findAllByUserIdAndWordDefinitionId(user!!.id, wordDefinitionId).size shouldBe 0
+                userSentenceRepository
+                    .findAllByUserIdAndWordDefinitionIdAndType(
+                        user!!.id,
+                        wordDefinitionId,
+                        SentenceType.READING,
+                    ).size shouldBe 0
 
                 // when
                 val result = getReadingSentencesApplication.run(wordDefinitionId, user!!)
@@ -91,6 +97,7 @@ class GetReadingSentencesApplicationTest(
                     UserSentenceCreateObject(
                         userId = user!!.id,
                         wordDefinitionId = word!!.definitions.first().id,
+                        type = SentenceType.READING,
                         sentenceId = selectedSentence.id,
                     ),
                 )

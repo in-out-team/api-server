@@ -26,14 +26,15 @@ class GetReadingSentencesApplication(
         if (sentences.isEmpty()) {
             throw NotFoundException(
                 message = "Sentences not found for word definition id: $wordDefinitionId",
-                code = "WORD_3",
+                code = "SENTENCE_1",
             )
         }
 
-        val userSentences = wordService.getUserSentencesBy(user.id, wordDefinitionId).toMutableList()
+        val userSentences =
+            wordService.getUserSentencesBy(user.id, wordDefinitionId, SentenceType.READING).toMutableList()
         if (userSentences.isEmpty()) {
             wordService
-                .loadUserSentences(
+                .loadUserSentencesForReading(
                     user.id,
                     sentences
                         .shuffled()

@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Sentence
@@ -62,6 +63,7 @@ class UnselectReadingSentenceApplicationTest(
                     UserSentenceCreateObject(
                         userId = user!!.id,
                         wordDefinitionId = sentence!!.wordDefinitionId,
+                        type = SentenceType.READING,
                         sentenceId = sentence!!.id,
                     ),
                 )

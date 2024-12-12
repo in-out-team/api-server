@@ -26,7 +26,7 @@ class SelectReadingSentenceApplication(
                 message = "Sentence Not Found",
                 code = "SENTENCE_1",
             )
-        wordService.getUserSentencesBy(user.id, sentence.wordDefinitionId).let { userSentences ->
+        wordService.getUserSentencesBy(user.id, sentence.wordDefinitionId, SentenceType.READING).let { userSentences ->
             if (userSentences.size >= MAX_SENTENCES_COUNT) {
                 throw BadRequestException(
                     message = "Maximum of $MAX_SENTENCES_COUNT sentences can be selected",
@@ -39,6 +39,7 @@ class SelectReadingSentenceApplication(
             UserSentenceCreateObject(
                 userId = user.id,
                 wordDefinitionId = sentence.wordDefinitionId,
+                type = SentenceType.READING,
                 sentenceId = sentence.id,
             ),
         )

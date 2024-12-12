@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
@@ -61,6 +62,7 @@ class SelectReadingSentenceApplicationTest(
                     UserSentenceCreateObject(
                         userId = user!!.id,
                         wordDefinitionId = wordDefinitionId,
+                        type = SentenceType.READING,
                         sentenceId = sentenceId,
                     ),
                 )
