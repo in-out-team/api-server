@@ -1,5 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1
 
+import com.inout.apiserver.application.word.GetRandomWritingSentenceApplication
 import com.inout.apiserver.application.word.GetReadingSentencesApplication
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
@@ -31,6 +32,7 @@ class SentenceController(
     private val getReadingSentencesApplication: GetReadingSentencesApplication,
     private val selectReadingSentenceApplication: SelectReadingSentenceApplication,
     private val unselectReadingSentenceApplication: UnselectReadingSentenceApplication,
+    private val getRandomWritingSentenceApplication: GetRandomWritingSentenceApplication,
 ) {
     @GetMapping("/reading")
     @Operation(
@@ -174,4 +176,55 @@ class SentenceController(
         unselectReadingSentenceApplication.run(id, user)
         return ResponseEntity.noContent().build()
     }
+
+    @GetMapping("/writing/random")
+    @Operation(
+        summary = "작문 랜덤 문장 조회",
+        description = "작문 연습용 랜덤 문장을 조회하며, 학습을 시작한 문장이 3개에 도달하게 될 경우 에러가 발생합니다.",
+        parameters = [
+            Parameter(
+                name = "wordDefinitionId",
+                description = "단어 정의 ID",
+                required = true,
+                schema = Schema(implementation = Long::class),
+            ),
+        ],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "작문 랜덤 문장 조회 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = SentenceResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "이미 선택한 문장이 3개 이상인 경우 (code: SENTENCE_6), 모든 문장이 선택된 경우 (code: SENTENCE_7)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "문장이 없는 경우 (code: SENTENCE_1)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun getRandomWritingSentence(
+        @RequestParam(required = true) wordDefinitionId: Long,
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<SentenceResponse> =
+        ResponseEntity(SentenceResponse.of(getRandomWritingSentenceApplication.run(user, wordDefinitionId)), OK)
 }

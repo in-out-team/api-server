@@ -102,30 +102,38 @@ class WordService(
     fun getUserSentencesBy(
         userId: Long,
         wordDefinitionId: Long,
-    ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionId(userId, wordDefinitionId)
+        type: SentenceType,
+    ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionIdAndType(userId, wordDefinitionId, type)
 
     fun deleteUserSentence(userSentence: UserSentence) {
         userSentenceRepository.delete(UserSentenceEntity.of(userSentence))
     }
 
-    fun loadUserSentences(
+    fun loadUserSentencesForReading(
         userId: Long,
         sentences: List<Sentence>,
     ): List<UserSentence> {
         // TODO:
         //  - need to add test case
         //  - need to add validation for sentences (size > 0)
-        if (sentences.map { it.wordDefinitionId }.distinct().size != 1) {
+        val wordDefinitionId =
+            sentences
+                .map { it.wordDefinitionId }
+                .distinct()
+                .takeIf { it.size == 1 }
+                ?.first()
+        if (wordDefinitionId == null || !sentences.all { it.type == SentenceType.READING }) {
             throw BadRequestException(
-                message = "Cannot load user sentences for different word definitions",
+                message = "Cannot load user sentences for different word definitions or type",
                 code = "SENTENCE_4",
             )
         }
 
         val userSentences =
-            userSentenceRepository.findAllByUserIdAndWordDefinitionId(
+            userSentenceRepository.findAllByUserIdAndWordDefinitionIdAndType(
                 userId = userId,
-                wordDefinitionId = sentences.first().wordDefinitionId,
+                wordDefinitionId = wordDefinitionId,
+                type = SentenceType.READING,
             )
         if (userSentences.isNotEmpty()) {
             return userSentences
@@ -136,6 +144,7 @@ class WordService(
                 UserSentenceCreateObject(
                     userId = userId,
                     wordDefinitionId = sentence.wordDefinitionId,
+                    type = sentence.type,
                     sentenceId = sentence.id,
                 ),
             )

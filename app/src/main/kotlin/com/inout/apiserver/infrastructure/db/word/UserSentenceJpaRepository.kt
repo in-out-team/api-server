@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.enums.SentenceType
 import org.springframework.data.jpa.repository.JpaRepository
 
 interface UserSentenceJpaRepository : JpaRepository<UserSentenceEntity, Long> {
@@ -14,8 +15,9 @@ interface UserSentenceJpaRepository : JpaRepository<UserSentenceEntity, Long> {
         sentenceId: Long,
     ): UserSentenceEntity?
 
-    fun findAllByUserIdAndWordDefinitionId(
+    fun findAllByUserIdAndWordDefinitionIdAndType(
         userId: Long,
         wordDefinitionId: Long,
+        type: SentenceType,
     ): List<UserSentenceEntity>
 }
