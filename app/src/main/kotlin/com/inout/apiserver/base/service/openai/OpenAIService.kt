@@ -4,6 +4,7 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
+import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
@@ -88,5 +89,21 @@ class OpenAIService(
                 .first()
                 .message.messageContent as TextContent
         return OpenAIWordDefinitionSentenceResponse.fromJson(chatMessageContent.content)
+    }
+
+    fun fetchWritingSentenceFeedback(
+        originalContent: String,
+        userSubmittedContent: String,
+        fromLanguage: String = "English",
+        toLanguage: String = "Korean",
+    ): OpenAIWritingSentenceFeedbackResponse {
+        val chatCompletionRequest =
+            openAIRequestProvider.genWritingSentenceFeedbackRequest(originalContent, userSubmittedContent, fromLanguage, toLanguage)
+        val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
+        val chatMessageContent =
+            response.choices
+                .first()
+                .message.messageContent as TextContent
+        return OpenAIWritingSentenceFeedbackResponse.fromJson(chatMessageContent.content)
     }
 }

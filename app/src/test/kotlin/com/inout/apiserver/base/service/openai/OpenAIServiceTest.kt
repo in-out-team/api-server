@@ -2,6 +2,7 @@ package com.inout.apiserver.base.service.openai
 
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -45,6 +46,39 @@ class OpenAIServiceTest(
 
                 // Then
                 response.sentences.size shouldBe 10
+            }
+        }
+
+        xdescribe("fetchWritingSentenceFeedback") {
+            it("should throw exception when originalContent is the same as submittedContent") {
+                // Given
+                val originalContent = "I am a student."
+                val submittedContent = "I am a student."
+                val fromLanguage = "English"
+                val toLanguage = "Korean"
+
+                // When
+                val exception =
+                    shouldThrow<IllegalArgumentException> {
+                        openAIService.fetchWritingSentenceFeedback(originalContent, submittedContent, fromLanguage, toLanguage)
+                    }
+
+                // Then
+                exception.message shouldBe "originalContent and submittedContent must be different"
+            }
+
+            it("should return OpenAIWritingSentenceFeedbackResponse") {
+                // Given
+                val originalContent = "He is not coming back"
+                val submittedContent = "He is coming not back"
+                val fromLanguage = "English"
+                val toLanguage = "Korean"
+
+                // When
+                val response = openAIService.fetchWritingSentenceFeedback(originalContent, submittedContent, fromLanguage, toLanguage)
+
+                // Then
+                response.feedback.length shouldBeGreaterThan 10
             }
         }
     })
