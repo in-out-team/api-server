@@ -227,4 +227,15 @@ class SentenceController(
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<SentenceResponse> =
         ResponseEntity(SentenceResponse.of(getRandomWritingSentenceApplication.run(user, wordDefinitionId)), OK)
+
+    @PostMapping("/writing/{id}/feedback")
+    @Operation(
+        summary = "작문 문장 피드백",
+        description = "제출한 작문 문장에 대한 AI 피드백을 제공합니다.",
+    )
+    fun getWritingSentenceFeedback(
+        @PathVariable id: Long,
+        @Parameter(hidden = true) @RequestUser user: User,
+    ) {
+    }
 }
