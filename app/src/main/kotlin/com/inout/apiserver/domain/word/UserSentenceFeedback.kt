@@ -7,8 +7,7 @@ import java.time.Instant
  */
 data class UserSentenceFeedback(
     val id: Long,
-    val userId: Long,
-    val sentenceId: Long,
+    val userSentenceId: Long,
     val sentenceFeedbackId: Long,
     val createdAt: Instant? = null,
     val updatedAt: Instant? = null,

@@ -7,8 +7,12 @@ import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
@@ -22,6 +26,8 @@ class WordService(
     private val wordRepository: WordRepository,
     private val sentenceRepository: SentenceRepository,
     private val userSentenceRepository: UserSentenceRepository,
+    private val userSentenceFeedbackRepository: UserSentenceFeedbackRepository,
+    private val sentenceFeedbackRepository: SentenceFeedbackRepository,
 ) {
     fun getWordByNameAndFromLanguageAndToLanguage(
         name: String,
@@ -150,4 +156,18 @@ class WordService(
             )
         }
     }
+
+    fun getUserSentenceFeedbacks(userSentenceId: Long): List<UserSentenceFeedback> =
+        userSentenceFeedbackRepository.findAllByUserSentenceId(userSentenceId)
+
+    fun getSentenceFeedbackBy(
+        sentenceId: Long,
+        submittedContent: String,
+    ) = sentenceFeedbackRepository.findBySentenceIdAndSubmittedContent(sentenceId, submittedContent)
+
+    fun createSentenceFeedback(sentenceFeedbackCreateObject: SentenceFeedbackCreateObject): SentenceFeedback =
+        sentenceFeedbackRepository.save(SentenceFeedbackEntity.fromCreateObject(sentenceFeedbackCreateObject))
+
+    fun createUserSentenceFeedback(userSentenceFeedbackCreateObject: UserSentenceFeedbackCreateObject): UserSentenceFeedback =
+        userSentenceFeedbackRepository.save(UserSentenceFeedbackEntity.fromCreateObject(userSentenceFeedbackCreateObject))
 }

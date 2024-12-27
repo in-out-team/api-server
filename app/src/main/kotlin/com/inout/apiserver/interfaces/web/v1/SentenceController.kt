@@ -2,19 +2,23 @@ package com.inout.apiserver.interfaces.web.v1
 
 import com.inout.apiserver.application.word.GetRandomWritingSentenceApplication
 import com.inout.apiserver.application.word.GetReadingSentencesApplication
+import com.inout.apiserver.application.word.GetWritingSentenceFeedbackApplication
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
 import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
+import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.SentencesResponse
 import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
+import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbackResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
@@ -22,9 +26,11 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 @RestController
 @RequestMapping("/v1/sentences")
@@ -33,6 +39,7 @@ class SentenceController(
     private val selectReadingSentenceApplication: SelectReadingSentenceApplication,
     private val unselectReadingSentenceApplication: UnselectReadingSentenceApplication,
     private val getRandomWritingSentenceApplication: GetRandomWritingSentenceApplication,
+    private val getWritingSentenceFeedbackApplication: GetWritingSentenceFeedbackApplication,
 ) {
     @GetMapping("/reading")
     @Operation(
@@ -231,11 +238,74 @@ class SentenceController(
     @PostMapping("/writing/{id}/feedback")
     @Operation(
         summary = "작문 문장 피드백",
-        description = "제출한 작문 문장에 대한 AI 피드백을 제공합니다.",
+        description = "제출한 작문 문장에 대한 AI 피드백을 제공합니다. 외부 API 요청을 하므로 시간이 소요될 수 있으니 spinner 같은 UI를 제공해주세요.",
+        parameters = [
+            Parameter(
+                name = "id",
+                description = "문장 ID",
+                required = true,
+                example = "1",
+            ),
+        ],
+        requestBody =
+            SwaggerRequestBody(
+                description = "제출한 작문 문장",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = GetWritingSentenceFeedbackRequest::class),
+                    ),
+                ],
+            ),
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "작문 문장 피드백 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = WritingSentenceFeedbackResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "피드백 받은 횟수가 최대 횟수에 도달한 경우 (code: SENTENCE_8)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "문장을 찾을 수 없음 (code: SENTENCE_3)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
     )
     fun getWritingSentenceFeedback(
         @PathVariable id: Long,
+        @RequestBody @Valid request: GetWritingSentenceFeedbackRequest,
         @Parameter(hidden = true) @RequestUser user: User,
-    ) {
-    }
+    ) = ResponseEntity(
+        WritingSentenceFeedbackResponse(
+            getWritingSentenceFeedbackApplication
+                .run(
+                    GetWritingSentenceFeedbackApplication.Request(
+                        user = user,
+                        sentenceId = id,
+                        submittedContent = request.submittedContent,
+                    ),
+                ).feedback,
+        ),
+        OK,
+    )
 }

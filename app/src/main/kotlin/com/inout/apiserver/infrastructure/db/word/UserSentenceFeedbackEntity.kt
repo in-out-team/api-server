@@ -12,19 +12,17 @@ import jakarta.persistence.Table
 @Table(
     name = "user_sentence_feedbacks",
     indexes = [
-        Index(columnList = "user_id, sentence_id", name = "idx_user_sentence_feedbacks_user_id_sentence_id"),
+        Index(columnList = "user_sentence_id", name = "idx_user_sentence_feedbacks_user_sentence_id"),
     ],
 )
 data class UserSentenceFeedbackEntity(
-    val userId: Long,
-    val sentenceId: Long,
+    val userSentenceId: Long,
     val sentenceFeedbackId: Long,
 ) : BaseEntity() {
     companion object {
         fun fromCreateObject(userSentenceFeedbackCreateObject: UserSentenceFeedbackCreateObject): UserSentenceFeedbackEntity =
             UserSentenceFeedbackEntity(
-                userId = userSentenceFeedbackCreateObject.userId,
-                sentenceId = userSentenceFeedbackCreateObject.sentenceId,
+                userSentenceId = userSentenceFeedbackCreateObject.userSentenceId,
                 sentenceFeedbackId = userSentenceFeedbackCreateObject.sentenceFeedbackId,
             )
     }
@@ -36,8 +34,7 @@ data class UserSentenceFeedbackEntity(
                     "UserSentenceFeedback id is null",
                     "IORNN_USER_SENTENCE_FEEDBACK_1",
                 ),
-            userId = userId,
-            sentenceId = sentenceId,
+            userSentenceId = userSentenceId,
             sentenceFeedbackId = sentenceFeedbackId,
             createdAt = createdAt,
             updatedAt = updatedAt,
