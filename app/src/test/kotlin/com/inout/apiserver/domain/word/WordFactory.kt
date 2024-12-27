@@ -4,7 +4,13 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
+import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
+import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
 import com.inout.apiserver.infrastructure.db.word.WordEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
@@ -15,6 +21,9 @@ import java.time.Instant
 class WordFactory(
     private val wordRepository: WordRepository,
     private val sentenceRepository: SentenceRepository,
+    private val sentenceFeedbackRepository: SentenceFeedbackRepository,
+    private val userSentenceRepository: UserSentenceRepository,
+    private val userSentenceFeedbackRepository: UserSentenceFeedbackRepository,
 ) {
     companion object {
         @Deprecated("Use member function createWord instead")
@@ -103,4 +112,40 @@ class WordFactory(
                 lexicalCategories = lexicalCategories,
             ),
         )
+
+    fun createSentenceFeedback(
+        sentenceId: Long,
+        submittedContent: String = "I read book",
+        feedback: String = "주어와 동사 사이에 'a'를 넣어야 합니다. 'a'는 무언가 특정한 책을 가리키는데 도움을 줍니다. 모호함을 없애고 명확한 문장을 만들기 위해 필요한 내용입니다.",
+    ) = sentenceFeedbackRepository.save(
+        SentenceFeedbackEntity(
+            sentenceId = sentenceId,
+            submittedContent = submittedContent,
+            feedback = feedback,
+        ),
+    )
+
+    fun createUserSentence(
+        userId: Long,
+        wordDefinitionId: Long,
+        sentenceId: Long,
+        type: SentenceType = SentenceType.WRITING,
+    ) = userSentenceRepository.save(
+        UserSentenceEntity(
+            userId = userId,
+            wordDefinitionId = wordDefinitionId,
+            type = type,
+            sentenceId = sentenceId,
+        ),
+    )
+
+    fun createUserSentenceFeedback(
+        userSentenceId: Long,
+        sentenceFeedbackId: Long,
+    ) = userSentenceFeedbackRepository.save(
+        UserSentenceFeedbackEntity(
+            userSentenceId = userSentenceId,
+            sentenceFeedbackId = sentenceFeedbackId,
+        ),
+    )
 }
