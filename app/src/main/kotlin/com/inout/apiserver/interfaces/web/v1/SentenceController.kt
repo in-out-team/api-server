@@ -3,6 +3,7 @@ package com.inout.apiserver.interfaces.web.v1
 import com.inout.apiserver.application.word.GetRandomWritingSentenceApplication
 import com.inout.apiserver.application.word.GetReadingSentencesApplication
 import com.inout.apiserver.application.word.GetWritingSentenceFeedbackApplication
+import com.inout.apiserver.application.word.GetWritingSentenceFeedbacksApplication
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
 import com.inout.apiserver.config.web.RequestUser
@@ -13,6 +14,7 @@ import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.SentencesResponse
 import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbackResponse
+import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbacksResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -40,6 +42,7 @@ class SentenceController(
     private val unselectReadingSentenceApplication: UnselectReadingSentenceApplication,
     private val getRandomWritingSentenceApplication: GetRandomWritingSentenceApplication,
     private val getWritingSentenceFeedbackApplication: GetWritingSentenceFeedbackApplication,
+    private val getWritingSentenceFeedbacksApplication: GetWritingSentenceFeedbacksApplication,
 ) {
     @GetMapping("/reading")
     @Operation(
@@ -305,6 +308,57 @@ class SentenceController(
                         submittedContent = request.submittedContent,
                     ),
                 ).feedback,
+        ),
+        OK,
+    )
+
+    @GetMapping("/writing/{id}/feedbacks")
+    @Operation(
+        summary = "작문 문장 피드백 조회",
+        description = "제출한 작문 문장에 대해 제공받았던 AI 피드백을 조회합니다.",
+        parameters = [
+            Parameter(
+                name = "id",
+                description = "문장 ID",
+                required = true,
+                example = "1",
+            ),
+        ],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "작문 문장 피드백 조회 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = WritingSentenceFeedbacksResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "문장을 찾을 수 없음 (code: SENTENCE_3)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun getWritingSentenceFeedbacks(
+        @PathVariable id: Long,
+        @Parameter(hidden = true) @RequestUser user: User,
+    ) = ResponseEntity(
+        WritingSentenceFeedbacksResponse.of(
+            getWritingSentenceFeedbacksApplication
+                .run(
+                    GetWritingSentenceFeedbacksApplication.Request(
+                        sentenceId = id,
+                        user = user,
+                    ),
+                ).feedbacks,
         ),
         OK,
     )
