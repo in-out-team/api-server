@@ -16,4 +16,6 @@ class SentenceFeedbackRepository(
             sentenceId,
             submittedContent,
         )?.toDomain()
+
+    fun findAllByIdIn(ids: List<Long>) = sentenceFeedbackJpaRepository.findAllByIdIn(ids).map { it.toDomain() }
 }

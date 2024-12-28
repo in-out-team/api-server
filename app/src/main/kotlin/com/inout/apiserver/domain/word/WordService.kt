@@ -170,4 +170,7 @@ class WordService(
 
     fun createUserSentenceFeedback(userSentenceFeedbackCreateObject: UserSentenceFeedbackCreateObject): UserSentenceFeedback =
         userSentenceFeedbackRepository.save(UserSentenceFeedbackEntity.fromCreateObject(userSentenceFeedbackCreateObject))
+
+    fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<Long>): List<SentenceFeedback> =
+        sentenceFeedbackRepository.findAllByIdIn(sentenceFeedbackIds)
 }

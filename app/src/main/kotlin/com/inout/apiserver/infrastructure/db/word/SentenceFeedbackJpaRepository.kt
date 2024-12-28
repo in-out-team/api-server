@@ -7,4 +7,6 @@ interface SentenceFeedbackJpaRepository : JpaRepository<SentenceFeedbackEntity, 
         sentenceId: Long,
         submittedContent: String,
     ): SentenceFeedbackEntity?
+
+    fun findAllByIdIn(ids: List<Long>): List<SentenceFeedbackEntity>
 }
