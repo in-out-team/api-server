@@ -8,6 +8,7 @@ import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedback
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 
 @Service
 class OpenAIService(
@@ -105,5 +106,14 @@ class OpenAIService(
                 .first()
                 .message.messageContent as TextContent
         return OpenAIWritingSentenceFeedbackResponse.fromJson(chatMessageContent.content)
+    }
+
+    fun fetchTextFromSpeech(
+        file: MultipartFile,
+        language: String = "English",
+    ): String {
+        val transcriptionRequest = openAIRequestProvider.genTranscriptionRequest(file, language)
+        val transcription = runBlocking { openai.transcription(transcriptionRequest) }
+        return transcription.text
     }
 }

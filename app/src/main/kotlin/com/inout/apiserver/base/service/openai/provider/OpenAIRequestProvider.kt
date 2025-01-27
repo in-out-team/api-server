@@ -1,16 +1,24 @@
 package com.inout.apiserver.base.service.openai.provider
 
+import com.aallam.openai.api.audio.AudioResponseFormat
+import com.aallam.openai.api.audio.TranscriptionRequest
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
 import com.aallam.openai.api.chat.ChatResponseFormat
 import com.aallam.openai.api.chat.ChatRole
+import com.aallam.openai.api.file.FileSource
 import com.aallam.openai.api.model.ModelId
+import com.inout.apiserver.error.BadRequestException
+import okio.source
 import org.springframework.stereotype.Component
+import org.springframework.web.multipart.MultipartFile
 
 @Component
 class OpenAIRequestProvider {
     private val chatCompletionModel = ModelId("gpt-3.5-turbo")
     private val chatCompletionResponseFormat = ChatResponseFormat.JsonObject
+    private val transcriptionModel = ModelId("whisper-1")
+    private val transcriptionResponseFormat = AudioResponseFormat.Text
 
     fun genWordInfoRequest(
         word: String,
@@ -187,6 +195,26 @@ class OpenAIRequestProvider {
             model = chatCompletionModel,
             messages = listOf(systemDefinition, queryMessage),
             responseFormat = chatCompletionResponseFormat,
+        )
+    }
+
+    fun genTranscriptionRequest(
+        file: MultipartFile,
+        language: String = "English",
+    ): TranscriptionRequest {
+        if (file.isEmpty) {
+            throw BadRequestException(message = "Audio file cannot be empty", code = "OPENAI_001")
+        }
+        if (file.contentType != "audio/mpeg") {
+            throw BadRequestException(message = "Content type must be audio/mpeg", code = "OPENAI_002")
+        }
+
+        return TranscriptionRequest(
+            audio = FileSource(name = "request.mp3", source = file.inputStream.source()),
+            model = ModelId("whisper-1"),
+            // FIXME: temp, need a mapper which translates language to language code
+            language = language.slice(0..1).lowercase(),
+            responseFormat = AudioResponseFormat.Text,
         )
     }
 }

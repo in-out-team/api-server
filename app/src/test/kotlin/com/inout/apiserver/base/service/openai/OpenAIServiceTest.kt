@@ -7,6 +7,10 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.mock.web.MockMultipartFile
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.regex.Pattern
 
 @InOutSpringBootTest
 class OpenAIServiceTest(
@@ -60,7 +64,12 @@ class OpenAIServiceTest(
                 // When
                 val exception =
                     shouldThrow<IllegalArgumentException> {
-                        openAIService.fetchWritingSentenceFeedback(originalContent, submittedContent, fromLanguage, toLanguage)
+                        openAIService.fetchWritingSentenceFeedback(
+                            originalContent,
+                            submittedContent,
+                            fromLanguage,
+                            toLanguage,
+                        )
                     }
 
                 // Then
@@ -75,10 +84,31 @@ class OpenAIServiceTest(
                 val toLanguage = "Korean"
 
                 // When
-                val response = openAIService.fetchWritingSentenceFeedback(originalContent, submittedContent, fromLanguage, toLanguage)
+                val response =
+                    openAIService.fetchWritingSentenceFeedback(originalContent, submittedContent, fromLanguage, toLanguage)
 
                 // Then
                 response.feedback.length shouldBeGreaterThan 10
+            }
+        }
+
+        xdescribe("fetchTextFromSpeech") {
+            it("should return OpenAITextFromSpeechResponse") {
+                // Given
+                val path = Paths.get("src/test/resources/audio/test.mp3")
+                val audioContent = Files.readAllBytes(path)
+                val mockMultipartFile = MockMultipartFile("file", "test.mp3", "audio/mpeg", audioContent)
+                val language = "English"
+
+                // When
+                val result = openAIService.fetchTextFromSpeech(mockMultipartFile, language)
+
+                // Then
+                val regex = "^hello world,? this is phil+ip choi\\.?$"
+                val pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE)
+                val matcher = pattern.matcher(result)
+
+                matcher.find() shouldBe true
             }
         }
     })
