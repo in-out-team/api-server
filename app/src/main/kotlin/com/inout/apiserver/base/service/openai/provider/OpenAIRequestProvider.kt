@@ -211,10 +211,10 @@ class OpenAIRequestProvider {
 
         return TranscriptionRequest(
             audio = FileSource(name = "request.mp3", source = file.inputStream.source()),
-            model = ModelId("whisper-1"),
+            model = transcriptionModel,
             // FIXME: temp, need a mapper which translates language to language code
             language = language.slice(0..1).lowercase(),
-            responseFormat = AudioResponseFormat.Text,
+            responseFormat = transcriptionResponseFormat,
         )
     }
 }
