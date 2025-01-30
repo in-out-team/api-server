@@ -58,6 +58,9 @@ dependencies {
     // google api client
     implementation("com.google.api-client:google-api-client:2.2.0")
 
+    // aws
+    implementation("com.amazonaws:aws-java-sdk-s3:1.12.780")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
