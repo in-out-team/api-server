@@ -3,6 +3,10 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.domain.study.Study
+import com.inout.apiserver.domain.study.StudyFactory
+import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
@@ -11,6 +15,7 @@ import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeSortedBy
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Assertions
@@ -20,10 +25,16 @@ import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class WordServiceTest(
+    // factories
+    private val userFactory: UserFactory,
+    private val wordFactory: WordFactory,
+    private val studyFactory: StudyFactory,
+    // services
+    private val wordService: WordService,
+    // repositories
     private val wordRepository: WordRepository,
     private val userSentenceRepository: UserSentenceRepository,
-    private val wordFactory: WordFactory,
-    private val wordService: WordService,
+    // etc
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
         afterEach {
@@ -249,6 +260,34 @@ class WordServiceTest(
                     userId = userSentenceCreateObject.userId,
                     sentenceId = userSentenceCreateObject.sentenceId,
                 ) shouldBe result
+            }
+        }
+
+        describe("getConversationsBy") {
+            var user: User? = null
+            var word: Word? = null
+            var study: Study? = null
+
+            beforeEach {
+                user = userFactory.createUser()
+                word = wordFactory.createWord()
+                study = studyFactory.createStudy(user!!.id, word!!.definitions.first().id)
+            }
+
+            it("should return empty list if no conversations found") {
+                wordService.getConversationsBy(user!!, word!!.definitions.first().id) shouldBe emptyList()
+            }
+
+            it("should return list of conversations sorted by createdAt") {
+                val conversations =
+                    (1..3)
+                        .map {
+                            wordFactory.createConversation(user!!.id, word!!.definitions.first().id)
+                        }
+
+                val result = wordService.getConversationsBy(user!!, word!!.definitions.first().id)
+                result shouldBe conversations
+                result shouldBeSortedBy { it.createdAt!! }
             }
         }
     })

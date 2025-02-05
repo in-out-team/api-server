@@ -3,6 +3,8 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.infrastructure.db.word.ConversationEntity
+import com.inout.apiserver.infrastructure.db.word.ConversationRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
@@ -24,6 +26,7 @@ class WordFactory(
     private val sentenceFeedbackRepository: SentenceFeedbackRepository,
     private val userSentenceRepository: UserSentenceRepository,
     private val userSentenceFeedbackRepository: UserSentenceFeedbackRepository,
+    private val conversationRepository: ConversationRepository,
 ) {
     companion object {
         @Deprecated("Use member function createWord instead")
@@ -146,6 +149,16 @@ class WordFactory(
         UserSentenceFeedbackEntity(
             userSentenceId = userSentenceId,
             sentenceFeedbackId = sentenceFeedbackId,
+        ),
+    )
+
+    fun createConversation(
+        userId: Long,
+        wordDefinitionId: Long,
+    ) = conversationRepository.save(
+        ConversationEntity(
+            userId = userId,
+            wordDefinitionId = wordDefinitionId,
         ),
     )
 }

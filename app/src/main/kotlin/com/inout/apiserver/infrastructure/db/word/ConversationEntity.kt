@@ -5,6 +5,7 @@ import com.inout.apiserver.error.InOutRequireNotNullException
 import com.inout.apiserver.infrastructure.db.BaseEntity
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
@@ -14,7 +15,7 @@ import jakarta.persistence.Table
 data class ConversationEntity(
     val userId: Long,
     val wordDefinitionId: Long,
-    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "conversation_id")
     val messages: MutableList<ConversationMessageEntity> = mutableListOf(),
 ) : BaseEntity() {

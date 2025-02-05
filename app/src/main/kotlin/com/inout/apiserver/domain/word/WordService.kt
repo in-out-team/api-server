@@ -3,9 +3,11 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.word.ConversationRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
@@ -28,6 +30,7 @@ class WordService(
     private val userSentenceRepository: UserSentenceRepository,
     private val userSentenceFeedbackRepository: UserSentenceFeedbackRepository,
     private val sentenceFeedbackRepository: SentenceFeedbackRepository,
+    private val conversationRepository: ConversationRepository,
 ) {
     fun getWordByNameAndFromLanguageAndToLanguage(
         name: String,
@@ -173,4 +176,12 @@ class WordService(
 
     fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<Long>): List<SentenceFeedback> =
         sentenceFeedbackRepository.findAllByIdIn(sentenceFeedbackIds)
+
+    fun getConversationsBy(
+        user: User,
+        wordDefinitionId: Long,
+    ): List<Conversation> =
+        conversationRepository
+            .findAllByUserIdAndWordDefinitionId(user.id, wordDefinitionId)
+            .sortedBy { it.createdAt }
 }
