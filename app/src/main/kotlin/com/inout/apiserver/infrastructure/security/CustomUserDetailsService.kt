@@ -11,15 +11,16 @@ import org.springframework.security.core.userdetails.User as SecurityUser
 class CustomUserDetailsService(
     private val userRepository: UserRepository,
 ) : UserDetailsService {
-    override fun loadUserByUsername(username: String): UserDetails {
-        return userRepository.findByEmail(username)
+    override fun loadUserByUsername(username: String): UserDetails =
+        userRepository
+            .findByEmail(username)
             ?.let { user ->
-                SecurityUser.builder()
+                SecurityUser
+                    .builder()
                     .username(user.email) // email is used as username in our service
                     .password(user.password)
                     .roles("USER") // TODO: fix according to actual user role
                     .build()
             }
             ?: throw UsernameNotFoundException("User not found")
-    }
 }

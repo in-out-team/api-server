@@ -1,7 +1,7 @@
 package com.inout.apiserver.config.web
 
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.security.core.context.SecurityContextHolder
@@ -19,10 +19,10 @@ class WebConfig(
         resolvers.add(RequestUserArgumentResolver(userService))
     }
 
-    class RequestUserArgumentResolver(private val userService: UserService) : HandlerMethodArgumentResolver {
-        override fun supportsParameter(parameter: MethodParameter): Boolean {
-            return parameter.hasParameterAnnotation(RequestUser::class.java)
-        }
+    class RequestUserArgumentResolver(
+        private val userService: UserService,
+    ) : HandlerMethodArgumentResolver {
+        override fun supportsParameter(parameter: MethodParameter): Boolean = parameter.hasParameterAnnotation(RequestUser::class.java)
 
         override fun resolveArgument(
             parameter: MethodParameter,

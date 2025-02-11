@@ -42,17 +42,20 @@ class SecurityConfig(
                     .permitAll() // permit all swagger related requests (TODO: this is for dev, disable on prod)
                     .requestMatchers(HttpMethod.POST, "/v1/users")
                     .permitAll() // for user creation, no authentication required
-                    .requestMatchers("/v*/auth/**").permitAll() // for user authentication, no authentication required
-                    .requestMatchers("/admin/**").hasRole("ADMIN") // admin role check
-                    .requestMatchers("/**").hasRole("USER") // user role check
-            }
-            .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // since we are using JWT
+                    .requestMatchers("/v*/auth/**")
+                    .permitAll() // for user authentication, no authentication required
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN") // admin role check
+                    .requestMatchers("/**")
+                    .hasRole("USER") // user role check
+            }.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // since we are using JWT
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .exceptionHandling {
                 it.authenticationEntryPoint { _, response, _ ->
                     response.contentType = "application/json;charset=UTF-8"
                     response.status = HttpServletResponse.SC_UNAUTHORIZED
+                    // FIXME: unwanted error responses are also sent as unauthorized, need to fix this
                     response.writer.write(
                         """
                         {
@@ -69,36 +72,29 @@ class SecurityConfig(
     }
 
     @Bean
-    fun userDetailsService(): UserDetailsService {
-        return CustomUserDetailsService(userRepository)
-    }
+    fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userRepository)
 
     @Bean
-    fun encoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
+    fun encoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun authenticationProvider(): AuthenticationProvider {
-        return DaoAuthenticationProvider()
+    fun authenticationProvider(): AuthenticationProvider =
+        DaoAuthenticationProvider()
             .apply {
                 setUserDetailsService(userDetailsService())
                 setPasswordEncoder(encoder())
             }
-    }
 
     @Bean
-    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
-        return config.authenticationManager
-    }
+    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager = config.authenticationManager
 
     @Bean // place oauth related here for now, on implementing other providers(ex. apple, kakao), relocate to a different config
     fun googleIdTokenVerifier(
         @Value("\${auth.google.ios-client-id}")
         googleIosClientId: String,
-    ): GoogleIdTokenVerifier {
-        return GoogleIdTokenVerifier.Builder(NetHttpTransport(), GsonFactory.getDefaultInstance())
+    ): GoogleIdTokenVerifier =
+        GoogleIdTokenVerifier
+            .Builder(NetHttpTransport(), GsonFactory.getDefaultInstance())
             .setAudience(listOf(googleIosClientId))
             .build()
-    }
 }

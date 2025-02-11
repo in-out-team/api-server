@@ -7,8 +7,8 @@ import com.inout.apiserver.application.word.GetWritingSentenceFeedbacksApplicati
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
 import com.inout.apiserver.config.web.RequestUser
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.SentencesResponse

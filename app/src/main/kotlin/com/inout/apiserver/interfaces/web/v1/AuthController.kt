@@ -20,15 +20,32 @@ class AuthController(
 ) : AuthApiSpec {
     override fun login(
         @RequestBody @Valid request: UserLoginRequest,
-    ): ResponseEntity<TokenResponse> {
-        return ResponseEntity.ok(emailPasswordLoginApplication.run(request))
-    }
+    ): ResponseEntity<TokenResponse> =
+        ResponseEntity.ok(
+            TokenResponse(
+                accessToken =
+                    emailPasswordLoginApplication
+                        .run(
+                            EmailPasswordLoginApplication.Request(
+                                email = request.email,
+                                password = request.password,
+                            ),
+                        ).accessToken,
+            ),
+        )
 
     override fun googleLogin(
         @RequestBody @Valid request: GoogleLoginRequest,
-    ): ResponseEntity<TokenResponse> {
-        return ResponseEntity.ok(googleLoginApplication.run(request))
-    }
+    ): ResponseEntity<TokenResponse> =
+        ResponseEntity.ok(
+            TokenResponse(
+                accessToken =
+                    googleLoginApplication
+                        .run(
+                            GoogleLoginApplication.Request(idToken = request.idToken),
+                        ).accessToken,
+            ),
+        )
 
     // TODO: get refresh token
 }

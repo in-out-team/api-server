@@ -3,7 +3,6 @@ package com.inout.apiserver.domain.study
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
@@ -14,6 +13,7 @@ import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.StudyEntity
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
@@ -56,7 +56,7 @@ class StudyServiceTest(
                 val pageable = PageRequest.of(0, 10)
 
                 // when
-                val studies = studyService.getAllByUserId(user!!.id, pageable)
+                val studies = studyService.getAllByUserId(user!!.id!!, pageable)
 
                 // then
                 studies.isEmpty shouldBe true
@@ -81,10 +81,10 @@ class StudyServiceTest(
                             ),
                     )
                 val studies =
-                    word.definitions.map { studyFactory.createStudy(userId = user!!.id, wordDefinitionId = it.id) }
+                    word.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id) }
 
                 // when
-                val res = studyService.getAllByUserId(user!!.id, PageRequest.of(0, 10))
+                val res = studyService.getAllByUserId(user!!.id!!, PageRequest.of(0, 10))
 
                 // then
                 res.totalElements shouldBe 2
@@ -99,12 +99,12 @@ class StudyServiceTest(
 
             beforeEach {
                 word = wordFactory.createWord()
-                study = studyFactory.createStudy(userId = user!!.id, wordDefinitionId = word!!.definitions.first().id)
+                study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word!!.definitions.first().id)
             }
 
             it("should return study when it exists") {
                 // when
-                val res = studyService.getByUserIdAndWordDefinitionId(user!!.id, study!!.wordDefinitionId)
+                val res = studyService.getByUserIdAndWordDefinitionId(user!!.id!!, study!!.wordDefinitionId)
 
                 // then
                 res shouldBe study
@@ -112,7 +112,7 @@ class StudyServiceTest(
 
             it("should return null when study does not exist") {
                 // when
-                val res = studyService.getByUserIdAndWordDefinitionId(user!!.id, study!!.wordDefinitionId + 1)
+                val res = studyService.getByUserIdAndWordDefinitionId(user!!.id!!, study!!.wordDefinitionId + 1)
 
                 // then
                 res shouldBe null
@@ -120,12 +120,11 @@ class StudyServiceTest(
         }
 
         describe("getById") {
-            var word: Word?
             var study: Study? = null
 
             beforeEach {
-                word = wordFactory.createWord()
-                study = studyFactory.createStudy(userId = user!!.id)
+                wordFactory.createWord()
+                study = studyFactory.createStudy(userId = user!!.id!!)
             }
 
             it("should return study when it exists") {
@@ -150,7 +149,7 @@ class StudyServiceTest(
                 // given
                 val word = wordFactory.createWord()
                 studyFactory.createStudy(
-                    userId = user!!.id,
+                    userId = user!!.id!!,
                     wordDefinitionId = word.definitions.first().id,
                 )
 
@@ -159,7 +158,7 @@ class StudyServiceTest(
                     assertThrows<ConflictException> {
                         studyService.createStudy(
                             StudyCreateObject(
-                                userId = user!!.id,
+                                userId = user!!.id!!,
                                 wordDefinitionId = word.definitions.first().id,
                             ),
                         )
@@ -179,13 +178,13 @@ class StudyServiceTest(
                 val study =
                     studyService.createStudy(
                         StudyCreateObject(
-                            userId = user!!.id,
+                            userId = user!!.id!!,
                             wordDefinitionId = wordDefinitionId,
                         ),
                     )
 
                 // then
-                study.userId shouldBe user!!.id
+                study.userId shouldBe user!!.id!!
                 study.wordDefinitionId shouldBe wordDefinitionId
             }
         }
@@ -195,7 +194,7 @@ class StudyServiceTest(
                 val now = Instant.now()
                 listOf(0, -1).forEach { count ->
                     // when
-                    val studies = studyService.getStudiesPastDue(user!!.id, now, emptyList(), count)
+                    val studies = studyService.getStudiesPastDue(user!!.id!!, now, emptyList(), count)
 
                     // then
                     studies.isEmpty() shouldBe true
@@ -222,12 +221,12 @@ class StudyServiceTest(
                     )
                 val studies =
                     listOf(
-                        studyFactory.createStudy(userId = user!!.id, wordDefinitionId = word.definitions[0].id),
-                        studyFactory.createStudy(userId = user!!.id, wordDefinitionId = word.definitions[1].id),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id),
                     )
 
                 // when
-                val res = studyService.getStudiesPastDue(user!!.id, Instant.now(), emptyList(), 2)
+                val res = studyService.getStudiesPastDue(user!!.id!!, Instant.now(), emptyList(), 2)
 
                 // then
                 res shouldBe studies
@@ -263,8 +262,8 @@ class StudyServiceTest(
                     )
                 val studies =
                     listOf(
-                        studyFactory.createStudy(userId = user!!.id, wordDefinitionId = word.definitions[0].id),
-                        studyFactory.createStudy(userId = user!!.id, wordDefinitionId = word.definitions[1].id),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id),
                     )
                 val ids = studies.map { it.id }
 
@@ -282,14 +281,14 @@ class StudyServiceTest(
                 val dailyStudySet =
                     dailyStudySetRepository.save(
                         DailyStudySetEntity(
-                            userId = user!!.id,
+                            userId = user!!.id!!,
                             date = LocalDate.now(),
                             studyIds = emptyList(),
                         ),
                     )
 
                 // when
-                val res = studyService.getDailyStudySet(user!!.id, LocalDate.now())
+                val res = studyService.getDailyStudySet(user!!.id!!, LocalDate.now())
 
                 // then
                 res shouldBe dailyStudySet
@@ -297,7 +296,7 @@ class StudyServiceTest(
 
             it("should return null when daily study set does not exist") {
                 // when
-                val res = studyService.getDailyStudySet(user!!.id, LocalDate.now())
+                val res = studyService.getDailyStudySet(user!!.id!!, LocalDate.now())
 
                 // then
                 res shouldBe null
@@ -309,12 +308,12 @@ class StudyServiceTest(
                 // given
                 val dailyStudySetCreateObject =
                     DailyStudySetCreateObject(
-                        userId = user!!.id,
+                        userId = user!!.id!!,
                         date = LocalDate.now(),
                     )
                 dailyStudySetRepository.save(
                     DailyStudySetEntity(
-                        userId = user!!.id,
+                        userId = user!!.id!!,
                         date = LocalDate.now(),
                         studyIds = emptyList(),
                     ),
@@ -335,7 +334,7 @@ class StudyServiceTest(
                 // given
                 val dailyStudySetCreateObject =
                     DailyStudySetCreateObject(
-                        userId = user!!.id,
+                        userId = user!!.id!!,
                         date = LocalDate.now(),
                     )
 
@@ -344,7 +343,7 @@ class StudyServiceTest(
 
                 // then
                 dailyStudySetRepository.findById(dailyStudySet.id) shouldBe dailyStudySet
-                dailyStudySet.userId shouldBe user!!.id
+                dailyStudySet.userId shouldBe user!!.id!!
                 dailyStudySet.date shouldBe LocalDate.now()
             }
         }
@@ -371,7 +370,7 @@ class StudyServiceTest(
                             ),
                     )
                 studies =
-                    word!!.definitions.map { studyFactory.createStudy(userId = user!!.id, wordDefinitionId = it.id) }
+                    word!!.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id) }
             }
 
             it("should return daily study set studies when date is before today") {
@@ -379,7 +378,7 @@ class StudyServiceTest(
                 val dailyStudySet =
                     dailyStudySetRepository.save(
                         DailyStudySetEntity(
-                            userId = user!!.id,
+                            userId = user!!.id!!,
                             date = LocalDate.now().minusDays(1),
                             studyIds = studies!!.map { it.id },
                         ),
@@ -398,7 +397,7 @@ class StudyServiceTest(
                 val dailyStudySet =
                     dailyStudySetRepository.save(
                         DailyStudySetEntity(
-                            userId = user!!.id,
+                            userId = user!!.id!!,
                             date = LocalDate.now(),
                             studyIds = studies!!.map { it.id },
                         ),
@@ -418,7 +417,7 @@ class StudyServiceTest(
                 val pastDueStudies =
                     listOf(
                         studyFactory.createStudy(
-                            userId = user!!.id,
+                            userId = user!!.id!!,
                             wordDefinitionId = pastStudiesWord.definitions.first().id,
                         ),
                     )
@@ -436,7 +435,7 @@ class StudyServiceTest(
             it("should return rated study") {
                 // given
                 val word = wordFactory.createWord()
-                val study = studyFactory.createStudy(userId = user!!.id, wordDefinitionId = word.definitions.first().id)
+                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
                 val rating = FsrsCardRating.EASY
                 val now = Instant.now()
 
@@ -445,7 +444,7 @@ class StudyServiceTest(
 
                 // then
                 res.id shouldBeGreaterThan 0
-                res.userId shouldBe user!!.id
+                res.userId shouldBe user!!.id!!
                 res.wordDefinitionId shouldBe word.definitions.first().id
                 res.state shouldBe FsrsCardState.REVIEW
                 val expectedScheduledDays = 11

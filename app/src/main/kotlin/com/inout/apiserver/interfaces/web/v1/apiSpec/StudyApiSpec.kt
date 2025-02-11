@@ -1,7 +1,7 @@
 package com.inout.apiserver.interfaces.web.v1.apiSpec
 
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.error.HttpException
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.DailyStudySetResponse

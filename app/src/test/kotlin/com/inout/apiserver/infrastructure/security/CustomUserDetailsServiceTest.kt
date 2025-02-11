@@ -1,6 +1,6 @@
 package com.inout.apiserver.infrastructure.security
 
-import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import io.mockk.every
 import io.mockk.mockk
@@ -28,7 +28,7 @@ class CustomUserDetailsServiceTest {
     fun `loadUserByUsername - should return UserDetails when user found`() {
         // given
         val user =
-            User(id = 1L, email = email, password = "password", nickname = "test1", createdAt = null, updatedAt = null)
+            User(id = 1L, email = email, password = "password", nickname = "test1")
         every { userRepository.findByEmail(email) } returns user
 
         // when

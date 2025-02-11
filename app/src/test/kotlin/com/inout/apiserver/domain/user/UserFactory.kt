@@ -1,6 +1,6 @@
 package com.inout.apiserver.domain.user
 
-import com.inout.apiserver.infrastructure.db.user.UserEntity
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import org.springframework.stereotype.Component
 
@@ -14,7 +14,7 @@ class UserFactory(
         nickname: String = "test",
     ): User =
         userRepository.save(
-            UserEntity(
+            User(
                 email = email,
                 password = password,
                 nickname = nickname,

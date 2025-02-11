@@ -1,13 +1,13 @@
 package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
-import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.infrastructure.db.user.User
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.security.Keys
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Date
 
 @Service
 class TokenService(
@@ -18,9 +18,10 @@ class TokenService(
     fun generate(
         user: User,
         expirationDate: Date = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration),
-        extraClaims: Map<String, Any> = emptyMap()
-    ): String {
-        return Jwts.builder()
+        extraClaims: Map<String, Any> = emptyMap(),
+    ): String =
+        Jwts
+            .builder()
             .claims()
             .subject(user.email)
             .issuedAt(Date(System.currentTimeMillis()))
@@ -29,18 +30,19 @@ class TokenService(
             .and()
             .signWith(key)
             .compact()
-    }
 
-    fun isValid(token: String, email: String): Boolean {
-        return runCatching {
+    fun isValid(
+        token: String,
+        email: String,
+    ): Boolean =
+        runCatching {
             extractEmail(token) == email && !isExpired(token)
         }.getOrElse {
             false
         }
-    }
 
-    fun isExpired(token: String): Boolean {
-        return runCatching {
+    fun isExpired(token: String): Boolean =
+        runCatching {
             getClaims(token).expiration.before(Date(System.currentTimeMillis()))
         }.getOrElse { error ->
             when {
@@ -48,20 +50,17 @@ class TokenService(
                 else -> throw error
             }
         }
-    }
 
-    fun extractEmail(token: String): String? {
-        return runCatching { getClaims(token).subject }.getOrElse { null }
-    }
+    fun extractEmail(token: String): String? = runCatching { getClaims(token).subject }.getOrElse { null }
 
     /**
      * throws ExpiredJwtException if the token is expired or any other exception if the token is invalid
      */
-    private fun getClaims(token: String): Claims {
-        return Jwts.parser()
+    private fun getClaims(token: String): Claims =
+        Jwts
+            .parser()
             .verifyWith(key)
             .build()
             .parseSignedClaims(token)
             .payload
-    }
 }
