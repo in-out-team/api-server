@@ -1,12 +1,12 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.word.UserSentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.stereotype.Component
 
 @Component
@@ -26,7 +26,7 @@ class SelectReadingSentenceApplication(
                 message = "Sentence Not Found",
                 code = "SENTENCE_1",
             )
-        wordService.getUserSentencesBy(user.id, sentence.wordDefinitionId, SentenceType.READING).let { userSentences ->
+        wordService.getUserSentencesBy(user.id!!, sentence.wordDefinitionId, SentenceType.READING).let { userSentences ->
             if (userSentences.size >= MAX_SENTENCES_COUNT) {
                 throw BadRequestException(
                     message = "Maximum of $MAX_SENTENCES_COUNT sentences can be selected",
@@ -37,7 +37,7 @@ class SelectReadingSentenceApplication(
 
         return wordService.createUserSentence(
             UserSentenceCreateObject(
-                userId = user.id,
+                userId = user.id!!,
                 wordDefinitionId = sentence.wordDefinitionId,
                 type = SentenceType.READING,
                 sentenceId = sentence.id,

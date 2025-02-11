@@ -1,10 +1,10 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.stereotype.Component
 
 @Component
@@ -31,11 +31,11 @@ class GetReadingSentencesApplication(
         }
 
         val userSentences =
-            wordService.getUserSentencesBy(user.id, wordDefinitionId, SentenceType.READING).toMutableList()
+            wordService.getUserSentencesBy(user.id!!, wordDefinitionId, SentenceType.READING).toMutableList()
         if (userSentences.isEmpty()) {
             wordService
                 .loadUserSentencesForReading(
-                    user.id,
+                    user.id!!,
                     sentences
                         .shuffled()
                         .take(minOf(TARGET_SENTENCES_COUNT, (sentences.size / 3).coerceAtLeast(1))),

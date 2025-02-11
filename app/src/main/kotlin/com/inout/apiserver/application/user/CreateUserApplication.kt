@@ -1,8 +1,7 @@
 package com.inout.apiserver.application.user
 
 import com.inout.apiserver.domain.user.UserService
-import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
-import com.inout.apiserver.interfaces.web.v1.response.UserResponse
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -11,8 +10,23 @@ import org.springframework.transaction.annotation.Transactional
 class CreateUserApplication(
     private val userService: UserService,
 ) {
-    fun run(request: CreateUserRequest): UserResponse {
-        val newUser = userService.createUser(request)
-        return UserResponse.of(newUser)
+    data class Request(
+        val email: String,
+        val password: String,
+        val nickname: String,
+    )
+
+    data class Response(
+        val newUser: User,
+    )
+
+    fun run(request: Request): Response {
+        val newUser =
+            userService.createUser(
+                email = request.email,
+                password = request.password,
+                nickname = request.nickname,
+            )
+        return Response(newUser = newUser)
     }
 }

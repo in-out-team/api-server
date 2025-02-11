@@ -1,7 +1,6 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
@@ -11,6 +10,7 @@ import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.comparables.shouldBeGreaterThan
@@ -77,7 +77,7 @@ class GetReadingSentencesApplicationTest(
                 val wordDefinitionId = word!!.definitions.first().id
                 userSentenceRepository
                     .findAllByUserIdAndWordDefinitionIdAndType(
-                        user!!.id,
+                        user!!.id!!,
                         wordDefinitionId,
                         SentenceType.READING,
                     ).size shouldBe 0
@@ -95,7 +95,7 @@ class GetReadingSentencesApplicationTest(
                 val selectedSentence = sentences!!.first()
                 wordService.createUserSentence(
                     UserSentenceCreateObject(
-                        userId = user!!.id,
+                        userId = user!!.id!!,
                         wordDefinitionId = word!!.definitions.first().id,
                         type = SentenceType.READING,
                         sentenceId = selectedSentence.id,

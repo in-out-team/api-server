@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.infrastructure.db.user.User
 
 data class UserResponse(
     val id: Long,
@@ -8,12 +8,11 @@ data class UserResponse(
     val nickname: String,
 ) {
     companion object {
-        fun of(user: User): UserResponse {
-            return UserResponse(
-                id = user.id,
+        fun of(user: User): UserResponse =
+            UserResponse(
+                id = user.id!!,
                 email = user.email,
                 nickname = user.nickname,
             )
-        }
     }
 }

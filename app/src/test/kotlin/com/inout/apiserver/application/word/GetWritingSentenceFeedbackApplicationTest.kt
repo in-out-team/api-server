@@ -3,7 +3,6 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.Word
@@ -14,6 +13,7 @@ import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
+import com.inout.apiserver.infrastructure.db.user.User
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -75,7 +75,7 @@ class GetWritingSentenceFeedbackApplicationTest(
         }
 
         describe("when sentence is found") {
-            var word: Word? = null
+            var word: Word?
             var wordDefinition: WordDefinition? = null
             var sentence: Sentence? = null
 
@@ -141,7 +141,7 @@ class GetWritingSentenceFeedbackApplicationTest(
 
                 it("should raise error if max attempt is reached") {
                     // given
-                    val userSentence = wordFactory.createUserSentence(user!!.id, wordDefinition!!.id, sentence!!.id)
+                    val userSentence = wordFactory.createUserSentence(user!!.id!!, wordDefinition!!.id, sentence!!.id)
                     repeat(3) {
                         val sentenceFeedback =
                             wordFactory.createSentenceFeedback(
@@ -175,7 +175,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                 it("should create userSentence on first attempt") {
                     // given
                     mockOpenAIRequest()
-                    wordService.getUserSentenceBy(user!!.id, sentence!!.id) shouldBe null
+                    wordService.getUserSentenceBy(user!!.id!!, sentence!!.id) shouldBe null
 
                     // when
                     getWritingSentenceFeedbackApplication.run(
@@ -187,7 +187,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                     )
 
                     // then
-                    wordService.getUserSentenceBy(user!!.id, sentence!!.id) shouldNotBe null
+                    wordService.getUserSentenceBy(user!!.id!!, sentence!!.id) shouldNotBe null
                 }
 
                 it("should create sentenceFeedback if submitted content was not attempted") {
@@ -212,7 +212,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                 it("should create userSentenceFeedback even if sentenceFeedback was already attempted") {
                     // given
                     mockOpenAIRequest()
-                    val userSentence = wordFactory.createUserSentence(user!!.id, wordDefinition!!.id, sentence!!.id)
+                    val userSentence = wordFactory.createUserSentence(user!!.id!!, wordDefinition!!.id, sentence!!.id)
                     val sentenceFeedback = wordFactory.createSentenceFeedback(sentenceId = sentence!!.id)
 
                     // when
@@ -232,7 +232,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                 it("should create userSentenceFeedback and sentenceFeedback if submitted content was not attempted") {
                     // given
                     mockOpenAIRequest()
-                    val userSentence = wordFactory.createUserSentence(user!!.id, wordDefinition!!.id, sentence!!.id)
+                    val userSentence = wordFactory.createUserSentence(user!!.id!!, wordDefinition!!.id, sentence!!.id)
                     wordService.getSentenceFeedbackBy(sentence!!.id, "test") shouldBe null
 
                     // when

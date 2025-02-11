@@ -5,7 +5,7 @@ import com.inout.apiserver.application.study.RateStudyWordApplication
 import com.inout.apiserver.application.study.ReadOrCreateDailyStudySetApplication
 import com.inout.apiserver.application.study.ReadStudiesApplication
 import com.inout.apiserver.config.web.RequestUser
-import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.apiSpec.StudyApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
@@ -34,18 +34,17 @@ class StudyController(
     override fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
         @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<StudyWordResponse> {
-        return ResponseEntity(
-            createStudyApplication.run(request, user.id).let { StudyWordResponse.of(it.study, it.word) },
+    ): ResponseEntity<StudyWordResponse> =
+        ResponseEntity(
+            createStudyApplication.run(request, user.id!!).let { StudyWordResponse.of(it.study, it.word) },
             HttpStatus.CREATED,
         )
-    }
 
     override fun getStudies(
         @Parameter(hidden = true) @RequestUser user: User,
         @Parameter(hidden = true) pageable: Pageable,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
-        val (count, studyWithWords) = readStudiesApplication.run(user.id, pageable)
+        val (count, studyWithWords) = readStudiesApplication.run(user.id!!, pageable)
         return ResponseEntity(
             ResponsePaginationWrapper(
                 data = studyWithWords.map { StudyWordResponse.of(it.study, it.word) },
@@ -60,7 +59,7 @@ class StudyController(
         @Parameter(hidden = true) @RequestUser user: User,
         @RequestParam(name = "date", required = true) date: LocalDate,
     ): ResponseEntity<DailyStudySetResponse> {
-        val dailyStudySetResult = readOrCreateDailyStudySetApplication.run(user.id, date)
+        val dailyStudySetResult = readOrCreateDailyStudySetApplication.run(user.id!!, date)
         return ResponseEntity(
             DailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
             HttpStatus.OK,
@@ -73,7 +72,7 @@ class StudyController(
     ): ResponseEntity<StudyWordResponse> {
         val rateStudyResult =
             rateStudyWordApplication.run(
-                userId = user.id,
+                userId = user.id!!,
                 studyId = request.studyId,
                 dailyStudySetId = request.dailyStudySetId,
                 rating = request.rating,

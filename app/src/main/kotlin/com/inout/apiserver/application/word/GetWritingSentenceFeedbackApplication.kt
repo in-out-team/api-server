@@ -2,13 +2,13 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.word.SentenceFeedbackCreateObject
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
 import com.inout.apiserver.domain.word.UserSentenceFeedbackCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
@@ -54,11 +54,11 @@ class GetWritingSentenceFeedbackApplication(
         }
 
         val userSentence =
-            wordService.getUserSentenceBy(request.user.id, request.sentenceId)
+            wordService.getUserSentenceBy(request.user.id!!, request.sentenceId)
                 ?: run {
                     wordService.createUserSentence(
                         UserSentenceCreateObject(
-                            userId = request.user.id,
+                            userId = request.user.id!!,
                             wordDefinitionId = sentence.wordDefinitionId,
                             type = SentenceType.WRITING,
                             sentenceId = sentence.id,

@@ -1,7 +1,7 @@
 package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtConfig
-import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.infrastructure.db.user.User
 import io.jsonwebtoken.Claims
 import io.mockk.every
 import io.mockk.mockk

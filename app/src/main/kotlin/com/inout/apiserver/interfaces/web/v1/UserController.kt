@@ -4,7 +4,7 @@ import com.inout.apiserver.application.user.CreateUserApplication
 import com.inout.apiserver.application.user.ReadUserApplication
 import com.inout.apiserver.application.user.UpdateUserApplication
 import com.inout.apiserver.config.web.RequestUser
-import com.inout.apiserver.domain.user.User
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.apiSpec.UserApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
@@ -27,18 +27,47 @@ class UserController(
 ) : UserApiSpec {
     override fun createUser(
         @RequestBody @Valid request: CreateUserRequest,
-    ): ResponseEntity<UserResponse> {
-        return ResponseEntity(createUserApplication.run(request), CREATED)
-    }
+    ): ResponseEntity<UserResponse> =
+        ResponseEntity(
+            UserResponse.of(
+                user =
+                    createUserApplication
+                        .run(
+                            CreateUserApplication.Request(
+                                email = request.email,
+                                password = request.password,
+                                nickname = request.nickname,
+                            ),
+                        ).newUser,
+            ),
+            CREATED,
+        )
 
     override fun updateUser(
         @RequestBody @Valid request: UpdateUserRequest,
         @RequestUser user: User,
-    ): ResponseEntity<UserResponse> = ResponseEntity(updateUserApplication.run(request, user), OK)
+    ): ResponseEntity<UserResponse> =
+        ResponseEntity(
+            UserResponse.of(
+                user =
+                    updateUserApplication
+                        .run(
+                            UpdateUserApplication.Request(
+                                user = user,
+                                newNickname = request.nickname,
+                            ),
+                        ).updatedUser,
+            ),
+            OK,
+        )
 
     override fun getUser(
         @PathVariable id: Long,
-    ): ResponseEntity<UserResponse> {
-        return ResponseEntity(readUserApplication.run(id), OK)
-    }
+    ): ResponseEntity<UserResponse> =
+        ResponseEntity(
+            UserResponse.of(
+                user = readUserApplication.run(ReadUserApplication.Request(id = id)).user,
+            ),
+            OK,
+        )
 }

@@ -1,11 +1,11 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.User
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.stereotype.Component
 
 @Component
@@ -28,7 +28,7 @@ class GetRandomWritingSentenceApplication(
             )
         }
 
-        val userSentences = wordService.getUserSentencesBy(user.id, wordDefinitionId, SentenceType.WRITING)
+        val userSentences = wordService.getUserSentencesBy(user.id!!, wordDefinitionId, SentenceType.WRITING)
         if (userSentences.size >= TARGET_SENTENCES_COUNT) {
             throw BadRequestException(
                 message = "User already has enough sentences",
