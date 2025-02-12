@@ -1,59 +1,52 @@
 package com.inout.apiserver.infrastructure.db.study
 
-import com.inout.apiserver.domain.study.Study
+import com.inout.apiserver.base.alias.StudyId
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.WordDefinitionId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.time.Instant
+
+interface StudyJpaRepository : JpaRepository<Study, StudyId> {
+    fun findByUserIdAndWordDefinitionId(
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
+    ): Study?
+
+    fun findAllByUserId(
+        userId: UserId,
+        pageable: Pageable,
+    ): Page<Study>
+
+    fun findAllByUserIdAndDueLessThanOrderByDue(
+        userId: UserId,
+        due: Instant,
+        pageable: Pageable,
+    ): Page<Study>
+
+    fun findAllByUserIdAndDueLessThanAndIdNotInOrderByDue(
+        userId: UserId,
+        due: Instant,
+        excludeIds: List<Long>,
+        pageable: Pageable,
+    ): Page<Study>
+}
 
 @Repository
 class StudyRepository(
     private val studyJpaRepository: StudyJpaRepository,
-) {
-    fun save(study: StudyEntity): Study {
-        return studyJpaRepository.save(study).toDomain()
-    }
-
-    fun findByUserIdAndWordDefinitionId(
-        userId: Long,
-        wordDefinitionId: Long,
-    ): Study? {
-        return studyJpaRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)?.toDomain()
-    }
-
-    fun findById(id: Long): Study? {
-        return studyJpaRepository.findById(id).orElse(null)?.toDomain()
-    }
-
-    fun findAllByUserId(
-        userId: Long,
-        pageable: Pageable,
-    ): Page<Study> {
-        return studyJpaRepository.findAllByUserId(userId, pageable).map { it.toDomain() }
-    }
-
-    fun findAllByIds(ids: List<Long>): List<Study> {
-        return studyJpaRepository.findAllById(ids).map { it.toDomain() }
-    }
-
+) : StudyJpaRepository by studyJpaRepository {
     fun findAllPastDueStudiesBy(
-        userId: Long,
+        userId: UserId,
         due: Instant,
-        excludeIds: List<Long>,
+        excludeIds: List<StudyId>,
         pageable: Pageable,
     ): Page<Study> =
         if (excludeIds.isEmpty()) {
-            studyJpaRepository.findAllByUserIdAndDueLessThanOrderByDue(
-                userId = userId,
-                due = due,
-                pageable = pageable,
-            )
+            findAllByUserIdAndDueLessThanOrderByDue(userId, due, pageable)
         } else {
-            studyJpaRepository.findAllByUserIdAndDueLessThanAndIdNotInOrderByDue(
-                userId = userId,
-                due = due,
-                excludeIds = excludeIds,
-                pageable = pageable,
-            )
-        }.map { it.toDomain() }
+            findAllByUserIdAndDueLessThanAndIdNotInOrderByDue(userId, due, excludeIds, pageable)
+        }
 }

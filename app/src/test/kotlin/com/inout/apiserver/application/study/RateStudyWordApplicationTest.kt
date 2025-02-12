@@ -22,8 +22,7 @@ import java.time.LocalDate
 
 @InOutSpringBootTest
 class RateStudyWordApplicationTest(
-    // usecase
-    private val rateStudyWordApplication: RateStudyWordApplication,
+    private val subject: RateStudyWordApplication,
     // repositories
     private val dailyStudySetRepository: DailyStudySetRepository,
     // factories
@@ -58,7 +57,14 @@ class RateStudyWordApplicationTest(
                 // when
                 val exception =
                     assertThrows<NotFoundException> {
-                        rateStudyWordApplication.run(userId, dailyStudySetId, studyId, rating)
+                        subject.run(
+                            RateStudyWordApplication.Request(
+                                userId = userId,
+                                dailyStudySetId = dailyStudySetId,
+                                studyId = studyId,
+                                rating = rating,
+                            ),
+                        )
                     }
 
                 // then
@@ -79,7 +85,14 @@ class RateStudyWordApplicationTest(
                 // when
                 val exception =
                     assertThrows<NotFoundException> {
-                        rateStudyWordApplication.run(userId, dailyStudySetId, studyId, rating)
+                        subject.run(
+                            RateStudyWordApplication.Request(
+                                userId = userId,
+                                dailyStudySetId = dailyStudySetId,
+                                studyId = studyId,
+                                rating = rating,
+                            ),
+                        )
                     }
 
                 // then
@@ -100,7 +113,14 @@ class RateStudyWordApplicationTest(
                 // when
                 val exception =
                     assertThrows<NotFoundException> {
-                        rateStudyWordApplication.run(userId, dailyStudySetId, studyId, rating)
+                        subject.run(
+                            RateStudyWordApplication.Request(
+                                userId = userId,
+                                dailyStudySetId = dailyStudySetId,
+                                studyId = studyId,
+                                rating = rating,
+                            ),
+                        )
                     }
 
                 // then
@@ -120,7 +140,16 @@ class RateStudyWordApplicationTest(
                 val study = studyFactory.createStudy(userId = userId, wordDefinitionId = word.definitions.first().id)
 
                 // when
-                val result = rateStudyWordApplication.run(userId, dailyStudySetId, study.id, rating).studyWord.study
+                val result =
+                    subject
+                        .run(
+                            RateStudyWordApplication.Request(
+                                userId = userId,
+                                dailyStudySetId = dailyStudySetId,
+                                studyId = study.id!!,
+                                rating = rating,
+                            ),
+                        ).studyWord.study
 
                 // then
                 result.state shouldBe FsrsCardState.REVIEW
@@ -152,7 +181,14 @@ class RateStudyWordApplicationTest(
                 val study = studyFactory.createStudy(userId = userId, wordDefinitionId = word.definitions.first().id)
 
                 // when
-                rateStudyWordApplication.run(userId, dailyStudySetId, study.id, rating)
+                subject.run(
+                    RateStudyWordApplication.Request(
+                        userId = userId,
+                        dailyStudySetId = dailyStudySetId,
+                        studyId = study.id!!,
+                        rating = rating,
+                    ),
+                )
 
                 // then
                 val updatedDailyStudySet = dailyStudySetRepository.findById(dailyStudySetId)!!

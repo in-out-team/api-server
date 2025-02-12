@@ -1,16 +1,17 @@
 package com.inout.apiserver.application.study
 
+import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.study.Study
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
+import com.inout.apiserver.infrastructure.db.study.Study
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
@@ -25,8 +26,8 @@ class CreateStudyApplicationTest {
     private val createStudyApplication = CreateStudyApplication(studyService, wordService)
     private val now = Instant.now()
 
-    private fun createWords(count: Int): List<Word> {
-        return (1..count).map { i ->
+    private fun createWords(count: Int): List<Word> =
+        (1..count).map { i ->
             Word(
                 id = i.toLong(),
                 name = "name$i",
@@ -45,11 +46,10 @@ class CreateStudyApplicationTest {
                 updatedAt = now,
             )
         }
-    }
 
     private fun createStudy(
         word: Word,
-        userId: Long,
+        userId: UserId,
     ): Study {
         val fsrsCard = Card.createEmptyCard()
         return Study(
@@ -66,19 +66,21 @@ class CreateStudyApplicationTest {
             lapses = fsrsCard.lapses,
             lastReview = fsrsCard.lastReview,
             reviewLogs = emptyList(),
-            createdAt = now,
-            updatedAt = now,
-        )
+        ).apply {
+            createdAt = now
+            updatedAt = now
+        }
     }
 
     @Test
     fun `run - should raise error when word definition does not exist`() {
         // Given
-        val request =
-            CreateStudyRequest(
-                wordDefinitionId = 1L,
-            )
-        every { wordService.getWordByWordDefinitionId(request.wordDefinitionId) } throws
+        val user =
+            mockk<User> {
+                every { id } returns 1L
+            }
+        val wordDefinitionId = 1L
+        every { wordService.getWordByWordDefinitionId(wordDefinitionId) } throws
             NotFoundException(
                 message = "Word Definition not found",
                 code = "WORD_2",
@@ -87,7 +89,12 @@ class CreateStudyApplicationTest {
         // When
         val sut =
             assertThrows(NotFoundException::class.java) {
-                createStudyApplication.run(request, 1L)
+                createStudyApplication.run(
+                    CreateStudyApplication.Request(
+                        user = user,
+                        wordDefinitionId = wordDefinitionId,
+                    ),
+                )
             }
 
         // Then
@@ -98,13 +105,14 @@ class CreateStudyApplicationTest {
     @Test
     fun `run - should raise error when study creation fails`() {
         // Given
-        val request =
-            CreateStudyRequest(
-                wordDefinitionId = 1L,
-            )
+        val wordDefinitionId = 1L
         val word = createWords(1).first()
-        every { wordService.getWordByWordDefinitionId(request.wordDefinitionId) } returns word
-        every { studyService.createStudy(any()) } throws
+        val user =
+            mockk<User> {
+                every { id } returns 1L
+            }
+        every { wordService.getWordByWordDefinitionId(wordDefinitionId) } returns word
+        every { studyService.createStudy(any(), any()) } throws
             ConflictException(
                 message = "Study already exists",
                 code = "STUDY_1",
@@ -113,7 +121,12 @@ class CreateStudyApplicationTest {
         // When
         val sut =
             assertThrows(ConflictException::class.java) {
-                createStudyApplication.run(request, 1L)
+                createStudyApplication.run(
+                    CreateStudyApplication.Request(
+                        user = user,
+                        wordDefinitionId = wordDefinitionId,
+                    ),
+                )
             }
 
         // Then
@@ -124,18 +137,24 @@ class CreateStudyApplicationTest {
     @Test
     fun `run - should return created study word`() {
         // Given
-        val request =
-            CreateStudyRequest(
-                wordDefinitionId = 1L,
-            )
+        val wordDefinitionId = 1L
         val word = createWords(1).first()
-        val userId = 1L
-        val study = createStudy(word, userId)
-        every { wordService.getWordByWordDefinitionId(request.wordDefinitionId) } returns word
-        every { studyService.createStudy(any()) } returns study
+        val user =
+            mockk<User> {
+                every { id } returns 1L
+            }
+        val study = createStudy(word, user.id!!)
+        every { wordService.getWordByWordDefinitionId(wordDefinitionId) } returns word
+        every { studyService.createStudy(any(), any()) } returns study
 
         // When
-        val sut = createStudyApplication.run(request, userId)
+        val sut =
+            createStudyApplication.run(
+                CreateStudyApplication.Request(
+                    user = user,
+                    wordDefinitionId = wordDefinitionId,
+                ),
+            )
 
         // Then
         assertEquals(study, sut.study)

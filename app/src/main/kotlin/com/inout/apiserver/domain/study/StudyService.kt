@@ -1,16 +1,14 @@
 package com.inout.apiserver.domain.study
 
-import com.inout.apiserver.base.enums.FsrsCardRating
-import com.inout.apiserver.base.enums.FsrsCardState
+import com.inout.apiserver.base.alias.DailyStudySetId
+import com.inout.apiserver.base.alias.StudyId
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.StudyEntity
+import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
-import com.inout.fsrs.FSRS
-import com.inout.fsrs.model.FSRSParameters
-import com.inout.fsrs.model.enums.Grade
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -29,7 +27,7 @@ class StudyService(
     }
 
     fun getAllByUserId(
-        userId: Long,
+        userId: UserId,
         pageable: Pageable,
     ): Page<Study> {
         //  TODO: ignore sort for now
@@ -43,37 +41,32 @@ class StudyService(
     }
 
     fun getByUserIdAndWordDefinitionId(
-        userId: Long,
-        wordDefinitionId: Long,
-    ): Study? {
-        return studyRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)
-    }
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
+    ): Study? = studyRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)
 
-    fun getById(id: Long): Study? {
-        return studyRepository.findById(id)
-    }
+    fun getById(id: StudyId): Study? = studyRepository.findById(id).orElse(null)
 
     fun getStudiesPastDue(
-        userId: Long,
+        userId: UserId,
         due: Instant,
-        excludeIds: List<Long>,
+        excludeIds: List<StudyId>,
         count: Int,
     ): List<Study> {
         if (count <= 0) {
             return emptyList()
         }
 
-        return studyRepository.findAllPastDueStudiesBy(
-            userId = userId,
-            due = due,
-            excludeIds = excludeIds,
-            pageable = PageRequest.of(0, count),
-        ).content
+        return studyRepository
+            .findAllPastDueStudiesBy(
+                userId = userId,
+                due = due,
+                excludeIds = excludeIds,
+                pageable = PageRequest.of(0, count),
+            ).content
     }
 
-    fun getStudiesByIds(ids: List<Long>): List<Study> {
-        return studyRepository.findAllByIds(ids)
-    }
+    fun getStudiesByIds(ids: List<StudyId>): List<Study> = studyRepository.findAllById(ids)
 
     fun createStudy(studyCreateObject: StudyCreateObject): Study {
         getByUserIdAndWordDefinitionId(
@@ -83,49 +76,38 @@ class StudyService(
             throw ConflictException(message = "Study already exists", code = "STUDY_1")
         }
 
-        return studyRepository.save(StudyEntity.fromCreateObject(studyCreateObject))
+        return studyRepository.save(Study.fromCreateObject(studyCreateObject))
     }
 
-    fun rateStudy(
-        study: Study,
-        rating: FsrsCardRating,
+    fun createStudy(
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
     ): Study {
-        val fsrsParam = FSRSParameters()
-        val fsrs = FSRS(fsrsParam)
-        val fsrsCard = study.toFsrsCard()
-        val recordLog = fsrs.repeat(fsrsCard, study.due)
-        val newRecordLogItem =
-            recordLog.logs[Grade.fromRating(FsrsCardRating.toFsrsRating(rating))]
-                ?: throw InternalServerErrorException(message = "FSRS Repeat Error", code = "STUDY_6")
-        val updatedFsrsCard = newRecordLogItem.card
-        val newFsrsReviewLog = newRecordLogItem.log
+        getByUserIdAndWordDefinitionId(
+            userId = userId,
+            wordDefinitionId = wordDefinitionId,
+        )?.let {
+            throw ConflictException(message = "Study already exists", code = "STUDY_1")
+        }
 
-        val ratedStudy =
-            study.copy(
-                state = FsrsCardState.of(updatedFsrsCard.state),
-                due = updatedFsrsCard.due,
-                stability = updatedFsrsCard.stability,
-                difficulty = updatedFsrsCard.difficulty,
-                elapsedDays = updatedFsrsCard.elapsedDays,
-                scheduledDays = updatedFsrsCard.scheduledDays,
-                reps = updatedFsrsCard.reps,
-                lapses = updatedFsrsCard.lapses,
-                lastReview = updatedFsrsCard.lastReview,
-                reviewLogs = study.reviewLogs + StudyReviewLog.newFrom(newFsrsReviewLog),
-            )
-        return studyRepository.save(StudyEntity.fromDomain(ratedStudy))
+        return studyRepository.save(
+            Study.fromCreateObject(
+                StudyCreateObject(
+                    userId = userId,
+                    wordDefinitionId = wordDefinitionId,
+                ),
+            ),
+        )
     }
+
+    fun updateStudy(study: Study): Study = studyRepository.save(study)
 
     fun getDailyStudySet(
-        userId: Long,
+        userId: UserId,
         date: LocalDate,
-    ): DailyStudySet? {
-        return dailyStudySetRepository.findByUserIdAndDate(userId, date)
-    }
+    ): DailyStudySet? = dailyStudySetRepository.findByUserIdAndDate(userId, date)
 
-    fun getDailyStudySetById(id: Long): DailyStudySet? {
-        return dailyStudySetRepository.findById(id)
-    }
+    fun getDailyStudySetById(id: DailyStudySetId): DailyStudySet? = dailyStudySetRepository.findById(id)
 
     fun addStudyToDailyStudySet(
         dailyStudySet: DailyStudySet,
@@ -135,13 +117,13 @@ class StudyService(
             throw ConflictException(message = "Study already exists in daily study set", code = "STUDY_7")
         }
 
-        val updatedStudyIds = (dailyStudySet.studyIds + study.id).toSet().toList()
+        val updatedStudyIds = (dailyStudySet.studyIds + study.id!!).distinct()
         return dailyStudySetRepository.save(DailyStudySetEntity.fromDomain(dailyStudySet.copy(studyIds = updatedStudyIds)))
     }
 
     fun getStudiesByDailyStudySet(dailyStudySet: DailyStudySet): List<Study> {
         val todayDate = LocalDate.now()
-        val dailyStudySetStudies = studyRepository.findAllByIds(dailyStudySet.studyIds)
+        val dailyStudySetStudies = studyRepository.findAllById(dailyStudySet.studyIds)
         if (dailyStudySet.date.isBefore(todayDate)) {
             return dailyStudySetStudies
         }

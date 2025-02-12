@@ -3,12 +3,12 @@ package com.inout.apiserver.application.study
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.study.Study
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.InternalServerErrorException
+import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
@@ -25,8 +25,8 @@ class ReadStudiesApplicationTest {
     private val readStudiesApplication = ReadStudiesApplication(studyService, wordService)
     private val now = Instant.now()
 
-    private fun createWords(count: Int): List<Word> {
-        return (1..count).map { i ->
+    private fun createWords(count: Int): List<Word> =
+        (1..count).map { i ->
             Word(
                 id = i.toLong(),
                 name = "name$i",
@@ -45,7 +45,6 @@ class ReadStudiesApplicationTest {
                 updatedAt = now,
             )
         }
-    }
 
     private fun createStudies(
         count: Int,
@@ -67,8 +66,6 @@ class ReadStudiesApplicationTest {
                 lapses = fsrsCard.lapses,
                 lastReview = fsrsCard.lastReview,
                 reviewLogs = emptyList(),
-                createdAt = now,
-                updatedAt = now,
             )
         }
     }
@@ -88,7 +85,12 @@ class ReadStudiesApplicationTest {
         // When
         val sut =
             assertThrows(InternalServerErrorException::class.java) {
-                readStudiesApplication.run(userId, pageable)
+                readStudiesApplication.run(
+                    ReadStudiesApplication.Request(
+                        userId = userId,
+                        pageable = pageable,
+                    ),
+                )
             }
 
         // Then
@@ -109,14 +111,20 @@ class ReadStudiesApplicationTest {
         every { wordService.getWordsByWordDefinitionIds(wordDefinitionIds) } returns words
 
         // When
-        val sut = readStudiesApplication.run(userId, pageable)
+        val sut =
+            readStudiesApplication.run(
+                ReadStudiesApplication.Request(
+                    userId = userId,
+                    pageable = pageable,
+                ),
+            )
 
         // Then
-        assertEquals(2, sut.first)
-        assertEquals(2, sut.second.size)
-        assertEquals(studies[0], sut.second[0].study)
-        assertEquals(words[0], sut.second[0].word)
-        assertEquals(studies[1], sut.second[1].study)
-        assertEquals(words[1], sut.second[1].word)
+        assertEquals(2, sut.totalCount)
+        assertEquals(2, sut.studies.size)
+        assertEquals(studies[0], sut.studies[0].study)
+        assertEquals(words[0], sut.studies[0].word)
+        assertEquals(studies[1], sut.studies[1].study)
+        assertEquals(words[1], sut.studies[1].word)
     }
 }

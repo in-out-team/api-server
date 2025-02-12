@@ -1,7 +1,7 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.study.Study
 import com.inout.apiserver.domain.word.Word
+import com.inout.apiserver.infrastructure.db.study.Study
 
 data class StudyWordResponse(
     val id: Long,
@@ -14,7 +14,7 @@ data class StudyWordResponse(
         ): StudyWordResponse {
             val wordWithDefinitionsResponse = WordWithDefinitionsResponse.of(word)
             return StudyWordResponse(
-                id = study.id,
+                id = study.id!!,
                 word = wordWithDefinitionsResponse.filterDefinitionsBy(study.wordDefinitionId),
             )
         }
