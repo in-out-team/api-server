@@ -1,11 +1,12 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,19 +17,28 @@ class GetRandomWritingSentenceApplication(
         private const val TARGET_SENTENCES_COUNT = 3
     }
 
-    fun run(
-        user: User,
-        wordDefinitionId: Long,
-    ): Sentence {
-        val writingSentences = wordService.getSentencesByWordDefinitionIdAndType(wordDefinitionId, SentenceType.WRITING)
+    data class Request(
+        val wordDefinitionId: WordDefinitionId,
+        val user: User,
+    )
+
+    data class Response(
+        val sentence: Sentence,
+    )
+
+    // TODO: write test case
+    fun run(request: Request): Response {
+        val writingSentences =
+            wordService.getSentencesByWordDefinitionIdAndType(request.wordDefinitionId, SentenceType.WRITING)
         if (writingSentences.isEmpty()) {
             throw NotFoundException(
-                message = "Sentences not found for word definition id: $wordDefinitionId",
+                message = "Sentences not found for word definition id: ${request.wordDefinitionId}",
                 code = "SENTENCE_1",
             )
         }
 
-        val userSentences = wordService.getUserSentencesBy(user.id!!, wordDefinitionId, SentenceType.WRITING)
+        val userSentences =
+            wordService.getUserSentencesBy(request.user.id!!, request.wordDefinitionId, SentenceType.WRITING)
         if (userSentences.size >= TARGET_SENTENCES_COUNT) {
             throw BadRequestException(
                 message = "User already has enough sentences",
@@ -44,6 +54,8 @@ class GetRandomWritingSentenceApplication(
             )
         }
 
-        return sentences.random()
+        return Response(
+            sentence = sentences.random(),
+        )
     }
 }

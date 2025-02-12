@@ -83,7 +83,13 @@ class SentenceController(
         @RequestParam(required = true) wordDefinitionId: Long,
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<SentencesResponse> {
-        val (selectedSentences, notSelectedSentences) = getReadingSentencesApplication.run(wordDefinitionId, user)
+        val (selectedSentences, notSelectedSentences) =
+            getReadingSentencesApplication.run(
+                GetReadingSentencesApplication.Request(
+                    wordDefinitionId = wordDefinitionId,
+                    user = user,
+                ),
+            )
 
         return ResponseEntity(
             SentencesResponse.of(
@@ -146,7 +152,15 @@ class SentenceController(
         @PathVariable id: Long,
         @Parameter(hidden = true) @RequestUser user: User,
     ) = ResponseEntity(
-        UserSentenceResponse.of(selectReadingSentenceApplication.run(id, user)),
+        UserSentenceResponse.of(
+            selectReadingSentenceApplication
+                .run(
+                    SelectReadingSentenceApplication.Request(
+                        sentenceId = id,
+                        user = user,
+                    ),
+                ).userSentence,
+        ),
         CREATED,
     )
 
@@ -183,7 +197,12 @@ class SentenceController(
         @PathVariable id: Long,
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<Void> {
-        unselectReadingSentenceApplication.run(id, user)
+        unselectReadingSentenceApplication.run(
+            UnselectReadingSentenceApplication.Request(
+                sentenceId = id,
+                user = user,
+            ),
+        )
         return ResponseEntity.noContent().build()
     }
 
@@ -236,7 +255,18 @@ class SentenceController(
         @RequestParam(required = true) wordDefinitionId: Long,
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<SentenceResponse> =
-        ResponseEntity(SentenceResponse.of(getRandomWritingSentenceApplication.run(user, wordDefinitionId)), OK)
+        ResponseEntity(
+            SentenceResponse.of(
+                getRandomWritingSentenceApplication
+                    .run(
+                        GetRandomWritingSentenceApplication.Request(
+                            wordDefinitionId = wordDefinitionId,
+                            user = user,
+                        ),
+                    ).sentence,
+            ),
+            OK,
+        )
 
     @PostMapping("/writing/{id}/feedback")
     @Operation(

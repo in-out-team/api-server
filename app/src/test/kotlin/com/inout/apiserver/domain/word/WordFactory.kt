@@ -5,7 +5,7 @@ import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
@@ -80,21 +80,21 @@ class WordFactory(
         wordDefinitionId: WordDefinitionId,
         content: String = "I read a book",
         translation: String = "나는 책을 읽었다",
-        lexicalCategories: List<SentenceEntity.LexicalCategoryInfo> =
+        lexicalCategories: List<Sentence.LexicalCategoryInfo> =
             listOf(
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "I",
                     lexicalCategory = LexicalCategoryType.PRONOUN,
                 ),
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "read",
                     lexicalCategory = LexicalCategoryType.VERB,
                 ),
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "a",
                     lexicalCategory = LexicalCategoryType.ARTICLE,
                 ),
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "book",
                     lexicalCategory = LexicalCategoryType.NOUN,
                 ),
@@ -102,7 +102,7 @@ class WordFactory(
         type: SentenceType = SentenceType.READING,
     ): Sentence =
         sentenceRepository.save(
-            SentenceEntity(
+            Sentence(
                 wordDefinitionId = wordDefinitionId,
                 type = type,
                 content = content,

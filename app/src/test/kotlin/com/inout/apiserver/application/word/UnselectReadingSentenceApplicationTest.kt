@@ -2,7 +2,6 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
@@ -10,6 +9,7 @@ import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -18,7 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class UnselectReadingSentenceApplicationTest(
-    private val unselectReadingSentenceApplication: UnselectReadingSentenceApplication,
+    private val subject: UnselectReadingSentenceApplication,
     private val wordService: WordService,
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
@@ -42,7 +42,12 @@ class UnselectReadingSentenceApplicationTest(
                 // when
                 val exception =
                     shouldThrow<NotFoundException> {
-                        unselectReadingSentenceApplication.run(sentenceId, user!!)
+                        subject.run(
+                            UnselectReadingSentenceApplication.Request(
+                                sentenceId = sentenceId,
+                                user = user!!,
+                            ),
+                        )
                     }
 
                 // then
@@ -64,17 +69,22 @@ class UnselectReadingSentenceApplicationTest(
                         userId = user!!.id!!,
                         wordDefinitionId = sentence!!.wordDefinitionId,
                         type = SentenceType.READING,
-                        sentenceId = sentence!!.id,
+                        sentenceId = sentence!!.id!!,
                     ),
                 )
             }
 
             it("should delete user sentence") {
                 // when
-                unselectReadingSentenceApplication.run(sentence!!.id, user!!)
+                subject.run(
+                    UnselectReadingSentenceApplication.Request(
+                        sentenceId = sentence!!.id!!,
+                        user = user!!,
+                    ),
+                )
 
                 // then
-                wordService.getUserSentenceBy(user!!.id!!, sentence!!.id) shouldBe null
+                wordService.getUserSentenceBy(user!!.id!!, sentence!!.id!!) shouldBe null
             }
         }
     })

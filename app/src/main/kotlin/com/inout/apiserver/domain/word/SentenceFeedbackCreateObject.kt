@@ -1,7 +1,9 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.SentenceId
+
 data class SentenceFeedbackCreateObject(
-    val sentenceId: Long,
+    val sentenceId: SentenceId,
     val submittedContent: String,
     val feedback: String,
 ) {

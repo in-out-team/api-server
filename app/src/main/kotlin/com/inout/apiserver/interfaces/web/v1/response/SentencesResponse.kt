@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.word.Sentence
+import com.inout.apiserver.infrastructure.db.word.Sentence
 
 data class SentencesResponse(
     val selectedSentences: List<SentenceResponse>,

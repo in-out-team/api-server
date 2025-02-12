@@ -18,7 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class CreateSentenceApplicationTest(
-    private val createSentenceApplication: CreateSentenceApplication,
+    private val subject: CreateSentenceApplication,
     @SpyBean
     private val openAIService: OpenAIService,
     private val wordService: WordService,
@@ -40,7 +40,11 @@ class CreateSentenceApplicationTest(
                     // when
                     val exception =
                         shouldThrow<NotFoundException> {
-                            createSentenceApplication.run(wordId)
+                            subject.run(
+                                CreateSentenceApplication.Request(
+                                    wordId = wordId,
+                                ),
+                            )
                         }
 
                     // then
@@ -111,7 +115,11 @@ class CreateSentenceApplicationTest(
                         .fetchWordDefinitionSentence(any(), any(), any(), any())
 
                     // when
-                    createSentenceApplication.run(wordId)
+                    subject.run(
+                        CreateSentenceApplication.Request(
+                            wordId = wordId,
+                        ),
+                    )
 
                     // then
                     val result = wordService.getSentencesByWordDefinitionId(wordDefinition.id!!)

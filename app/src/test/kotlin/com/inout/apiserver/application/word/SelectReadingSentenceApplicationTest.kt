@@ -17,7 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class SelectReadingSentenceApplicationTest(
-    private val selectReadingSentenceApplication: SelectReadingSentenceApplication,
+    private val subject: SelectReadingSentenceApplication,
     private val wordService: WordService,
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
@@ -37,12 +37,17 @@ class SelectReadingSentenceApplicationTest(
                 // given
                 val word = wordFactory.createWord()
                 val wordDefinitionId = word.definitions.first().id!!
-                val sentenceId = wordFactory.createSentence(wordDefinitionId = wordDefinitionId).id + 1L
+                val sentenceId = wordFactory.createSentence(wordDefinitionId = wordDefinitionId).id!! + 1L
 
                 // when
                 val exception =
                     shouldThrow<NotFoundException> {
-                        selectReadingSentenceApplication.run(sentenceId, user!!)
+                        subject.run(
+                            SelectReadingSentenceApplication.Request(
+                                sentenceId = sentenceId,
+                                user = user!!,
+                            ),
+                        )
                     }
 
                 // then
@@ -57,7 +62,7 @@ class SelectReadingSentenceApplicationTest(
                 val word = wordFactory.createWord()
                 val wordDefinitionId = word.definitions.first().id!!
                 val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
-                val sentenceId = sentence.id
+                val sentenceId = sentence.id!!
                 wordService.createUserSentence(
                     UserSentenceCreateObject(
                         userId = user!!.id!!,
@@ -70,7 +75,12 @@ class SelectReadingSentenceApplicationTest(
                 // when
                 val exception =
                     shouldThrow<ConflictException> {
-                        selectReadingSentenceApplication.run(sentenceId, user!!)
+                        subject.run(
+                            SelectReadingSentenceApplication.Request(
+                                sentenceId = sentenceId,
+                                user = user!!,
+                            ),
+                        )
                     }
 
                 // then
@@ -85,10 +95,17 @@ class SelectReadingSentenceApplicationTest(
                 val word = wordFactory.createWord()
                 val wordDefinitionId = word.definitions.first().id!!
                 val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
-                val sentenceId = sentence.id
+                val sentenceId = sentence.id!!
 
                 // when
-                val userSentence = selectReadingSentenceApplication.run(sentenceId, user!!)
+                val userSentence =
+                    subject
+                        .run(
+                            SelectReadingSentenceApplication.Request(
+                                sentenceId = sentenceId,
+                                user = user!!,
+                            ),
+                        ).userSentence
 
                 // then
                 userSentence.userId shouldBe user!!.id
