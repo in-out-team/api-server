@@ -5,7 +5,7 @@ import com.inout.apiserver.base.alias.StudyId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
+import com.inout.apiserver.infrastructure.db.study.DailyStudySet
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
@@ -107,7 +107,7 @@ class StudyService(
         date: LocalDate,
     ): DailyStudySet? = dailyStudySetRepository.findByUserIdAndDate(userId, date)
 
-    fun getDailyStudySetById(id: DailyStudySetId): DailyStudySet? = dailyStudySetRepository.findById(id)
+    fun getDailyStudySetById(id: DailyStudySetId): DailyStudySet? = dailyStudySetRepository.findById(id).orElse(null)
 
     fun addStudyToDailyStudySet(
         dailyStudySet: DailyStudySet,
@@ -118,7 +118,11 @@ class StudyService(
         }
 
         val updatedStudyIds = (dailyStudySet.studyIds + study.id!!).distinct()
-        return dailyStudySetRepository.save(DailyStudySetEntity.fromDomain(dailyStudySet.copy(studyIds = updatedStudyIds)))
+        return dailyStudySetRepository.save(
+            dailyStudySet.copy(
+                studyIds = updatedStudyIds,
+            ),
+        )
     }
 
     fun getStudiesByDailyStudySet(dailyStudySet: DailyStudySet): List<Study> {
@@ -148,6 +152,6 @@ class StudyService(
             throw ConflictException(message = "Daily study set already exists", code = "STUDY_5")
         }
 
-        return dailyStudySetRepository.save(DailyStudySetEntity.fromCreateObject(dailyStudySetCreateObject))
+        return dailyStudySetRepository.save(DailyStudySet.fromCreateObject(dailyStudySetCreateObject))
     }
 }

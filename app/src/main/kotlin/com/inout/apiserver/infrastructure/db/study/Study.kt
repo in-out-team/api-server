@@ -15,6 +15,7 @@ import com.inout.fsrs.model.FSRSParameters
 import com.inout.fsrs.model.enums.Grade
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
@@ -44,7 +45,7 @@ data class Study(
     val userId: UserId,
     // should be unmodifiable
     val wordDefinitionId: WordDefinitionId,
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
     val due: Instant,
     val stability: Double,

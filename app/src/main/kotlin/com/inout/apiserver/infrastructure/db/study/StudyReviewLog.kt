@@ -7,6 +7,7 @@ import com.inout.apiserver.domain.study.StudyReviewLogCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import com.inout.fsrs.model.ReviewLog
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -20,9 +21,9 @@ data class StudyReviewLog(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: StudyReviewLogId? = null,
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     val rating: FsrsCardRating,
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
     val due: Instant,
     val stability: Double,

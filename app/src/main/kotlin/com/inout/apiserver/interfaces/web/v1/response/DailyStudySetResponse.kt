@@ -1,8 +1,8 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.base.enums.FsrsCardRating
-import com.inout.apiserver.domain.study.DailyStudySet
 import com.inout.apiserver.domain.study.StudyWord
+import com.inout.apiserver.infrastructure.db.study.DailyStudySet
 import java.time.LocalDate
 
 data class DailyStudySetResponse(
@@ -29,7 +29,7 @@ data class DailyStudySetResponse(
                     }
                 }
             return DailyStudySetResponse(
-                id = dailyStudySet.id,
+                id = dailyStudySet.id!!,
                 date = dailyStudySet.date,
                 studies = studyWordResponses,
                 extraData = extraData,
