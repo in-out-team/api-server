@@ -1,28 +1,34 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.alias.WordDefinitionId
+import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.word.Word
-import com.inout.apiserver.domain.word.WordSpecification
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.domain.Specification
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 import org.springframework.stereotype.Repository
 
-@Repository
-class WordRepository(
-    private val wordJpaRepository: WordJpaRepository,
-) {
-    fun save(word: WordEntity): Word = wordJpaRepository.save(word).toDomain()
-
+interface WordJpaRepository :
+    JpaRepository<Word, WordId>,
+    JpaSpecificationExecutor<Word> {
     fun findByNameAndFromLanguageAndToLanguage(
         name: String,
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
-    ): Word? = wordJpaRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)?.toDomain()
+    ): Word?
 
-    fun findById(id: Long): Word? = wordJpaRepository.findById(id).orElse(null)?.toDomain()
+    fun findByDefinitionsId(wordDefinitionId: WordDefinitionId): Word?
 
+    fun findAllByDefinitionsIdIn(wordDefinitionIds: List<WordDefinitionId>): List<Word>
+}
+
+@Repository
+class WordRepository(
+    private val wordJpaRepository: WordJpaRepository,
+) : WordJpaRepository by wordJpaRepository {
     fun findWordsWithDefinitions(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
@@ -37,16 +43,11 @@ class WordRepository(
                 .and(WordSpecification.prefix(prefix))
                 .and(WordSpecification.lexicalCategoryType(lexicalCategory))
 
-        return wordJpaRepository.findAll(spec, pageable).map { it.toDomain() }
+        return wordJpaRepository.findAll(spec, pageable)
     }
 
-    fun findByWordDefinitionId(wordDefinitionId: Long): Word? =
-        wordJpaRepository
-            .findByDefinitionsId(wordDefinitionId)
-            ?.toDomain()
+    fun findByWordDefinitionId(wordDefinitionId: WordDefinitionId): Word? = wordJpaRepository.findByDefinitionsId(wordDefinitionId)
 
-    fun findAllByWordDefinitionIds(wordDefinitionIds: List<Long>): List<Word> =
-        wordJpaRepository.findAllByDefinitionsIdIn(wordDefinitionIds).map {
-            it.toDomain()
-        }
+    fun findAllByWordDefinitionIds(wordDefinitionIds: List<WordDefinitionId>): List<Word> =
+        wordJpaRepository.findAllByDefinitionsIdIn(wordDefinitionIds)
 }

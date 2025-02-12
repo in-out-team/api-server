@@ -1,5 +1,7 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.WordDefinitionId
+import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
@@ -11,11 +13,10 @@ import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
-import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
-import com.inout.apiserver.infrastructure.db.word.WordEntity
+import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import org.springframework.stereotype.Component
-import java.time.Instant
 
 @Component
 class WordFactory(
@@ -28,7 +29,7 @@ class WordFactory(
     companion object {
         @Deprecated("Use member function createWord instead")
         fun createWord(
-            id: Long = 1L,
+            id: WordId = 1L,
             name: String = "book",
             fromLanguage: LanguageType = LanguageType.ENGLISH,
             toLanguage: LanguageType = LanguageType.KOREAN,
@@ -36,7 +37,6 @@ class WordFactory(
             meaning: String = "책",
             preContext: String = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
         ): Word {
-            val now = Instant.now()
             val wordDefinition =
                 WordDefinition(
                     id = id,
@@ -50,8 +50,6 @@ class WordFactory(
                 fromLanguage = fromLanguage,
                 toLanguage = toLanguage,
                 definitions = listOf(wordDefinition),
-                createdAt = now,
-                updatedAt = now,
             )
         }
     }
@@ -60,9 +58,9 @@ class WordFactory(
         name: String = "book",
         fromLanguage: LanguageType = LanguageType.ENGLISH,
         toLanguage: LanguageType = LanguageType.KOREAN,
-        wordDefinitions: List<WordDefinitionEntity> =
+        wordDefinitions: List<WordDefinition> =
             listOf(
-                WordDefinitionEntity(
+                WordDefinition(
                     lexicalCategory = LexicalCategoryType.NOUN,
                     meaning = "책",
                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
@@ -70,7 +68,7 @@ class WordFactory(
             ),
     ): Word =
         wordRepository.save(
-            WordEntity(
+            Word(
                 name = name,
                 fromLanguage = fromLanguage,
                 toLanguage = toLanguage,
@@ -79,7 +77,7 @@ class WordFactory(
         )
 
     fun createSentence(
-        wordDefinitionId: Long,
+        wordDefinitionId: WordDefinitionId,
         content: String = "I read a book",
         translation: String = "나는 책을 읽었다",
         lexicalCategories: List<SentenceEntity.LexicalCategoryInfo> =

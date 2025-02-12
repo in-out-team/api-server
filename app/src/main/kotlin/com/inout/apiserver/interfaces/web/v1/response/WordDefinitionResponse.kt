@@ -1,7 +1,7 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.word.WordDefinition
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 
 data class WordDefinitionResponse(
     val id: Long,
@@ -10,13 +10,12 @@ data class WordDefinitionResponse(
     val preContext: String,
 ) {
     companion object {
-        fun of(wordDefinition: WordDefinition): WordDefinitionResponse {
-            return WordDefinitionResponse(
-                id = wordDefinition.id,
+        fun of(wordDefinition: WordDefinition): WordDefinitionResponse =
+            WordDefinitionResponse(
+                id = wordDefinition.id!!,
                 lexicalCategory = wordDefinition.lexicalCategory,
                 meaning = wordDefinition.meaning,
                 preContext = wordDefinition.preContext,
             )
-        }
     }
 }

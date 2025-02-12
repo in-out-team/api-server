@@ -1,11 +1,12 @@
 package com.inout.apiserver.application.study
 
 import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.study.StudyWord
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.InternalServerErrorException
+import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
@@ -28,9 +29,9 @@ class ReadStudiesApplication(
         val studies = studyService.getAllByUserId(request.userId, request.pageable)
         val wordDefinitionIds = studies.content.map { it.wordDefinitionId }
         val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
-        val wordByDefinitionIdMap = mutableMapOf<Long, Word>()
+        val wordByDefinitionIdMap = mutableMapOf<WordDefinitionId, Word>()
         words.forEach { word ->
-            word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id] = word }
+            word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id!!] = word }
         }
 
         return Response(

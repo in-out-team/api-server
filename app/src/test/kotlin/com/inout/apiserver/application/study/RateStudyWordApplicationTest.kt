@@ -4,7 +4,6 @@ import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
@@ -13,6 +12,7 @@ import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.comparables.shouldBeGreaterThan
@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Instant
-import java.util.*
+import java.util.Optional
 
 @InOutSpringBootTest
 class RateStudyWordApplicationTest(
@@ -43,7 +43,7 @@ class RateStudyWordApplicationTest(
         beforeEach {
             user = userFactory.createUser()
             word = wordFactory.createWord()
-            study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word!!.definitions.first().id)
+            study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word!!.definitions.first().id!!)
         }
 
         afterEach {
@@ -85,7 +85,7 @@ class RateStudyWordApplicationTest(
                 otherUserStudy =
                     studyFactory.createStudy(
                         userId = otherUser!!.id!!,
-                        wordDefinitionId = word!!.definitions.first().id,
+                        wordDefinitionId = word!!.definitions.first().id!!,
                     )
             }
 

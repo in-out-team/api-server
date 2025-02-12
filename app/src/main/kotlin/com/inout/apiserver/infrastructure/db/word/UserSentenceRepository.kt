@@ -1,5 +1,7 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.word.UserSentence
 import org.springframework.stereotype.Repository
@@ -12,21 +14,9 @@ class UserSentenceRepository(
 
     fun delete(userSentence: UserSentenceEntity) = userSentenceJpaRepository.delete(userSentence)
 
-    fun findByUserIdAndWordDefinitionIdAndSentenceId(
-        userId: Long,
-        wordDefinitionId: Long,
-        sentenceId: Long,
-    ): UserSentence? =
-        userSentenceJpaRepository
-            .findByUserIdAndWordDefinitionIdAndSentenceId(
-                userId,
-                wordDefinitionId,
-                sentenceId,
-            )?.toDomain()
-
     fun findAllByUserIdAndWordDefinitionIdAndType(
-        userId: Long,
-        wordDefinitionId: Long,
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
         type: SentenceType,
     ): List<UserSentence> =
         userSentenceJpaRepository
@@ -37,7 +27,7 @@ class UserSentenceRepository(
             ).map { it.toDomain() }
 
     fun findByUserIdAndSentenceId(
-        userId: Long,
+        userId: UserId,
         sentenceId: Long,
     ): UserSentence? =
         userSentenceJpaRepository

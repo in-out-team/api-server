@@ -1,7 +1,7 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.infrastructure.db.study.Study
+import com.inout.apiserver.infrastructure.db.word.Word
 
 data class StudyWordResponse(
     val id: Long,

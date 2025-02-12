@@ -4,7 +4,6 @@ import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.extension.cleanUp
@@ -12,7 +11,8 @@ import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
+import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactly
@@ -68,12 +68,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -81,7 +81,7 @@ class StudyServiceTest(
                             ),
                     )
                 val studies =
-                    word.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id) }
+                    word.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id!!) }
 
                 // when
                 val res = studyService.getAllByUserId(user!!.id!!, PageRequest.of(0, 10))
@@ -99,7 +99,7 @@ class StudyServiceTest(
 
             beforeEach {
                 word = wordFactory.createWord()
-                study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word!!.definitions.first().id)
+                study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word!!.definitions.first().id!!)
             }
 
             it("should return study when it exists") {
@@ -150,7 +150,7 @@ class StudyServiceTest(
                 val word = wordFactory.createWord()
                 studyFactory.createStudy(
                     userId = user!!.id!!,
-                    wordDefinitionId = word.definitions.first().id,
+                    wordDefinitionId = word.definitions.first().id!!,
                 )
 
                 // when
@@ -159,7 +159,7 @@ class StudyServiceTest(
                         studyService.createStudy(
                             StudyCreateObject(
                                 userId = user!!.id!!,
-                                wordDefinitionId = word.definitions.first().id,
+                                wordDefinitionId = word.definitions.first().id!!,
                             ),
                         )
                     }
@@ -172,7 +172,7 @@ class StudyServiceTest(
             it("should create study") {
                 // given
                 val word = wordFactory.createWord()
-                val wordDefinitionId = word.definitions.first().id
+                val wordDefinitionId = word.definitions.first().id!!
 
                 // when
                 val study =
@@ -207,12 +207,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -221,8 +221,8 @@ class StudyServiceTest(
                     )
                 val studies =
                     listOf(
-                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id),
-                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id!!),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id!!),
                     )
 
                 // when
@@ -248,12 +248,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -262,8 +262,8 @@ class StudyServiceTest(
                     )
                 val studies =
                     listOf(
-                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id),
-                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id!!),
+                        studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id!!),
                     )
                 val ids = studies.map { it.id!! }
 
@@ -344,12 +344,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -357,7 +357,7 @@ class StudyServiceTest(
                             ),
                     )
                 studies =
-                    word!!.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id) }
+                    word!!.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id!!) }
             }
 
             it("should return daily study set studies when date is before today") {
@@ -385,7 +385,7 @@ class StudyServiceTest(
                         name = "booked",
                         wordDefinitions =
                             listOf(
-                                WordDefinitionEntity(
+                                WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "예약된",
                                     preContext = "미리 자리를 확보한",
@@ -396,7 +396,7 @@ class StudyServiceTest(
                     listOf(
                         studyFactory.createStudy(
                             userId = user!!.id!!,
-                            wordDefinitionId = pastStudiesWord.definitions.first().id,
+                            wordDefinitionId = pastStudiesWord.definitions.first().id!!,
                         ),
                     )
 
@@ -413,7 +413,7 @@ class StudyServiceTest(
             it("should return rated study when study is rated") {
                 // given
                 val word = wordFactory.createWord()
-                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
+                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id!!)
                 val rating = FsrsCardRating.EASY
                 val now = Instant.now()
 
@@ -445,7 +445,7 @@ class StudyServiceTest(
                 // given
                 val userId = 1L
                 val word = wordFactory.createWord()
-                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
+                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id!!)
                 val dailyStudySet = studyFactory.createDailyStudySet(userId = userId, studies = listOf(study))
 
                 // when
@@ -464,7 +464,7 @@ class StudyServiceTest(
                 val userId = 1L
                 val dailyStudySet = studyFactory.createDailyStudySet(userId = userId)
                 val word = wordFactory.createWord()
-                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
+                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id!!)
 
                 // when
                 studyService.addStudyToDailyStudySet(dailyStudySet, study)

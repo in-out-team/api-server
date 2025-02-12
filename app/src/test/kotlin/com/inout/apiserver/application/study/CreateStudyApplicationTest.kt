@@ -5,13 +5,13 @@ import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.word.Word
-import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
@@ -42,8 +42,6 @@ class CreateStudyApplicationTest {
                             preContext = "preContext$i",
                         ),
                     ),
-                createdAt = now,
-                updatedAt = now,
             )
         }
 
@@ -55,7 +53,7 @@ class CreateStudyApplicationTest {
         return Study(
             id = 1L,
             userId = userId,
-            wordDefinitionId = word.definitions.first().id,
+            wordDefinitionId = word.definitions.first().id!!,
             state = FsrsCardState.of(fsrsCard.state),
             due = fsrsCard.due,
             stability = fsrsCard.stability,

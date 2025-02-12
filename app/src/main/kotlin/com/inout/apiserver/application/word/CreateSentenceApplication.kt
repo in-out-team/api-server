@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.openai.OpenAIService
@@ -16,12 +17,12 @@ class CreateSentenceApplication(
     private val wordService: WordService,
     private val openAIService: OpenAIService,
 ) {
-    fun run(wordId: Long) {
+    fun run(wordId: WordId) {
         val word =
             wordService.getWordById(wordId) ?: throw NotFoundException(message = "Word not found", code = "WORD_4")
         // TODO: need to bulk create sentences
         word.definitions.forEach { wordDefinition ->
-            wordService.getSentencesByWordDefinitionId(wordDefinition.id).let {
+            wordService.getSentencesByWordDefinitionId(wordDefinition.id!!).let {
                 if (it.isNotEmpty()) return@forEach
             }
 

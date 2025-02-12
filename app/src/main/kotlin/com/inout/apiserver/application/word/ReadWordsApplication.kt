@@ -2,8 +2,8 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
@@ -11,16 +11,32 @@ import org.springframework.stereotype.Component
 class ReadWordsApplication(
     private val wordService: WordService,
 ) {
-    fun run(
-        fromLanguage: LanguageType,
-        toLanguage: LanguageType,
-        prefix: String,
-        lexicalCategoryType: LexicalCategoryType?,
-        pageable: Pageable,
-    ): Pair<Long, List<Word>> {
-        val words =
-            wordService.getWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategoryType, pageable)
+    data class Request(
+        val fromLanguage: LanguageType,
+        val toLanguage: LanguageType,
+        val prefix: String,
+        val lexicalCategoryType: LexicalCategoryType?,
+        val pageable: Pageable,
+    )
 
-        return Pair(words.totalElements, words.content)
+    data class Response(
+        val totalCount: Long,
+        val words: List<Word>,
+    )
+
+    fun run(request: Request): Response {
+        val words =
+            wordService.getWordsWithDefinitions(
+                fromLanguage = request.fromLanguage,
+                toLanguage = request.toLanguage,
+                prefix = request.prefix,
+                lexicalCategory = request.lexicalCategoryType,
+                pageable = request.pageable,
+            )
+
+        return Response(
+            totalCount = words.totalElements,
+            words = words.content,
+        )
     }
 }
