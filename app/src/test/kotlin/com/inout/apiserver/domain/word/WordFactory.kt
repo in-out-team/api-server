@@ -1,5 +1,8 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.SentenceId
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.UserSentenceId
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
@@ -112,7 +115,7 @@ class WordFactory(
         )
 
     fun createSentenceFeedback(
-        sentenceId: Long,
+        sentenceId: SentenceId,
         submittedContent: String = "I read book",
         feedback: String = "주어와 동사 사이에 'a'를 넣어야 합니다. 'a'는 무언가 특정한 책을 가리키는데 도움을 줍니다. 모호함을 없애고 명확한 문장을 만들기 위해 필요한 내용입니다.",
     ) = sentenceFeedbackRepository.save(
@@ -124,9 +127,9 @@ class WordFactory(
     )
 
     fun createUserSentence(
-        userId: Long,
-        wordDefinitionId: Long,
-        sentenceId: Long,
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
+        sentenceId: SentenceId,
         type: SentenceType = SentenceType.WRITING,
     ) = userSentenceRepository.save(
         UserSentenceEntity(
@@ -138,7 +141,7 @@ class WordFactory(
     )
 
     fun createUserSentenceFeedback(
-        userSentenceId: Long,
+        userSentenceId: UserSentenceId,
         sentenceFeedbackId: Long,
     ) = userSentenceFeedbackRepository.save(
         UserSentenceFeedbackEntity(
