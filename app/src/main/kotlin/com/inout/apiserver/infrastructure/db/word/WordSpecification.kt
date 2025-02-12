@@ -7,22 +7,22 @@ import org.springframework.data.jpa.domain.Specification
 
 class WordSpecification {
     companion object {
-        fun fromLanguage(fromLanguage: LanguageType): Specification<com.inout.apiserver.infrastructure.db.word.Word> =
+        fun fromLanguage(fromLanguage: LanguageType): Specification<Word> =
             Specification { root, _, criteriaBuilder ->
                 criteriaBuilder.equal(root.get<LanguageType>("fromLanguage"), fromLanguage)
             }
 
-        fun toLanguage(toLanguage: LanguageType): Specification<com.inout.apiserver.infrastructure.db.word.Word> =
+        fun toLanguage(toLanguage: LanguageType): Specification<Word> =
             Specification { root, _, criteriaBuilder ->
                 criteriaBuilder.equal(root.get<LanguageType>("toLanguage"), toLanguage)
             }
 
-        fun prefix(prefix: String): Specification<com.inout.apiserver.infrastructure.db.word.Word> =
+        fun prefix(prefix: String): Specification<Word> =
             Specification { root, _, criteriaBuilder ->
                 criteriaBuilder.like(root.get("name"), "$prefix%")
             }
 
-        fun lexicalCategoryType(lexicalCategoryType: LexicalCategoryType?): Specification<com.inout.apiserver.infrastructure.db.word.Word> {
+        fun lexicalCategoryType(lexicalCategoryType: LexicalCategoryType?): Specification<Word> {
             return Specification { root, query, criteriaBuilder ->
                 if (lexicalCategoryType == null) {
                     return@Specification criteriaBuilder.conjunction()
