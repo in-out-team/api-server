@@ -2,11 +2,9 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
-import com.inout.apiserver.interfaces.web.v1.response.WordResponse
+import com.inout.apiserver.infrastructure.db.word.Word
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -14,19 +12,17 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import java.time.Instant
 
 class CreateWordApplicationTest {
     private val wordService = mockk<WordService>()
     private val openAIService = mockk<OpenAIService>()
     private val createWordApplication = CreateWordApplication(wordService, openAIService)
-    private val now = Instant.now()
 
     @Test
     fun `run - should throw ConflictException if word already exists`() {
         // Given
         val request =
-            CreateWordRequest(
+            CreateWordApplication.Request(
                 name = "name",
                 fromLanguage = LanguageType.ENGLISH,
                 toLanguage = LanguageType.KOREAN,
@@ -38,8 +34,6 @@ class CreateWordApplicationTest {
                 fromLanguage = request.fromLanguage,
                 toLanguage = request.toLanguage,
                 definitions = emptyList(),
-                createdAt = now,
-                updatedAt = now,
             )
         every {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
@@ -67,10 +61,10 @@ class CreateWordApplicationTest {
     }
 
     @Test
-    fun `run - should return WordResponse`() {
+    fun `run - should return created word`() {
         // Given
         val request =
-            CreateWordRequest(
+            CreateWordApplication.Request(
                 name = "name",
                 fromLanguage = LanguageType.ENGLISH,
                 toLanguage = LanguageType.KOREAN,
@@ -82,8 +76,6 @@ class CreateWordApplicationTest {
                 fromLanguage = request.fromLanguage,
                 toLanguage = request.toLanguage,
                 definitions = emptyList(),
-                createdAt = now,
-                updatedAt = now,
             )
         every {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
@@ -99,10 +91,10 @@ class CreateWordApplicationTest {
         every { wordService.createWord(any()) } returns word
 
         // When
-        val result: WordResponse = createWordApplication.run(request)
+        val result = createWordApplication.run(request)
 
         // Then
-        assertNotNull(result)
+        assertNotNull(result.word.id)
         verify(exactly = 1) {
             wordService.getWordByNameAndFromLanguageAndToLanguage(
                 request.name,

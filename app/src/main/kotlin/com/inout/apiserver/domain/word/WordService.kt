@@ -1,5 +1,7 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
@@ -14,7 +16,7 @@ import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
-import com.inout.apiserver.infrastructure.db.word.WordEntity
+import com.inout.apiserver.infrastructure.db.word.Word
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -35,7 +37,7 @@ class WordService(
         toLanguage: LanguageType,
     ): Word? = wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)
 
-    fun getWordById(id: Long): Word? = wordRepository.findById(id)
+    fun getWordById(id: Long): Word? = wordRepository.findById(id).orElse(null)
 
     @Transactional
     fun createWord(wordCreateObject: WordCreateObject): Word {
@@ -47,7 +49,7 @@ class WordService(
             throw ConflictException(message = "Word already exists", code = "WORD_1")
         }
 
-        return wordRepository.save(WordEntity.fromCreateObject(wordCreateObject))
+        return wordRepository.save(Word.fromCreateObject(wordCreateObject))
     }
 
     @Transactional
@@ -62,24 +64,24 @@ class WordService(
         pageable: Pageable,
     ): Page<Word> = wordRepository.findWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategory, pageable)
 
-    fun getWordByWordDefinitionId(wordDefinitionId: Long): Word =
+    fun getWordByWordDefinitionId(wordDefinitionId: WordDefinitionId): Word =
         wordRepository
             .findByWordDefinitionId(wordDefinitionId)
             ?.let { word -> word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }) }
             ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
 
-    fun getWordsByWordDefinitionIds(wordDefinitionIds: List<Long>): List<Word> {
+    fun getWordsByWordDefinitionIds(wordDefinitionIds: List<WordDefinitionId>): List<Word> {
         val ids = wordDefinitionIds.toSet()
         return wordRepository
             .findAllByWordDefinitionIds(wordDefinitionIds)
             .map { word -> word.copy(definitions = word.definitions.filter { it.id in ids }) }
     }
 
-    fun getSentencesByWordDefinitionId(wordDefinitionId: Long): List<Sentence> =
+    fun getSentencesByWordDefinitionId(wordDefinitionId: WordDefinitionId): List<Sentence> =
         sentenceRepository.findAllByWordDefinitionId(wordDefinitionId)
 
     fun getSentencesByWordDefinitionIdAndType(
-        wordDefinitionId: Long,
+        wordDefinitionId: WordDefinitionId,
         type: SentenceType,
     ): List<Sentence> = sentenceRepository.findAllByWordDefinitionIdAndType(wordDefinitionId, type)
 
@@ -101,13 +103,13 @@ class WordService(
     ): Sentence? = sentenceRepository.findById(id)?.takeIf { it.type == type }
 
     fun getUserSentenceBy(
-        userId: Long,
+        userId: UserId,
         sentenceId: Long,
     ): UserSentence? = userSentenceRepository.findByUserIdAndSentenceId(userId, sentenceId)
 
     fun getUserSentencesBy(
-        userId: Long,
-        wordDefinitionId: Long,
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
         type: SentenceType,
     ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionIdAndType(userId, wordDefinitionId, type)
 
@@ -116,7 +118,7 @@ class WordService(
     }
 
     fun loadUserSentencesForReading(
-        userId: Long,
+        userId: UserId,
         sentences: List<Sentence>,
     ): List<UserSentence> {
         // TODO:

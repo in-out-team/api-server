@@ -8,7 +8,7 @@ import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
-import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
+import java.util.Optional
 
 @InOutSpringBootTest
 class WordServiceTest(
@@ -58,13 +59,13 @@ class WordServiceTest(
             it("should return Word if found") {
                 val word = wordFactory.createWord()
 
-                val res = wordService.getWordById(word.id)
+                val res = wordService.getWordById(word.id!!)
 
                 res shouldBe word
             }
 
             it("should return null if not found") {
-                wordRepository.findById(1L) shouldBe null
+                wordRepository.findById(1L) shouldBe Optional.empty()
 
                 val res = wordService.getWordById(1L)
 
@@ -110,7 +111,7 @@ class WordServiceTest(
                 res.definitions shouldBe wordCreateObject.definitions
                 res.createdAt shouldNotBe null
                 res.updatedAt shouldNotBe null
-                wordRepository.findById(res.id) shouldBe res
+                wordRepository.findById(res.id!!) shouldBe Optional.of(res)
             }
         }
 
@@ -142,7 +143,7 @@ class WordServiceTest(
 
             it("should return Word") {
                 val word = wordFactory.createWord()
-                val wordDefinitionId = word.definitions.first().id
+                val wordDefinitionId = word.definitions.first().id!!
 
                 val res = wordService.getWordByWordDefinitionId(wordDefinitionId)
 
@@ -160,12 +161,12 @@ class WordServiceTest(
                             toLanguage = LanguageType.KOREAN,
                             wordDefinitions =
                                 listOf(
-                                    WordDefinitionEntity(
+                                    WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "책",
                                         preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                     ),
-                                    WordDefinitionEntity(
+                                    WordDefinition(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "예약하다",
                                         preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -178,12 +179,12 @@ class WordServiceTest(
                             toLanguage = LanguageType.KOREAN,
                             wordDefinitions =
                                 listOf(
-                                    WordDefinitionEntity(
+                                    WordDefinition(
                                         lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                         meaning = "예약된",
                                         preContext = "미리 자리를 확보한",
                                     ),
-                                    WordDefinitionEntity(
+                                    WordDefinition(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "예약하다",
                                         preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -191,7 +192,7 @@ class WordServiceTest(
                                 ),
                         ),
                     )
-                val wordDefinitionIds = words.flatMap { it.definitions }.map { it.id }.dropLast(1)
+                val wordDefinitionIds = words.flatMap { it.definitions }.map { it.id!! }.dropLast(1)
 
                 val res = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
 

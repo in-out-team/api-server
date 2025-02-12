@@ -36,7 +36,7 @@ class SelectReadingSentenceApplicationTest(
             it("should raise error if sentenceId does not exist") {
                 // given
                 val word = wordFactory.createWord()
-                val wordDefinitionId = word.definitions.first().id
+                val wordDefinitionId = word.definitions.first().id!!
                 val sentenceId = wordFactory.createSentence(wordDefinitionId = wordDefinitionId).id + 1L
 
                 // when
@@ -55,7 +55,7 @@ class SelectReadingSentenceApplicationTest(
             it("should raise error if user has already selected sentence") {
                 // given
                 val word = wordFactory.createWord()
-                val wordDefinitionId = word.definitions.first().id
+                val wordDefinitionId = word.definitions.first().id!!
                 val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                 val sentenceId = sentence.id
                 wordService.createUserSentence(
@@ -83,7 +83,7 @@ class SelectReadingSentenceApplicationTest(
             it("should create UserSentence") {
                 // given
                 val word = wordFactory.createWord()
-                val wordDefinitionId = word.definitions.first().id
+                val wordDefinitionId = word.definitions.first().id!!
                 val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                 val sentenceId = sentence.id
 

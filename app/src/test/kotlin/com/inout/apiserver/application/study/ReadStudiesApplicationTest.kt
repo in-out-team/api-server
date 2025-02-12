@@ -1,14 +1,15 @@
 package com.inout.apiserver.application.study
 
+import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.word.Word
-import com.inout.apiserver.domain.word.WordDefinition
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.infrastructure.db.study.Study
+import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.fsrs.model.Card
 import io.mockk.every
 import io.mockk.mockk
@@ -17,13 +18,11 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
-import java.time.Instant
 
 class ReadStudiesApplicationTest {
     private val studyService = mockk<StudyService>()
     private val wordService = mockk<WordService>()
     private val readStudiesApplication = ReadStudiesApplication(studyService, wordService)
-    private val now = Instant.now()
 
     private fun createWords(count: Int): List<Word> =
         (1..count).map { i ->
@@ -41,14 +40,12 @@ class ReadStudiesApplicationTest {
                             preContext = "preContext$i",
                         ),
                     ),
-                createdAt = now,
-                updatedAt = now,
             )
         }
 
     private fun createStudies(
         count: Int,
-        userId: Long,
+        userId: UserId,
     ): List<Study> {
         val fsrsCard = Card.createEmptyCard()
         return (1..count).map { i ->

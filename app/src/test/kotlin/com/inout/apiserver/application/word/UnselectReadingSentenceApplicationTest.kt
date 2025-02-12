@@ -4,13 +4,13 @@ import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -57,7 +57,7 @@ class UnselectReadingSentenceApplicationTest(
 
             beforeEach {
                 word = wordFactory.createWord()
-                val wordDefinitionId = word!!.definitions.first().id
+                val wordDefinitionId = word!!.definitions.first().id!!
                 sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                 wordService.createUserSentence(
                     UserSentenceCreateObject(

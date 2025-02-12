@@ -1,13 +1,13 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
-import com.inout.apiserver.interfaces.web.v1.response.WordResponse
+import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.stereotype.Component
 
 @Component
@@ -15,8 +15,17 @@ class CreateWordApplication(
     private val wordService: WordService,
     private val openAIService: OpenAIService,
 ) {
-    // TODO: need to accept user
-    fun run(request: CreateWordRequest): WordResponse {
+    data class Request(
+        val name: String,
+        val fromLanguage: LanguageType,
+        val toLanguage: LanguageType,
+    )
+
+    data class Response(
+        val word: Word,
+    )
+
+    fun run(request: Request): Response {
         wordService
             .getWordByNameAndFromLanguageAndToLanguage(
                 name = request.name,
@@ -53,6 +62,8 @@ class CreateWordApplication(
                         )
                     },
             )
-        return WordResponse.of(wordService.createWord(wordCreateObject))
+
+        val word = wordService.createWord(wordCreateObject)
+        return Response(word)
     }
 }

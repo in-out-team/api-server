@@ -4,11 +4,11 @@ import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.domain.study.DailyStudySetCreateObject
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.study.StudyWord
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySet
+import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.stereotype.Component
 import java.time.LocalDate
 
@@ -48,7 +48,7 @@ class ReadOrCreateDailyStudySetApplication(
         val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
         val wordByDefinitionIdMap = mutableMapOf<Long, Word>()
         words.forEach { word ->
-            word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id] = word }
+            word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id!!] = word }
         }
 
         return Response(

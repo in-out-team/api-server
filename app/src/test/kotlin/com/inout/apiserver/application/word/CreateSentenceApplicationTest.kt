@@ -54,7 +54,7 @@ class CreateSentenceApplicationTest(
                     // given
                     val word = wordFactory.createWord()
                     word.definitions.size shouldBe 1
-                    val wordId = word.id
+                    val wordId = word.id!!
                     val wordDefinition = word.definitions.first()
                     val sentences =
                         listOf(
@@ -114,7 +114,7 @@ class CreateSentenceApplicationTest(
                     createSentenceApplication.run(wordId)
 
                     // then
-                    val result = wordService.getSentencesByWordDefinitionId(wordDefinition.id)
+                    val result = wordService.getSentencesByWordDefinitionId(wordDefinition.id!!)
                     result.size shouldBe sentences.size
                     result.first { it.content == "I read a book" }.let { sentence ->
                         sentence.wordDefinitionId shouldBe wordDefinition.id

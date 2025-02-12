@@ -4,14 +4,14 @@ import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
+import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -40,12 +40,12 @@ class ReadOrCreateDailyStudySetApplicationTest(
                 wordFactory.createWord(
                     wordDefinitions =
                         listOf(
-                            WordDefinitionEntity(
+                            WordDefinition(
                                 lexicalCategory = LexicalCategoryType.NOUN,
                                 meaning = "책",
                                 preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                             ),
-                            WordDefinitionEntity(
+                            WordDefinition(
                                 lexicalCategory = LexicalCategoryType.VERB,
                                 meaning = "예약하다",
                                 preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -127,7 +127,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                     word!!.definitions.map {
                         studyFactory.createStudy(
                             userId = user!!.id!!,
-                            wordDefinitionId = it.id,
+                            wordDefinitionId = it.id!!,
                         )
                     }
                 studyFactory.createDailyStudySet(user!!.id!!, date, studies)
@@ -152,7 +152,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                     word!!.definitions.map {
                         studyFactory.createStudy(
                             userId = user!!.id!!,
-                            wordDefinitionId = it.id,
+                            wordDefinitionId = it.id!!,
                         )
                     }
                 studyFactory.createDailyStudySet(user!!.id!!, date, studies)
@@ -180,7 +180,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                     word!!.definitions.map {
                         studyFactory.createStudy(
                             userId = user!!.id!!,
-                            wordDefinitionId = it.id,
+                            wordDefinitionId = it.id!!,
                         )
                     }
                 studyFactory.createDailyStudySet(user!!.id!!, date, studies)

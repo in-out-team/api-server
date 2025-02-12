@@ -2,7 +2,6 @@ package com.inout.apiserver.infrastructure.db.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.word.Word
 import com.inout.apiserver.infrastructure.db.DbTestSupport
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -18,7 +17,6 @@ import org.springframework.data.domain.Sort
 
 @Import(WordRepository::class)
 class WordRepositoryTest(
-    private val wordJpaRepository: WordJpaRepository,
     private val wordRepository: WordRepository,
 ) : DbTestSupport() {
     @Nested
@@ -26,34 +24,32 @@ class WordRepositoryTest(
         @Test
         fun `should raise error when same combination of name and language exists`() {
             // given
-            val wordEntity = createWordEntity()
-            wordJpaRepository.save(wordEntity)
+            val word = createWord()
+            wordRepository.save(word)
 
             // when & then
             assertThatThrownBy {
                 wordRepository.save(
-                    WordEntity(
+                    Word(
                         name = "test",
                         fromLanguage = LanguageType.ENGLISH,
                         toLanguage = LanguageType.KOREAN,
                         definitions = emptyList(),
                     ),
                 )
-            }
-                .isInstanceOf(DataIntegrityViolationException::class.java)
+            }.isInstanceOf(DataIntegrityViolationException::class.java)
                 .hasMessageContaining("could not execute statement")
         }
 
         @Test
         fun `should return new saved word`() {
             // given
-            val wordEntity = createWordEntity()
+            val wordEntity = createWord()
 
             // when
             val result = wordRepository.save(wordEntity)
 
             // then
-            assertTrue(result is Word)
             assertEquals(wordEntity.name, result.name)
             assertEquals(wordEntity.fromLanguage, result.fromLanguage)
             assertEquals(wordEntity.toLanguage, result.toLanguage)
@@ -74,8 +70,8 @@ class WordRepositoryTest(
         fun `should return null when word not found`() {
             // given
             val name = "test"
-            val wordEntity = createWordEntity(name = name)
-            wordJpaRepository.save(wordEntity)
+            val wordEntity = createWord(name = name)
+            wordRepository.save(wordEntity)
 
             // when
             val result =
@@ -93,8 +89,8 @@ class WordRepositoryTest(
         fun `should return word when word found`() {
             // given
             val name = "test"
-            val wordEntity = createWordEntity(name = name)
-            wordJpaRepository.save(wordEntity)
+            val wordEntity = createWord(name = name)
+            wordRepository.save(wordEntity)
 
             // when
             val result =
@@ -121,23 +117,23 @@ class WordRepositoryTest(
         @Test
         fun `should return null when word not found`() {
             // given
-            assertEquals(wordJpaRepository.count(), 0)
+            assertEquals(wordRepository.count(), 0)
 
             // when
             val result = wordRepository.findById(1L)
 
             // then
-            assertNull(result)
+            assertTrue(result.isEmpty)
         }
 
         @Test
         fun `should return word when word found`() {
             // given
-            val wordEntity = createWordEntity()
-            val savedWord = wordJpaRepository.save(wordEntity)
+            val wordEntity = createWord()
+            val savedWord = wordRepository.save(wordEntity)
 
             // when
-            val result = wordRepository.findById(requireNotNull(savedWord.id))
+            val result = wordRepository.findById(savedWord.id!!).orElseThrow()
 
             // then
             assertNotNull(result)
@@ -161,11 +157,11 @@ class WordRepositoryTest(
         fun `should return words with matching prefix`() {
             // given
             val wordEntity1 =
-                createWordEntity(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
+                createWord(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
             val wordEntity2 =
-                createWordEntity(name = "booked", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
-            wordJpaRepository.save(wordEntity1)
-            wordJpaRepository.save(wordEntity2)
+                createWord(name = "booked", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
+            wordRepository.save(wordEntity1)
+            wordRepository.save(wordEntity2)
 
             // when
             val result =
@@ -189,16 +185,16 @@ class WordRepositoryTest(
         fun `should return words with matching prefix and lexical category`() {
             // given
             val wordEntity1 =
-                createWordEntity(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
+                createWord(name = "book", fromLanguage = LanguageType.ENGLISH, toLanguage = LanguageType.KOREAN)
             val wordEntity2 =
-                createWordEntity(
+                createWord(
                     name = "booked",
                     fromLanguage = LanguageType.ENGLISH,
                     toLanguage = LanguageType.KOREAN,
                     lexicalCategory = LexicalCategoryType.VERB,
                 )
-            wordJpaRepository.save(wordEntity1)
-            wordJpaRepository.save(wordEntity2)
+            wordRepository.save(wordEntity1)
+            wordRepository.save(wordEntity2)
 
             // when
             val result =
@@ -224,8 +220,8 @@ class WordRepositoryTest(
         @Test
         fun `should return word with matching word definition id`() {
             // given
-            val wordEntity = createWordEntity()
-            val savedWord = wordJpaRepository.save(wordEntity)
+            val wordEntity = createWord()
+            val savedWord = wordRepository.save(wordEntity)
 
             // when
             val result = wordRepository.findByWordDefinitionId(requireNotNull(savedWord.definitions[0].id))
@@ -238,8 +234,8 @@ class WordRepositoryTest(
         @Test
         fun `should return null when word definition id not found`() {
             // given
-            val wordEntity = createWordEntity()
-            val savedWordEntity = wordJpaRepository.save(wordEntity)
+            val wordEntity = createWord()
+            val savedWordEntity = wordRepository.save(wordEntity)
 
             // when
             val result = wordRepository.findByWordDefinitionId(savedWordEntity.definitions[0].id!! + 1)
@@ -254,12 +250,12 @@ class WordRepositoryTest(
         @Test
         fun `should return words with matching word definition ids`() {
             // given
-            val wordEntity1 = createWordEntity(name = "book")
-            val wordEntity2 = createWordEntity(name = "booking")
-            val wordEntity3 = createWordEntity(name = "booked")
-            val savedWordEntity1 = wordJpaRepository.save(wordEntity1)
-            val savedWordEntity2 = wordJpaRepository.save(wordEntity2)
-            val savedWordEntity3 = wordJpaRepository.save(wordEntity3)
+            val wordEntity1 = createWord(name = "book")
+            val wordEntity2 = createWord(name = "booking")
+            val wordEntity3 = createWord(name = "booked")
+            val savedWordEntity1 = wordRepository.save(wordEntity1)
+            val savedWordEntity2 = wordRepository.save(wordEntity2)
+            val savedWordEntity3 = wordRepository.save(wordEntity3)
 
             // when
             val expectedWordEntities = listOf(savedWordEntity1, savedWordEntity2)
@@ -284,24 +280,23 @@ class WordRepositoryTest(
         }
     }
 
-    private fun createWordEntity(
+    private fun createWord(
         name: String = "test",
         fromLanguage: LanguageType = LanguageType.ENGLISH,
         toLanguage: LanguageType = LanguageType.KOREAN,
         lexicalCategory: LexicalCategoryType = LexicalCategoryType.NOUN,
-    ): WordEntity {
-        return WordEntity(
+    ): Word =
+        Word(
             name = name,
             fromLanguage = fromLanguage,
             toLanguage = toLanguage,
             definitions =
                 listOf(
-                    WordDefinitionEntity(
+                    WordDefinition(
                         lexicalCategory = lexicalCategory,
                         meaning = "test",
                         preContext = "test preContext",
                     ),
                 ),
         )
-    }
 }
