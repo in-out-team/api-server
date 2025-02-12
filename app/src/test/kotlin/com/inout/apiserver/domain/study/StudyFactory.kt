@@ -3,7 +3,7 @@ package com.inout.apiserver.domain.study
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.FsrsCardState
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
+import com.inout.apiserver.infrastructure.db.study.DailyStudySet
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
@@ -52,15 +52,16 @@ class StudyFactory(
         userId: UserId,
         date: LocalDate = LocalDate.now(),
         studies: List<Study> = emptyList(),
-    ) = dailyStudySetRepository.save(
-        DailyStudySetEntity
-            .fromCreateObject(
-                DailyStudySetCreateObject(
-                    userId = userId,
-                    date = date,
+    ): DailyStudySet =
+        dailyStudySetRepository.save(
+            DailyStudySet
+                .fromCreateObject(
+                    DailyStudySetCreateObject(
+                        userId = userId,
+                        date = date,
+                    ),
+                ).copy(
+                    studyIds = studies.map { it.id!! },
                 ),
-            ).copy(
-                studyIds = studies.map { it.id!! },
-            ),
-    )
+        )
 }

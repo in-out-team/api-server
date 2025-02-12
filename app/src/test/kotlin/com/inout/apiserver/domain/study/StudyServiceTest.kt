@@ -9,7 +9,6 @@ import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.user.User
@@ -26,6 +25,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Instant
 import java.time.LocalDate
+import java.util.Optional
 
 @InOutSpringBootTest
 class StudyServiceTest(
@@ -278,14 +278,7 @@ class StudyServiceTest(
         describe("getDailyStudySet") {
             it("should return daily study set when it exists") {
                 // given
-                val dailyStudySet =
-                    dailyStudySetRepository.save(
-                        DailyStudySetEntity(
-                            userId = user!!.id!!,
-                            date = LocalDate.now(),
-                            studyIds = emptyList(),
-                        ),
-                    )
+                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!)
 
                 // when
                 val res = studyService.getDailyStudySet(user!!.id!!, LocalDate.now())
@@ -306,18 +299,12 @@ class StudyServiceTest(
         describe("createDailyStudySet") {
             it("should raise error if daily study set already exists") {
                 // given
+                studyFactory.createDailyStudySet(userId = user!!.id!!, date = LocalDate.now())
                 val dailyStudySetCreateObject =
                     DailyStudySetCreateObject(
                         userId = user!!.id!!,
                         date = LocalDate.now(),
                     )
-                dailyStudySetRepository.save(
-                    DailyStudySetEntity(
-                        userId = user!!.id!!,
-                        date = LocalDate.now(),
-                        studyIds = emptyList(),
-                    ),
-                )
 
                 // when
                 val exception =
@@ -342,7 +329,7 @@ class StudyServiceTest(
                 val dailyStudySet = studyService.createDailyStudySet(dailyStudySetCreateObject)
 
                 // then
-                dailyStudySetRepository.findById(dailyStudySet.id) shouldBe dailyStudySet
+                dailyStudySetRepository.findById(dailyStudySet.id!!) shouldBe Optional.of(dailyStudySet)
                 dailyStudySet.userId shouldBe user!!.id!!
                 dailyStudySet.date shouldBe LocalDate.now()
             }
@@ -376,12 +363,10 @@ class StudyServiceTest(
             it("should return daily study set studies when date is before today") {
                 // given
                 val dailyStudySet =
-                    dailyStudySetRepository.save(
-                        DailyStudySetEntity(
-                            userId = user!!.id!!,
-                            date = LocalDate.now().minusDays(1),
-                            studyIds = studies!!.map { it.id!! },
-                        ),
+                    studyFactory.createDailyStudySet(
+                        userId = user!!.id!!,
+                        date = LocalDate.now().minusDays(1),
+                        studies = studies!!,
                     )
 
                 // when
@@ -394,14 +379,7 @@ class StudyServiceTest(
 
             it("should return daily study set studies and past due studies when date is today") {
                 // given
-                val dailyStudySet =
-                    dailyStudySetRepository.save(
-                        DailyStudySetEntity(
-                            userId = user!!.id!!,
-                            date = LocalDate.now(),
-                            studyIds = studies!!.map { it.id!! },
-                        ),
-                    )
+                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!, studies = studies!!)
                 val pastStudiesWord =
                     wordFactory.createWord(
                         name = "booked",
@@ -468,14 +446,7 @@ class StudyServiceTest(
                 val userId = 1L
                 val word = wordFactory.createWord()
                 val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
-                val dailyStudySet =
-                    dailyStudySetRepository.save(
-                        DailyStudySetEntity(
-                            userId = userId,
-                            date = LocalDate.now(),
-                            studyIds = listOf(study.id!!),
-                        ),
-                    )
+                val dailyStudySet = studyFactory.createDailyStudySet(userId = userId, studies = listOf(study))
 
                 // when
                 val exception =
@@ -491,14 +462,7 @@ class StudyServiceTest(
             it("should add study to daily study set") {
                 // given
                 val userId = 1L
-                val dailyStudySet =
-                    dailyStudySetRepository.save(
-                        DailyStudySetEntity(
-                            userId = userId,
-                            date = LocalDate.now(),
-                            studyIds = emptyList(),
-                        ),
-                    )
+                val dailyStudySet = studyFactory.createDailyStudySet(userId = userId)
                 val word = wordFactory.createWord()
                 val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
 
@@ -506,7 +470,7 @@ class StudyServiceTest(
                 studyService.addStudyToDailyStudySet(dailyStudySet, study)
 
                 // then
-                val updatedDailyStudySet = checkNotNull(dailyStudySetRepository.findById(dailyStudySet.id))
+                val updatedDailyStudySet = dailyStudySetRepository.findById(dailyStudySet.id!!).orElseThrow()
                 updatedDailyStudySet.studyIds.size shouldBe 1
                 updatedDailyStudySet.studyIds.first() shouldBe study.id
             }
