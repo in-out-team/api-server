@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.word.SentenceFeedback
 import com.inout.apiserver.domain.word.WordService
@@ -12,7 +13,7 @@ class GetWritingSentenceFeedbacksApplication(
     private val wordService: WordService,
 ) {
     data class Request(
-        val sentenceId: Long,
+        val sentenceId: SentenceId,
         val user: User,
     )
 

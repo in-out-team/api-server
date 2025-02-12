@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
@@ -10,12 +11,14 @@ import org.springframework.stereotype.Component
 class UnselectReadingSentenceApplication(
     private val wordService: WordService,
 ) {
-    fun run(
-        sentenceId: Long,
-        user: User,
-    ) {
+    data class Request(
+        val sentenceId: SentenceId,
+        val user: User,
+    )
+
+    fun run(request: Request) {
         wordService
-            .getUserSentenceBy(user.id!!, sentenceId)
+            .getUserSentenceBy(request.user.id!!, request.sentenceId)
             ?.takeIf { userSentence ->
                 wordService.getSentenceByIdAndType(
                     userSentence.sentenceId,

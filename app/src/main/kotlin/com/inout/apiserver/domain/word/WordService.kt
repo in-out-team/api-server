@@ -1,14 +1,17 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.UserSentenceId
 import com.inout.apiserver.base.alias.WordDefinitionId
+import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
@@ -37,7 +40,7 @@ class WordService(
         toLanguage: LanguageType,
     ): Word? = wordRepository.findByNameAndFromLanguageAndToLanguage(name, fromLanguage, toLanguage)
 
-    fun getWordById(id: Long): Word? = wordRepository.findById(id).orElse(null)
+    fun getWordById(id: WordId): Word? = wordRepository.findById(id).orElse(null)
 
     @Transactional
     fun createWord(wordCreateObject: WordCreateObject): Word {
@@ -54,7 +57,7 @@ class WordService(
 
     @Transactional
     fun createSentence(sentenceCreateObject: SentenceCreateObject): Sentence =
-        sentenceRepository.save(SentenceEntity.fromCreateObject(sentenceCreateObject))
+        sentenceRepository.save(Sentence.fromCreateObject(sentenceCreateObject))
 
     fun getWordsWithDefinitions(
         fromLanguage: LanguageType,
@@ -98,13 +101,13 @@ class WordService(
     }
 
     fun getSentenceByIdAndType(
-        id: Long,
+        id: SentenceId,
         type: SentenceType,
-    ): Sentence? = sentenceRepository.findById(id)?.takeIf { it.type == type }
+    ): Sentence? = sentenceRepository.findById(id).orElse(null)?.takeIf { it.type == type }
 
     fun getUserSentenceBy(
         userId: UserId,
-        sentenceId: Long,
+        sentenceId: SentenceId,
     ): UserSentence? = userSentenceRepository.findByUserIdAndSentenceId(userId, sentenceId)
 
     fun getUserSentencesBy(
@@ -153,17 +156,17 @@ class WordService(
                     userId = userId,
                     wordDefinitionId = sentence.wordDefinitionId,
                     type = sentence.type,
-                    sentenceId = sentence.id,
+                    sentenceId = sentence.id!!,
                 ),
             )
         }
     }
 
-    fun getUserSentenceFeedbacks(userSentenceId: Long): List<UserSentenceFeedback> =
+    fun getUserSentenceFeedbacks(userSentenceId: UserSentenceId): List<UserSentenceFeedback> =
         userSentenceFeedbackRepository.findAllByUserSentenceId(userSentenceId)
 
     fun getSentenceFeedbackBy(
-        sentenceId: Long,
+        sentenceId: SentenceId,
         submittedContent: String,
     ) = sentenceFeedbackRepository.findBySentenceIdAndSubmittedContent(sentenceId, submittedContent)
 

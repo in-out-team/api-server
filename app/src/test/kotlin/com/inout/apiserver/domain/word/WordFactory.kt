@@ -1,11 +1,14 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.SentenceId
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.UserSentenceId
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
@@ -80,21 +83,21 @@ class WordFactory(
         wordDefinitionId: WordDefinitionId,
         content: String = "I read a book",
         translation: String = "나는 책을 읽었다",
-        lexicalCategories: List<SentenceEntity.LexicalCategoryInfo> =
+        lexicalCategories: List<Sentence.LexicalCategoryInfo> =
             listOf(
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "I",
                     lexicalCategory = LexicalCategoryType.PRONOUN,
                 ),
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "read",
                     lexicalCategory = LexicalCategoryType.VERB,
                 ),
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "a",
                     lexicalCategory = LexicalCategoryType.ARTICLE,
                 ),
-                SentenceEntity.LexicalCategoryInfo(
+                Sentence.LexicalCategoryInfo(
                     word = "book",
                     lexicalCategory = LexicalCategoryType.NOUN,
                 ),
@@ -102,7 +105,7 @@ class WordFactory(
         type: SentenceType = SentenceType.READING,
     ): Sentence =
         sentenceRepository.save(
-            SentenceEntity(
+            Sentence(
                 wordDefinitionId = wordDefinitionId,
                 type = type,
                 content = content,
@@ -112,7 +115,7 @@ class WordFactory(
         )
 
     fun createSentenceFeedback(
-        sentenceId: Long,
+        sentenceId: SentenceId,
         submittedContent: String = "I read book",
         feedback: String = "주어와 동사 사이에 'a'를 넣어야 합니다. 'a'는 무언가 특정한 책을 가리키는데 도움을 줍니다. 모호함을 없애고 명확한 문장을 만들기 위해 필요한 내용입니다.",
     ) = sentenceFeedbackRepository.save(
@@ -124,9 +127,9 @@ class WordFactory(
     )
 
     fun createUserSentence(
-        userId: Long,
-        wordDefinitionId: Long,
-        sentenceId: Long,
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
+        sentenceId: SentenceId,
         type: SentenceType = SentenceType.WRITING,
     ) = userSentenceRepository.save(
         UserSentenceEntity(
@@ -138,7 +141,7 @@ class WordFactory(
     )
 
     fun createUserSentenceFeedback(
-        userSentenceId: Long,
+        userSentenceId: UserSentenceId,
         sentenceFeedbackId: Long,
     ) = userSentenceFeedbackRepository.save(
         UserSentenceFeedbackEntity(

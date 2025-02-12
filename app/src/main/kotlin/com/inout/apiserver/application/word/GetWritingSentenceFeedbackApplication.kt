@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.domain.word.SentenceFeedbackCreateObject
@@ -24,7 +25,7 @@ class GetWritingSentenceFeedbackApplication(
 
     data class Request(
         val user: User,
-        val sentenceId: Long,
+        val sentenceId: SentenceId,
         /**
          * user's submitted answer for given writing practice sentence
          */
@@ -61,7 +62,7 @@ class GetWritingSentenceFeedbackApplication(
                             userId = request.user.id!!,
                             wordDefinitionId = sentence.wordDefinitionId,
                             type = SentenceType.WRITING,
-                            sentenceId = sentence.id,
+                            sentenceId = sentence.id!!,
                         ),
                     )
                 }
@@ -84,7 +85,7 @@ class GetWritingSentenceFeedbackApplication(
 
                     wordService.createSentenceFeedback(
                         SentenceFeedbackCreateObject(
-                            sentenceId = sentence.id,
+                            sentenceId = sentence.id!!,
                             submittedContent = request.submittedContent,
                             feedback = openAIWritingSentenceFeedbackResponse.feedback,
                         ),

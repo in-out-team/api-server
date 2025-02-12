@@ -1,7 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.SentenceEntity
+import com.inout.apiserver.infrastructure.db.word.Sentence
 
 data class SentenceResponse(
     val id: Long,
@@ -9,12 +8,12 @@ data class SentenceResponse(
     val translation: String,
     // TODO: using SentenceEntity.LexicalCategoryInfo is not preferred, it should be replaced with a DTO or
     //   a common interface from base
-    val lexicalCategories: List<SentenceEntity.LexicalCategoryInfo>,
+    val lexicalCategories: List<Sentence.LexicalCategoryInfo>,
 ) {
     companion object {
         fun of(sentence: Sentence): SentenceResponse =
             SentenceResponse(
-                id = sentence.id,
+                id = sentence.id!!,
                 content = sentence.content,
                 translation = sentence.translation,
                 lexicalCategories = sentence.lexicalCategories,

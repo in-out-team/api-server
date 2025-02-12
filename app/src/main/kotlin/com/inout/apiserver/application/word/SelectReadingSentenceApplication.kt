@@ -1,5 +1,6 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.word.UserSentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
@@ -17,31 +18,42 @@ class SelectReadingSentenceApplication(
         private const val MAX_SENTENCES_COUNT = 3
     }
 
-    fun run(
-        sentenceId: Long,
-        user: User,
-    ): UserSentence {
+    data class Request(
+        val sentenceId: SentenceId,
+        val user: User,
+    )
+
+    data class Response(
+        val userSentence: UserSentence,
+    )
+
+    fun run(request: Request): Response {
         val sentence =
-            wordService.getSentenceByIdAndType(sentenceId, SentenceType.READING) ?: throw NotFoundException(
+            wordService.getSentenceByIdAndType(request.sentenceId, SentenceType.READING) ?: throw NotFoundException(
                 message = "Sentence Not Found",
                 code = "SENTENCE_1",
             )
-        wordService.getUserSentencesBy(user.id!!, sentence.wordDefinitionId, SentenceType.READING).let { userSentences ->
-            if (userSentences.size >= MAX_SENTENCES_COUNT) {
-                throw BadRequestException(
-                    message = "Maximum of $MAX_SENTENCES_COUNT sentences can be selected",
-                    code = "SENTENCE_5",
-                )
+        wordService
+            .getUserSentencesBy(request.user.id!!, sentence.wordDefinitionId, SentenceType.READING)
+            .let { userSentences ->
+                if (userSentences.size >= MAX_SENTENCES_COUNT) {
+                    throw BadRequestException(
+                        message = "Maximum of $MAX_SENTENCES_COUNT sentences can be selected",
+                        code = "SENTENCE_5",
+                    )
+                }
             }
-        }
 
-        return wordService.createUserSentence(
-            UserSentenceCreateObject(
-                userId = user.id!!,
-                wordDefinitionId = sentence.wordDefinitionId,
-                type = SentenceType.READING,
-                sentenceId = sentence.id,
-            ),
+        return Response(
+            userSentence =
+                wordService.createUserSentence(
+                    UserSentenceCreateObject(
+                        userId = request.user.id!!,
+                        wordDefinitionId = sentence.wordDefinitionId,
+                        type = SentenceType.READING,
+                        sentenceId = sentence.id!!,
+                    ),
+                ),
         )
     }
 }

@@ -2,7 +2,6 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.Sentence
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
@@ -10,6 +9,7 @@ import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.core.spec.style.DescribeSpec
@@ -46,12 +46,17 @@ class GetReadingSentencesApplicationTest(
         describe("when sentences not found") {
             it("should raise error") {
                 // given
-                val wordDefinitionId = 1L
+                val wordDefinitionId = word!!.definitions.first().id!!
 
                 // when
                 val exception =
                     assertThrows<NotFoundException> {
-                        GetReadingSentencesApplication(wordService).run(wordDefinitionId, user!!)
+                        GetReadingSentencesApplication(wordService).run(
+                            GetReadingSentencesApplication.Request(
+                                wordDefinitionId = wordDefinitionId,
+                                user = user!!,
+                            ),
+                        )
                     }
 
                 // then
@@ -83,10 +88,16 @@ class GetReadingSentencesApplicationTest(
                     ).size shouldBe 0
 
                 // when
-                val result = getReadingSentencesApplication.run(wordDefinitionId, user!!)
+                val result =
+                    getReadingSentencesApplication.run(
+                        GetReadingSentencesApplication.Request(
+                            wordDefinitionId = wordDefinitionId,
+                            user = user!!,
+                        ),
+                    )
 
                 // then
-                result.first.size shouldBeGreaterThan 0
+                result.selectedSentences.size shouldBeGreaterThan 0
             }
 
             it("should return selected sentences as first") {
@@ -98,18 +109,24 @@ class GetReadingSentencesApplicationTest(
                         userId = user!!.id!!,
                         wordDefinitionId = wordDefinitionId,
                         type = SentenceType.READING,
-                        sentenceId = selectedSentence.id,
+                        sentenceId = selectedSentence.id!!,
                     ),
                 )
 
                 // when
-                val result = getReadingSentencesApplication.run(wordDefinitionId, user!!)
+                val result =
+                    getReadingSentencesApplication.run(
+                        GetReadingSentencesApplication.Request(
+                            wordDefinitionId = wordDefinitionId,
+                            user = user!!,
+                        ),
+                    )
 
                 // then
-                result.first.size shouldBe 1
-                result.first.first().id shouldBe selectedSentence.id
-                result.second.size shouldBe 1
-                result.second.first().id shouldBe sentences!!.last().id
+                result.selectedSentences.size shouldBe 1
+                result.selectedSentences.first().id shouldBe selectedSentence.id
+                result.unselectedSentences.size shouldBe 1
+                result.unselectedSentences.first().id shouldBe sentences!!.last().id
             }
         }
     })

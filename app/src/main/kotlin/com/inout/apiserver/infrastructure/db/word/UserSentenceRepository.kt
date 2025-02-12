@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.SentenceType
@@ -28,7 +29,7 @@ class UserSentenceRepository(
 
     fun findByUserIdAndSentenceId(
         userId: UserId,
-        sentenceId: Long,
+        sentenceId: SentenceId,
     ): UserSentence? =
         userSentenceJpaRepository
             .findByUserIdAndSentenceId(

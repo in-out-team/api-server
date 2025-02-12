@@ -42,7 +42,11 @@ class WordController(
             )
         // TODO: send it to some sort of queue implemented later (e.g. Kafka)
         CoroutineScope(Dispatchers.IO).launch {
-            createSentenceApplication.run(result.word.id!!)
+            createSentenceApplication.run(
+                CreateSentenceApplication.Request(
+                    wordId = result.word.id!!,
+                ),
+            )
         }
         return ResponseEntity(
             WordResponse.of(result.word),
