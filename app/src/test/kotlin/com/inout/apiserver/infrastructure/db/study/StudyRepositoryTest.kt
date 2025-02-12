@@ -1,5 +1,7 @@
 package com.inout.apiserver.infrastructure.db.study
 
+import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.domain.study.StudyCreateObject
 import com.inout.apiserver.infrastructure.db.DbTestSupport
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -16,19 +18,17 @@ import java.time.Instant
 @Import(StudyRepository::class)
 class StudyRepositoryTest(
     private val studyRepository: StudyRepository,
-    private val studyJpaRepository: StudyJpaRepository,
 ) : DbTestSupport() {
     private fun createUnsavedStudyEntity(
-        userId: Long,
-        wordDefinitionId: Long,
-    ): StudyEntity {
-        return StudyEntity.fromCreateObject(
+        userId: UserId = 1L,
+        wordDefinitionId: WordDefinitionId,
+    ): Study =
+        Study.fromCreateObject(
             StudyCreateObject(
                 userId = userId,
                 wordDefinitionId = wordDefinitionId,
             ),
         )
-    }
 
     @Nested
     inner class Save {
@@ -37,8 +37,8 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
-            studyJpaRepository.save(studyEntity)
+            val study = createUnsavedStudyEntity(userId, wordDefinitionId)
+            studyRepository.save(study)
 
             // when
             val sut = createUnsavedStudyEntity(userId, wordDefinitionId)
@@ -85,8 +85,8 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
-            studyJpaRepository.save(studyEntity)
+            val study = createUnsavedStudyEntity(userId, wordDefinitionId)
+            studyRepository.save(study)
 
             // when
             val sut = studyRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)
@@ -104,7 +104,7 @@ class StudyRepositoryTest(
             val id = 1L
 
             // when & then
-            assertNull(studyRepository.findById(id))
+            assertTrue(studyRepository.findById(id).isEmpty)
         }
 
         @Test
@@ -112,11 +112,10 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val wordDefinitionId = 1L
-            val studyEntity = createUnsavedStudyEntity(userId, wordDefinitionId)
-            val savedStudy = studyJpaRepository.save(studyEntity)
+            val study = studyRepository.save(createUnsavedStudyEntity(userId, wordDefinitionId))
 
             // when
-            val sut = studyRepository.findById(savedStudy.id!!)
+            val sut = studyRepository.findById(study.id!!)
 
             // then
             assertNotNull(sut)
@@ -143,7 +142,7 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val studies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
-            studyJpaRepository.saveAll(studies)
+            studyRepository.saveAll(studies)
 
             // when
             val pageable1 = PageRequest.of(0, 6)
@@ -172,7 +171,7 @@ class StudyRepositoryTest(
             val ids = emptyList<Long>()
 
             // when
-            val sut = studyRepository.findAllByIds(ids)
+            val sut = studyRepository.findAllById(ids)
 
             // then
             assertTrue(sut.isEmpty())
@@ -183,11 +182,11 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val studies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
-            val savedStudies = studyJpaRepository.saveAll(studies)
+            val savedStudies = studyRepository.saveAll(studies)
 
             // when
             val ids = savedStudies.shuffled().take(5).map { it.id!! }
-            val sut = studyRepository.findAllByIds(ids)
+            val sut = studyRepository.findAllById(ids)
 
             // then
             assertEquals(5, sut.size)
@@ -204,10 +203,10 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val savedStudies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
-            studyJpaRepository.saveAll(savedStudies)
+            studyRepository.saveAll(savedStudies)
             val due = Instant.now()
             val studies = (11..20).map { createUnsavedStudyEntity(userId, it.toLong()) }
-            studyJpaRepository.saveAll(studies)
+            studyRepository.saveAll(studies)
 
             // when
             val pageable = PageRequest.of(0, 10)
@@ -225,7 +224,7 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val studies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
-            studyJpaRepository.saveAll(studies)
+            studyRepository.saveAll(studies)
 
             // when
             val due = Instant.now()
@@ -251,7 +250,7 @@ class StudyRepositoryTest(
             // given
             val userId = 1L
             val studies = (1..10).map { createUnsavedStudyEntity(userId, it.toLong()) }
-            val savedStudies = studyJpaRepository.saveAll(studies)
+            val savedStudies = studyRepository.saveAll(studies)
             val due = Instant.now()
             val excludeIds = savedStudies.shuffled().take(5).map { it.id!! }
 

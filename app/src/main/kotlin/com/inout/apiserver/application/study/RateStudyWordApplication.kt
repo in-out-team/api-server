@@ -1,5 +1,8 @@
 package com.inout.apiserver.application.study
 
+import com.inout.apiserver.base.alias.DailyStudySetId
+import com.inout.apiserver.base.alias.StudyId
+import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.study.StudyWord
@@ -14,31 +17,34 @@ class RateStudyWordApplication(
     private val studyService: StudyService,
     private val wordService: WordService,
 ) {
-    data class Result(
+    data class Request(
+        val userId: UserId,
+        val dailyStudySetId: DailyStudySetId,
+        val studyId: StudyId,
+        val rating: FsrsCardRating,
+    )
+
+    data class Response(
         val studyWord: StudyWord,
     )
 
-    fun run(
-        userId: Long,
-        dailyStudySetId: Long,
-        studyId: Long,
-        rating: FsrsCardRating,
-    ): Result {
-        val dailyStudySet = studyService.getDailyStudySetById(dailyStudySetId)
-        if (dailyStudySet == null || dailyStudySet.userId != userId) {
+    fun run(request: Request): Response {
+        val dailyStudySet = studyService.getDailyStudySetById(request.dailyStudySetId)
+        if (dailyStudySet == null || dailyStudySet.userId != request.userId) {
             throw NotFoundException(message = "Daily study set not found", code = "STUDY_4")
         }
         val studies = studyService.getStudiesByDailyStudySet(dailyStudySet)
         val targetStudy =
-            studies.find { it.id == studyId && it.userId == userId }
+            studies.find { it.id == request.studyId && it.userId == request.userId }
                 ?: throw NotFoundException(
-                    message = "studyId of $studyId not found in dailyStudySetId of $dailyStudySetId",
+                    message = "studyId of ${request.studyId} not found in dailyStudySetId of ${request.dailyStudySetId}",
                     code = "STUDY_2",
                 )
-        val updatedStudy = studyService.rateStudy(targetStudy, rating)
+        val updatedStudy = studyService.updateStudy(targetStudy.rate(request.rating))
+
         studyService.addStudyToDailyStudySet(dailyStudySet, updatedStudy)
 
         val word = wordService.getWordByWordDefinitionId(updatedStudy.wordDefinitionId)
-        return Result(studyWord = StudyWord(study = updatedStudy, word = word))
+        return Response(studyWord = StudyWord(study = updatedStudy, word = word))
     }
 }

@@ -11,15 +11,16 @@ import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetEntity
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.StudyEntity
-import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.WordDefinitionEntity
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ranges.shouldBeIn
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
@@ -32,7 +33,6 @@ class StudyServiceTest(
     private val studyService: StudyService,
     // repositories
     private val dailyStudySetRepository: DailyStudySetRepository,
-    private val studyRepository: StudyRepository,
     // factories
     private val studyFactory: StudyFactory,
     private val userFactory: UserFactory,
@@ -88,7 +88,7 @@ class StudyServiceTest(
 
                 // then
                 res.totalElements shouldBe 2
-                res.content shouldBe studies
+                res.content shouldContainExactly studies
                 res.isLast shouldBe true
             }
         }
@@ -129,7 +129,7 @@ class StudyServiceTest(
 
             it("should return study when it exists") {
                 // when
-                val res = studyService.getById(study!!.id)
+                val res = studyService.getById(study!!.id!!)
 
                 // then
                 res shouldBe study
@@ -137,7 +137,7 @@ class StudyServiceTest(
 
             it("should return null when study does not exist") {
                 // when
-                val res = studyService.getById(study!!.id + 1)
+                val res = studyService.getById(study!!.id!! + 1)
 
                 // then
                 res shouldBe null
@@ -265,7 +265,7 @@ class StudyServiceTest(
                         studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[0].id),
                         studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions[1].id),
                     )
-                val ids = studies.map { it.id }
+                val ids = studies.map { it.id!! }
 
                 // when
                 val res = studyService.getStudiesByIds(ids)
@@ -380,7 +380,7 @@ class StudyServiceTest(
                         DailyStudySetEntity(
                             userId = user!!.id!!,
                             date = LocalDate.now().minusDays(1),
-                            studyIds = studies!!.map { it.id },
+                            studyIds = studies!!.map { it.id!! },
                         ),
                     )
 
@@ -399,7 +399,7 @@ class StudyServiceTest(
                         DailyStudySetEntity(
                             userId = user!!.id!!,
                             date = LocalDate.now(),
-                            studyIds = studies!!.map { it.id },
+                            studyIds = studies!!.map { it.id!! },
                         ),
                     )
                 val pastStudiesWord =
@@ -431,8 +431,8 @@ class StudyServiceTest(
             }
         }
 
-        describe("rateStudy") {
-            it("should return rated study") {
+        describe("updateStudy") {
+            it("should return rated study when study is rated") {
                 // given
                 val word = wordFactory.createWord()
                 val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
@@ -440,16 +440,17 @@ class StudyServiceTest(
                 val now = Instant.now()
 
                 // when
-                val res = studyService.rateStudy(study, rating)
+                val res = studyService.updateStudy(study.rate(rating))
 
                 // then
-                res.id shouldBeGreaterThan 0
+                res.id shouldNotBe null
                 res.userId shouldBe user!!.id!!
                 res.wordDefinitionId shouldBe word.definitions.first().id
                 res.state shouldBe FsrsCardState.REVIEW
                 val expectedScheduledDays = 11
                 res.scheduledDays shouldBe expectedScheduledDays
-                val expectedDueRange = now.plusDays(expectedScheduledDays).minusSeconds(1)..now.plusDays(expectedScheduledDays)
+                val expectedDueRange =
+                    now.plusDays(expectedScheduledDays).minusSeconds(1)..now.plusDays(expectedScheduledDays)
                 res.due shouldBeIn expectedDueRange
                 res.stability shouldBeGreaterThan 0.0
                 res.difficulty shouldBeGreaterThan 0.0
@@ -465,13 +466,14 @@ class StudyServiceTest(
             it("should raise error if study is already in daily study set") {
                 // given
                 val userId = 1L
-                val study = studyRepository.save(StudyEntity.fromDomain(StudyFactory.createStudy()))
+                val word = wordFactory.createWord()
+                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
                 val dailyStudySet =
                     dailyStudySetRepository.save(
                         DailyStudySetEntity(
                             userId = userId,
                             date = LocalDate.now(),
-                            studyIds = listOf(study.id),
+                            studyIds = listOf(study.id!!),
                         ),
                     )
 
@@ -497,7 +499,8 @@ class StudyServiceTest(
                             studyIds = emptyList(),
                         ),
                     )
-                val study = studyRepository.save(StudyEntity.fromDomain(StudyFactory.createStudy()))
+                val word = wordFactory.createWord()
+                val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id)
 
                 // when
                 studyService.addStudyToDailyStudySet(dailyStudySet, study)

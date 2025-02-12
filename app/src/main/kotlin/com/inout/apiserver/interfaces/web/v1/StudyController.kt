@@ -15,7 +15,8 @@ import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatus.CREATED
+import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -36,22 +37,31 @@ class StudyController(
         @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<StudyWordResponse> =
         ResponseEntity(
-            createStudyApplication.run(request, user.id!!).let { StudyWordResponse.of(it.study, it.word) },
-            HttpStatus.CREATED,
+            createStudyApplication
+                .run(
+                    CreateStudyApplication.Request(
+                        user = user,
+                        wordDefinitionId = request.wordDefinitionId,
+                    ),
+                ).let { StudyWordResponse.of(it.study, it.word) },
+            CREATED,
         )
 
     override fun getStudies(
         @Parameter(hidden = true) @RequestUser user: User,
         @Parameter(hidden = true) pageable: Pageable,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
-        val (count, studyWithWords) = readStudiesApplication.run(user.id!!, pageable)
+        val (count, studyWithWords) =
+            readStudiesApplication.run(
+                ReadStudiesApplication.Request(userId = user.id!!, pageable = pageable),
+            )
         return ResponseEntity(
             ResponsePaginationWrapper(
                 data = studyWithWords.map { StudyWordResponse.of(it.study, it.word) },
                 hasMore = pageable.next().offset < count,
                 count = count,
             ),
-            HttpStatus.OK,
+            OK,
         )
     }
 
@@ -59,10 +69,13 @@ class StudyController(
         @Parameter(hidden = true) @RequestUser user: User,
         @RequestParam(name = "date", required = true) date: LocalDate,
     ): ResponseEntity<DailyStudySetResponse> {
-        val dailyStudySetResult = readOrCreateDailyStudySetApplication.run(user.id!!, date)
+        val dailyStudySetResult =
+            readOrCreateDailyStudySetApplication.run(
+                ReadOrCreateDailyStudySetApplication.Request(userId = user.id!!, date = date),
+            )
         return ResponseEntity(
             DailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
-            HttpStatus.OK,
+            OK,
         )
     }
 
@@ -72,14 +85,16 @@ class StudyController(
     ): ResponseEntity<StudyWordResponse> {
         val rateStudyResult =
             rateStudyWordApplication.run(
-                userId = user.id!!,
-                studyId = request.studyId,
-                dailyStudySetId = request.dailyStudySetId,
-                rating = request.rating,
+                RateStudyWordApplication.Request(
+                    userId = user.id!!,
+                    dailyStudySetId = request.dailyStudySetId,
+                    studyId = request.studyId,
+                    rating = request.rating,
+                ),
             )
         return ResponseEntity(
             StudyWordResponse.of(rateStudyResult.studyWord.study, rateStudyResult.studyWord.word),
-            HttpStatus.OK,
+            OK,
         )
     }
 }
