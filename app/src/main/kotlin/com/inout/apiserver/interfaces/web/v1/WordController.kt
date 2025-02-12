@@ -32,12 +32,22 @@ class WordController(
     override fun createWord(
         @RequestBody @Valid request: CreateWordRequest,
     ): ResponseEntity<WordResponse> {
-        val wordResponse = createWordApplication.run(request)
+        val result =
+            createWordApplication.run(
+                CreateWordApplication.Request(
+                    name = request.name,
+                    fromLanguage = request.fromLanguage,
+                    toLanguage = request.toLanguage,
+                ),
+            )
         // TODO: send it to some sort of queue implemented later (e.g. Kafka)
         CoroutineScope(Dispatchers.IO).launch {
-            createSentenceApplication.run(wordResponse.id)
+            createSentenceApplication.run(result.word.id!!)
         }
-        return ResponseEntity(wordResponse, CREATED)
+        return ResponseEntity(
+            WordResponse.of(result.word),
+            CREATED,
+        )
     }
 
     override fun readWordsWithMatchingPrefix(
@@ -48,7 +58,15 @@ class WordController(
         lexicalCategory: LexicalCategoryType?,
     ): ResponseEntity<ResponsePaginationWrapper<WordWithDefinitionsResponse>> {
         val (count, words) =
-            readWordsApplication.run(fromLanguage, toLanguage, prefix, lexicalCategory, pageable)
+            readWordsApplication.run(
+                ReadWordsApplication.Request(
+                    fromLanguage = fromLanguage,
+                    toLanguage = toLanguage,
+                    prefix = prefix,
+                    lexicalCategoryType = lexicalCategory,
+                    pageable = pageable,
+                ),
+            )
 
         return ResponseEntity(
             ResponsePaginationWrapper(
