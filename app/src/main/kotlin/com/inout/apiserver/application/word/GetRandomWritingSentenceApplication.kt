@@ -26,7 +26,6 @@ class GetRandomWritingSentenceApplication(
         val sentence: Sentence,
     )
 
-    // TODO: write test case
     fun run(request: Request): Response {
         val writingSentences =
             wordService.getSentencesByWordDefinitionIdAndType(request.wordDefinitionId, SentenceType.WRITING)
