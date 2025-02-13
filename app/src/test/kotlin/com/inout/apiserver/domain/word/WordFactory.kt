@@ -12,7 +12,7 @@ import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
-import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentence
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
@@ -132,7 +132,7 @@ class WordFactory(
         sentenceId: SentenceId,
         type: SentenceType = SentenceType.WRITING,
     ) = userSentenceRepository.save(
-        UserSentenceEntity(
+        UserSentence(
             userId = userId,
             wordDefinitionId = wordDefinitionId,
             type = type,

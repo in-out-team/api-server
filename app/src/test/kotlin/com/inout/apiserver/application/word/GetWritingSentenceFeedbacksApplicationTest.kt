@@ -97,8 +97,8 @@ class GetWritingSentenceFeedbacksApplicationTest(
                         submittedContent = "I reading a book",
                         feedback = "동사와 목적어 사이에 'am'을 넣어야 합니다. 'am'은 현재 진행형을 나타냅니다.",
                     )
-                wordFactory.createUserSentenceFeedback(userSentence.id, sentenceFeedback1.id)
-                wordFactory.createUserSentenceFeedback(userSentence.id, sentenceFeedback2.id)
+                wordFactory.createUserSentenceFeedback(userSentence.id!!, sentenceFeedback1.id)
+                wordFactory.createUserSentenceFeedback(userSentence.id!!, sentenceFeedback2.id)
 
                 // when
                 val request =

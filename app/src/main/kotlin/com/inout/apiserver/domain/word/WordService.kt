@@ -15,7 +15,7 @@ import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
-import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentence
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
@@ -97,7 +97,7 @@ class WordService(
                 throw ConflictException(message = "User Sentence already exists", code = "SENTENCE_2")
             }
 
-        return userSentenceRepository.save(UserSentenceEntity.fromCreateObject(userSentenceCreateObject))
+        return userSentenceRepository.save(UserSentence.fromCreateObject(userSentenceCreateObject))
     }
 
     fun getSentenceByIdAndType(
@@ -117,7 +117,7 @@ class WordService(
     ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionIdAndType(userId, wordDefinitionId, type)
 
     fun deleteUserSentence(userSentence: UserSentence) {
-        userSentenceRepository.delete(UserSentenceEntity.of(userSentence))
+        userSentenceRepository.delete(userSentence)
     }
 
     fun loadUserSentencesForReading(

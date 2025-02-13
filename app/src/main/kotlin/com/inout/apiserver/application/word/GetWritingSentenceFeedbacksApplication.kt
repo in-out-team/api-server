@@ -31,7 +31,7 @@ class GetWritingSentenceFeedbacksApplication(
             wordService.getUserSentenceBy(request.user.id!!, request.sentenceId)
                 ?: return Response(feedbacks = emptyList())
         val sentenceFeedbacks =
-            wordService.getUserSentenceFeedbacks(userSentence.id).let { userSentenceFeedbacks ->
+            wordService.getUserSentenceFeedbacks(userSentence.id!!).let { userSentenceFeedbacks ->
                 wordService
                     .getSentenceFeedbacksByIds(userSentenceFeedbacks.map { it.sentenceFeedbackId })
                     .sortedByDescending { it.createdAt }

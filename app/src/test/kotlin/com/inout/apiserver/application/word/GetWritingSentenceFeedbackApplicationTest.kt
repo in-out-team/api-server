@@ -150,7 +150,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                                 feedback = "feedback",
                             )
                         wordFactory.createUserSentenceFeedback(
-                            userSentenceId = userSentence.id,
+                            userSentenceId = userSentence.id!!,
                             sentenceFeedbackId = sentenceFeedback.id,
                         )
                     }
@@ -225,7 +225,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                     )
 
                     // then
-                    wordService.getUserSentenceFeedbacks(userSentence.id).size shouldBe 1
+                    wordService.getUserSentenceFeedbacks(userSentence.id!!).size shouldBe 1
                     verify(openAIService, times(0)).fetchWritingSentenceFeedback(any(), any(), any(), any())
                 }
 
@@ -245,7 +245,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                     )
 
                     // then
-                    wordService.getUserSentenceFeedbacks(userSentence.id).size shouldBe 1
+                    wordService.getUserSentenceFeedbacks(userSentence.id!!).size shouldBe 1
                     wordService.getSentenceFeedbackBy(sentence!!.id!!, "test") shouldNotBe null
                     verify(openAIService, times(1)).fetchWritingSentenceFeedback(any(), any(), any(), any())
                 }
