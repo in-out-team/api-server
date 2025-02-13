@@ -1,5 +1,6 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.SentenceFeedbackId
 import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.UserSentenceId
@@ -12,11 +13,11 @@ import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
-import com.inout.apiserver.infrastructure.db.word.UserSentenceEntity
-import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentence
+import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.Word
@@ -97,7 +98,7 @@ class WordService(
                 throw ConflictException(message = "User Sentence already exists", code = "SENTENCE_2")
             }
 
-        return userSentenceRepository.save(UserSentenceEntity.fromCreateObject(userSentenceCreateObject))
+        return userSentenceRepository.save(UserSentence.fromCreateObject(userSentenceCreateObject))
     }
 
     fun getSentenceByIdAndType(
@@ -117,7 +118,7 @@ class WordService(
     ): List<UserSentence> = userSentenceRepository.findAllByUserIdAndWordDefinitionIdAndType(userId, wordDefinitionId, type)
 
     fun deleteUserSentence(userSentence: UserSentence) {
-        userSentenceRepository.delete(UserSentenceEntity.of(userSentence))
+        userSentenceRepository.delete(userSentence)
     }
 
     fun loadUserSentencesForReading(
@@ -171,11 +172,11 @@ class WordService(
     ) = sentenceFeedbackRepository.findBySentenceIdAndSubmittedContent(sentenceId, submittedContent)
 
     fun createSentenceFeedback(sentenceFeedbackCreateObject: SentenceFeedbackCreateObject): SentenceFeedback =
-        sentenceFeedbackRepository.save(SentenceFeedbackEntity.fromCreateObject(sentenceFeedbackCreateObject))
+        sentenceFeedbackRepository.save(SentenceFeedback.fromCreateObject(sentenceFeedbackCreateObject))
 
     fun createUserSentenceFeedback(userSentenceFeedbackCreateObject: UserSentenceFeedbackCreateObject): UserSentenceFeedback =
-        userSentenceFeedbackRepository.save(UserSentenceFeedbackEntity.fromCreateObject(userSentenceFeedbackCreateObject))
+        userSentenceFeedbackRepository.save(UserSentenceFeedback.fromCreateObject(userSentenceFeedbackCreateObject))
 
-    fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<Long>): List<SentenceFeedback> =
+    fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<SentenceFeedbackId>): List<SentenceFeedback> =
         sentenceFeedbackRepository.findAllByIdIn(sentenceFeedbackIds)
 }

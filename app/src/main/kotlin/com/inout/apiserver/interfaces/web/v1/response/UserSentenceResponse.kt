@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.word.UserSentence
+import com.inout.apiserver.infrastructure.db.word.UserSentence
 
 data class UserSentenceResponse(
     val id: Long,
@@ -11,7 +11,7 @@ data class UserSentenceResponse(
     companion object {
         fun of(userSentence: UserSentence): UserSentenceResponse =
             UserSentenceResponse(
-                id = userSentence.id,
+                id = userSentence.id!!,
                 userId = userSentence.userId,
                 wordDefinitionId = userSentence.wordDefinitionId,
                 sentenceId = userSentence.sentenceId,

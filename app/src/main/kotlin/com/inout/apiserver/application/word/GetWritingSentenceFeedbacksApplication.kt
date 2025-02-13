@@ -2,10 +2,10 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.word.SentenceFeedback
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
 import org.springframework.stereotype.Component
 
 @Component
@@ -31,7 +31,7 @@ class GetWritingSentenceFeedbacksApplication(
             wordService.getUserSentenceBy(request.user.id!!, request.sentenceId)
                 ?: return Response(feedbacks = emptyList())
         val sentenceFeedbacks =
-            wordService.getUserSentenceFeedbacks(userSentence.id).let { userSentenceFeedbacks ->
+            wordService.getUserSentenceFeedbacks(userSentence.id!!).let { userSentenceFeedbacks ->
                 wordService
                     .getSentenceFeedbacksByIds(userSentenceFeedbacks.map { it.sentenceFeedbackId })
                     .sortedByDescending { it.createdAt }

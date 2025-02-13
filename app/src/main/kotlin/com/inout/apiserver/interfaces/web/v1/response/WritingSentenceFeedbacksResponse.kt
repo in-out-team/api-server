@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.domain.word.SentenceFeedback
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
 
 data class WritingSentenceFeedbacksResponse(
     val feedbacks: List<Feedback>,

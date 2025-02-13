@@ -66,7 +66,7 @@ class GetWritingSentenceFeedbackApplication(
                         ),
                     )
                 }
-        val userSentenceFeedbacks = wordService.getUserSentenceFeedbacks(userSentence.id)
+        val userSentenceFeedbacks = wordService.getUserSentenceFeedbacks(userSentence.id!!)
         if (userSentenceFeedbacks.size >= MAX_ATTEMPTS) {
             throw BadRequestException(
                 message = "Maximum attempts on getting writing sentence feedback has been reached",
@@ -95,7 +95,7 @@ class GetWritingSentenceFeedbackApplication(
         wordService.createUserSentenceFeedback(
             UserSentenceFeedbackCreateObject(
                 userSentenceId = userSentence.id,
-                sentenceFeedbackId = sentenceFeedback.id,
+                sentenceFeedbackId = sentenceFeedback.id!!,
             ),
         )
 
