@@ -1,5 +1,6 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.SentenceFeedbackId
 import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.UserSentenceId
@@ -13,7 +14,7 @@ import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentence
-import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.Word
@@ -131,22 +132,24 @@ class WordFactory(
         wordDefinitionId: WordDefinitionId,
         sentenceId: SentenceId,
         type: SentenceType = SentenceType.WRITING,
-    ) = userSentenceRepository.save(
-        UserSentence(
-            userId = userId,
-            wordDefinitionId = wordDefinitionId,
-            type = type,
-            sentenceId = sentenceId,
-        ),
-    )
+    ): UserSentence =
+        userSentenceRepository.save(
+            UserSentence(
+                userId = userId,
+                wordDefinitionId = wordDefinitionId,
+                type = type,
+                sentenceId = sentenceId,
+            ),
+        )
 
     fun createUserSentenceFeedback(
         userSentenceId: UserSentenceId,
-        sentenceFeedbackId: Long,
-    ) = userSentenceFeedbackRepository.save(
-        UserSentenceFeedbackEntity(
-            userSentenceId = userSentenceId,
-            sentenceFeedbackId = sentenceFeedbackId,
-        ),
-    )
+        sentenceFeedbackId: SentenceFeedbackId,
+    ): UserSentenceFeedback =
+        userSentenceFeedbackRepository.save(
+            UserSentenceFeedback(
+                userSentenceId = userSentenceId,
+                sentenceFeedbackId = sentenceFeedbackId,
+            ),
+        )
 }
