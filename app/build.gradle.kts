@@ -59,6 +59,7 @@ dependencies {
     implementation("com.google.api-client:google-api-client:2.2.0")
 
     // aws
+    // TODO: aws-java-sdk 1.x entered maintenance mode and support ends on Dec 31, 2025
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.780")
 
     // test
