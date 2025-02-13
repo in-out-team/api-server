@@ -10,7 +10,7 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentence
@@ -119,13 +119,14 @@ class WordFactory(
         sentenceId: SentenceId,
         submittedContent: String = "I read book",
         feedback: String = "주어와 동사 사이에 'a'를 넣어야 합니다. 'a'는 무언가 특정한 책을 가리키는데 도움을 줍니다. 모호함을 없애고 명확한 문장을 만들기 위해 필요한 내용입니다.",
-    ) = sentenceFeedbackRepository.save(
-        SentenceFeedbackEntity(
-            sentenceId = sentenceId,
-            submittedContent = submittedContent,
-            feedback = feedback,
-        ),
-    )
+    ): SentenceFeedback =
+        sentenceFeedbackRepository.save(
+            SentenceFeedback(
+                sentenceId = sentenceId,
+                submittedContent = submittedContent,
+                feedback = feedback,
+            ),
+        )
 
     fun createUserSentence(
         userId: UserId,

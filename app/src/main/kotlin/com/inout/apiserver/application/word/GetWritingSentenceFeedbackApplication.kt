@@ -95,7 +95,7 @@ class GetWritingSentenceFeedbackApplication(
         wordService.createUserSentenceFeedback(
             UserSentenceFeedbackCreateObject(
                 userSentenceId = userSentence.id,
-                sentenceFeedbackId = sentenceFeedback.id,
+                sentenceFeedbackId = sentenceFeedback.id!!,
             ),
         )
 

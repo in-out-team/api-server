@@ -1,21 +1,16 @@
 package com.inout.apiserver.infrastructure.db.word
 
+import com.inout.apiserver.base.alias.SentenceFeedbackId
+import com.inout.apiserver.base.alias.SentenceId
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-class SentenceFeedbackRepository(
-    private val sentenceFeedbackJpaRepository: SentenceFeedbackJpaRepository,
-) {
-    fun save(sentenceFeedback: SentenceFeedbackEntity) = sentenceFeedbackJpaRepository.save(sentenceFeedback).toDomain()
-
+interface SentenceFeedbackRepository : JpaRepository<SentenceFeedback, SentenceFeedbackId> {
     fun findBySentenceIdAndSubmittedContent(
-        sentenceId: Long,
+        sentenceId: SentenceId,
         submittedContent: String,
-    ) = sentenceFeedbackJpaRepository
-        .findBySentenceIdAndSubmittedContent(
-            sentenceId,
-            submittedContent,
-        )?.toDomain()
+    ): SentenceFeedback?
 
-    fun findAllByIdIn(ids: List<Long>) = sentenceFeedbackJpaRepository.findAllByIdIn(ids).map { it.toDomain() }
+    fun findAllByIdIn(ids: List<SentenceFeedbackId>): List<SentenceFeedback>
 }

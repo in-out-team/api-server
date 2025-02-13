@@ -151,7 +151,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                             )
                         wordFactory.createUserSentenceFeedback(
                             userSentenceId = userSentence.id!!,
-                            sentenceFeedbackId = sentenceFeedback.id,
+                            sentenceFeedbackId = sentenceFeedback.id!!,
                         )
                     }
 

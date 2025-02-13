@@ -13,7 +13,7 @@ import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackEntity
+import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.SentenceRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentence
@@ -172,7 +172,7 @@ class WordService(
     ) = sentenceFeedbackRepository.findBySentenceIdAndSubmittedContent(sentenceId, submittedContent)
 
     fun createSentenceFeedback(sentenceFeedbackCreateObject: SentenceFeedbackCreateObject): SentenceFeedback =
-        sentenceFeedbackRepository.save(SentenceFeedbackEntity.fromCreateObject(sentenceFeedbackCreateObject))
+        sentenceFeedbackRepository.save(SentenceFeedback.fromCreateObject(sentenceFeedbackCreateObject))
 
     fun createUserSentenceFeedback(userSentenceFeedbackCreateObject: UserSentenceFeedbackCreateObject): UserSentenceFeedback =
         userSentenceFeedbackRepository.save(UserSentenceFeedback.fromCreateObject(userSentenceFeedbackCreateObject))
