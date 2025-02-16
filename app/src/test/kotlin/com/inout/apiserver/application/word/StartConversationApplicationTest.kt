@@ -5,6 +5,7 @@ import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.AudioFactory
+import com.inout.apiserver.domain.word.WordAIService
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.extension.cleanUp
@@ -17,6 +18,9 @@ import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
 
@@ -25,6 +29,8 @@ class StartConversationApplicationTest(
     private val subject: StartConversationApplication,
     // services
     private val studyService: StudyService,
+    @SpyBean
+    private val wordAIService: WordAIService,
     // repositories
     private val conversationRepository: ConversationRepository,
     // factories
@@ -41,6 +47,11 @@ class StartConversationApplicationTest(
         beforeEach {
             user = userFactory.createUser()
             word = wordFactory.createWord()
+
+            // mock calls to wordAIService to save and return a dummy audio
+            doReturn(audioFactory.createAudio())
+                .`when`(wordAIService)
+                .findOrCreateAudio(any(), any())
         }
 
         afterEach {
@@ -174,7 +185,7 @@ class StartConversationApplicationTest(
                         ).size shouldBe 1
                     result.conversation.userId shouldBe user!!.id
                     result.conversation.wordDefinitionId shouldBe wordDefinitionId
-                    result.conversation.messages.isEmpty() shouldBe true
+                    result.conversation.messages.size shouldBe 1
                 }
             }
         }

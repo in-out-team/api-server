@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables
 import com.inout.apiserver.base.alias.ConversationId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.WordDefinitionId
+import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.domain.word.ConversationCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import jakarta.persistence.CascadeType
@@ -46,6 +47,14 @@ data class Conversation(
             Conversation(
                 userId = createObject.userId,
                 wordDefinitionId = createObject.wordDefinitionId,
+                messages =
+                    mutableListOf(
+                        ConversationMessage(
+                            sender = SenderType.SYSTEM,
+                            content = createObject.systemAudio.content,
+                            audio = createObject.systemAudio,
+                        ),
+                    ),
             )
     }
 

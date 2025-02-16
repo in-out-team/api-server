@@ -1,9 +1,11 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.alias.WordDefinitionId
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.ConversationCreateObject
+import com.inout.apiserver.domain.word.WordAIService
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.infrastructure.db.user.User
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component
 class StartConversationApplication(
     private val wordService: WordService,
     private val studyService: StudyService,
+    private val wordAIService: WordAIService,
 ) {
     companion object {
         private const val MAX_CONVERSATION_COUNT = 3
@@ -46,11 +49,23 @@ class StartConversationApplication(
                     )
                 }
 
-                // TODO: need initial system message
+                val word = wordService.getWordByWordDefinitionId(request.wordDefinitionId)
+                val audio =
+                    wordAIService.findOrCreateAudio(
+                        language = word.fromLanguage,
+                        content =
+                            when (word.fromLanguage) { // TODO: create a separate class responsible for generating initial conversation
+                                LanguageType.ENGLISH -> "Let's talk about ${word.name}!"
+                                LanguageType.KOREAN -> "${word.name}에 대해 이야기 해볼까요?"
+                            },
+                    )
+
                 wordService.createConversation(
                     ConversationCreateObject(
                         userId = request.user.id!!,
                         wordDefinitionId = request.wordDefinitionId,
+                        systemMessage = audio.content,
+                        systemAudio = audio,
                     ),
                 )
             }

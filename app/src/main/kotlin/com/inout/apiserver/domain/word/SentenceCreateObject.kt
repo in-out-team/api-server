@@ -16,6 +16,7 @@ data class SentenceCreateObject(
         require(content.isNotBlank()) { "content must not be blank" }
         require(translation.isNotBlank()) { "translation must not be blank" }
         require(lexicalCategories.isNotEmpty()) { "lexicalCategories must not be empty" }
+        // TODO: create sometimes fails because of this check, need to enhance ai prompt
         require(content.split(" ").size == lexicalCategories.size) { "content and lexicalCategories size must be equal" }
     }
 }

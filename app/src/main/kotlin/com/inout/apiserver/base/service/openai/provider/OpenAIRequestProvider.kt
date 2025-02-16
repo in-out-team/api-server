@@ -231,5 +231,6 @@ class OpenAIRequestProvider {
         input = text,
         voice = voiceType.toOpenAIVoice(),
         responseFormat = speechResponseFormat,
+        speed = 0.90,
     )
 }

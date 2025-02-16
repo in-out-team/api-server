@@ -10,8 +10,8 @@ data class ConversationMessageResponse(
     val id: Long,
     val sender: SenderType,
     val content: String,
-    val audioUrl: String?,
     @JsonSerialize(using = PreSignedUrlSerializer::class)
+    val audioUrl: String?,
     val createdAt: Instant? = null,
 ) {
     companion object {
