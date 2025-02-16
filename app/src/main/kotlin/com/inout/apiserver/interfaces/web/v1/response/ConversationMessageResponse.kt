@@ -1,6 +1,8 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize
 import com.inout.apiserver.base.enums.SenderType
+import com.inout.apiserver.base.serializer.PreSignedUrlSerializer
 import com.inout.apiserver.infrastructure.db.word.ConversationMessage
 import java.time.Instant
 
@@ -9,6 +11,7 @@ data class ConversationMessageResponse(
     val sender: SenderType,
     val content: String,
     val audioUrl: String?,
+    @JsonSerialize(using = PreSignedUrlSerializer::class)
     val createdAt: Instant? = null,
 ) {
     companion object {
