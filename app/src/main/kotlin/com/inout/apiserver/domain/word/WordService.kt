@@ -193,4 +193,7 @@ class WordService(
                 userId = user.id!!,
                 wordDefinitionId = wordDefinitionId,
             ).sortedBy { it.createdAt }
+
+    fun createConversation(conversationCreateObject: ConversationCreateObject): Conversation =
+        conversationRepository.save(Conversation.fromCreateObject(conversationCreateObject))
 }

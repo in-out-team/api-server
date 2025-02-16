@@ -2,6 +2,7 @@ package com.inout.apiserver.base.service.openai
 
 import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
+import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
 import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
@@ -115,5 +116,13 @@ class OpenAIService(
         val transcriptionRequest = openAIRequestProvider.genTranscriptionRequest(file, language)
         val transcription = runBlocking { openai.transcription(transcriptionRequest) }
         return transcription.text
+    }
+
+    fun fetchSpeechFromText(
+        text: String,
+        aiVoiceType: AiVoiceType = AiVoiceType.ALLOY,
+    ): ByteArray {
+        val speechRequest = openAIRequestProvider.genSpeechRequest(text, aiVoiceType)
+        return runBlocking { openai.speech(speechRequest) }
     }
 }

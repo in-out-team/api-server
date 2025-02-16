@@ -1,6 +1,8 @@
 package com.inout.apiserver.base.service.openai.provider
 
 import com.aallam.openai.api.audio.AudioResponseFormat
+import com.aallam.openai.api.audio.SpeechRequest
+import com.aallam.openai.api.audio.SpeechResponseFormat
 import com.aallam.openai.api.audio.TranscriptionRequest
 import com.aallam.openai.api.chat.ChatCompletionRequest
 import com.aallam.openai.api.chat.ChatMessage
@@ -8,6 +10,7 @@ import com.aallam.openai.api.chat.ChatResponseFormat
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.file.FileSource
 import com.aallam.openai.api.model.ModelId
+import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.error.BadRequestException
 import okio.source
 import org.springframework.stereotype.Component
@@ -19,6 +22,8 @@ class OpenAIRequestProvider {
     private val chatCompletionResponseFormat = ChatResponseFormat.JsonObject
     private val transcriptionModel = ModelId("whisper-1")
     private val transcriptionResponseFormat = AudioResponseFormat.Text
+    private val speechModel = ModelId("tts-1")
+    private val speechResponseFormat = SpeechResponseFormat.Mp3
 
     fun genWordInfoRequest(
         word: String,
@@ -217,4 +222,14 @@ class OpenAIRequestProvider {
             responseFormat = transcriptionResponseFormat,
         )
     }
+
+    fun genSpeechRequest(
+        text: String,
+        voiceType: AiVoiceType,
+    ) = SpeechRequest(
+        model = speechModel,
+        input = text,
+        voice = voiceType.toOpenAIVoice(),
+        responseFormat = speechResponseFormat,
+    )
 }

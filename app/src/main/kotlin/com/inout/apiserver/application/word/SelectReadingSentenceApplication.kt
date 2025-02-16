@@ -28,6 +28,7 @@ class SelectReadingSentenceApplication(
     )
 
     fun run(request: Request): Response {
+        // FIXME: user needs to be studying given sentence
         val sentence =
             wordService.getSentenceByIdAndType(request.sentenceId, SentenceType.READING) ?: throw NotFoundException(
                 message = "Sentence Not Found",

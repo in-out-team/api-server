@@ -3,6 +3,7 @@ package com.inout.apiserver.infrastructure.db.word
 import com.inout.apiserver.base.alias.AiAudioId
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.domain.word.AiAudioCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -24,4 +25,14 @@ data class AiAudio(
     val voiceType: AiVoiceType,
     val content: String,
     val directory: String,
-) : TimestampedEntity()
+) : TimestampedEntity() {
+    companion object {
+        fun fromCreateObject(createObject: AiAudioCreateObject): AiAudio =
+            AiAudio(
+                language = createObject.language,
+                voiceType = createObject.aiVoiceType,
+                content = createObject.content,
+                directory = createObject.directory,
+            )
+    }
+}
