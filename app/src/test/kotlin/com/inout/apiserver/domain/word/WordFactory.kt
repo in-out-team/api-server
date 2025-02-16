@@ -9,6 +9,8 @@ import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.infrastructure.db.word.Conversation
+import com.inout.apiserver.infrastructure.db.word.ConversationRepository
 import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.SentenceFeedbackRepository
@@ -29,6 +31,7 @@ class WordFactory(
     private val sentenceFeedbackRepository: SentenceFeedbackRepository,
     private val userSentenceRepository: UserSentenceRepository,
     private val userSentenceFeedbackRepository: UserSentenceFeedbackRepository,
+    private val conversationRepository: ConversationRepository,
 ) {
     companion object {
         @Deprecated("Use member function createWord instead")
@@ -151,6 +154,17 @@ class WordFactory(
             UserSentenceFeedback(
                 userSentenceId = userSentenceId,
                 sentenceFeedbackId = sentenceFeedbackId,
+            ),
+        )
+
+    fun createConversation(
+        userId: UserId,
+        wordDefinitionId: WordDefinitionId,
+    ): Conversation =
+        conversationRepository.save(
+            Conversation(
+                userId = userId,
+                wordDefinitionId = wordDefinitionId,
             ),
         )
 }

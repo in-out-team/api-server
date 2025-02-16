@@ -3,17 +3,22 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.domain.study.StudyFactory
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
+import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
+import com.inout.apiserver.infrastructure.db.word.Word
 import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeSortedBy
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
@@ -23,8 +28,13 @@ import java.util.Optional
 class WordServiceTest(
     private val wordRepository: WordRepository,
     private val userSentenceRepository: UserSentenceRepository,
+    // factories
     private val wordFactory: WordFactory,
+    private val userFactory: UserFactory,
+    private val studyFactory: StudyFactory,
+    // services
     private val wordService: WordService,
+    // etc
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
         afterEach {
@@ -211,31 +221,50 @@ class WordServiceTest(
         }
 
         describe("createUserSentence") {
+            var user: User? = null
+            var word: Word?
+            var wordDefinitionId = 0L
+            var sentence: Sentence? = null
+
+            beforeEach {
+                user = userFactory.createUser()
+                word = wordFactory.createWord()
+                wordDefinitionId = word!!.definitions.first().id!!
+                sentence =
+                    wordFactory.createSentence(
+                        wordDefinitionId = wordDefinitionId,
+                    )
+            }
+
             it("should raise ConflictException if userSentence already exists") {
                 // Given
                 val userSentenceCreateObject =
                     UserSentenceCreateObject(
-                        userId = 1L,
-                        wordDefinitionId = 1L,
+                        userId = user!!.id!!,
+                        wordDefinitionId = wordDefinitionId,
                         type = SentenceType.READING,
-                        sentenceId = 1L,
+                        sentenceId = sentence!!.id!!,
                     )
                 wordService.createUserSentence(userSentenceCreateObject)
 
                 // When, Then
-                Assertions.assertThrows(ConflictException::class.java) {
-                    wordService.createUserSentence(userSentenceCreateObject)
-                }
+                val result =
+                    assertThrows<ConflictException> {
+                        wordService.createUserSentence(userSentenceCreateObject)
+                    }
+
+                result.message shouldBe "User Sentence already exists"
+                result.code shouldBe "SENTENCE_2"
             }
 
             it("should save and return UserSentence") {
                 // Given
                 val userSentenceCreateObject =
                     UserSentenceCreateObject(
-                        userId = 1L,
-                        wordDefinitionId = 1L,
+                        userId = user!!.id!!,
+                        wordDefinitionId = wordDefinitionId,
                         type = SentenceType.READING,
-                        sentenceId = 1L,
+                        sentenceId = sentence!!.id!!,
                     )
 
                 // When
@@ -250,6 +279,35 @@ class WordServiceTest(
                     userId = userSentenceCreateObject.userId,
                     sentenceId = userSentenceCreateObject.sentenceId,
                 ) shouldBe result
+            }
+        }
+
+        describe("getConversationsBy") {
+            var user: User? = null
+            var word: Word?
+            var wordDefinitionId = 0L
+
+            beforeEach {
+                user = userFactory.createUser()
+                word = wordFactory.createWord()
+                wordDefinitionId = word!!.definitions.first().id!!
+                studyFactory.createStudy(user!!.id!!, wordDefinitionId)
+            }
+
+            it("should return empty list if no conversations found") {
+                wordService.getConversationsBy(user!!, wordDefinitionId) shouldBe emptyList()
+            }
+
+            it("should return list of conversations sorted by createdAt") {
+                val conversations =
+                    (1..3)
+                        .map {
+                            wordFactory.createConversation(user!!.id!!, wordDefinitionId)
+                        }
+
+                val result = wordService.getConversationsBy(user!!, wordDefinitionId)
+                result shouldBe conversations
+                result shouldBeSortedBy { it.createdAt!! }
             }
         }
     })
