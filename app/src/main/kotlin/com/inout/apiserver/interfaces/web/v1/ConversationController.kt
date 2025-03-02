@@ -1,10 +1,12 @@
 package com.inout.apiserver.interfaces.web.v1
 
 import com.inout.apiserver.application.word.GetConversationsApplication
+import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.application.word.StartConversationApplication
 import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.interfaces.web.v1.request.RespondToConversationRequest
 import com.inout.apiserver.interfaces.web.v1.request.StartConversationRequest
 import com.inout.apiserver.interfaces.web.v1.response.ConversationResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponseListWrapper
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus.OK
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 class ConversationController(
     private val getConversationsApplication: GetConversationsApplication,
     private val startConversationApplication: StartConversationApplication,
+    private val respondToConversationApplication: RespondToConversationApplication,
 ) {
     @GetMapping
     @Operation(
@@ -120,6 +124,82 @@ class ConversationController(
                             user = user,
                         ),
                     ).conversation,
+            ),
+        )
+
+    @PostMapping("/{conversationId}/respond")
+    @Operation(
+        summary = "마지막 대화에 응답",
+        description = "conversation 학습의 마지막 대화에 사용자가 응답하는 API 입니다.",
+        parameters = [
+            Parameter(
+                name = "conversationId",
+                description = "대화 ID",
+                required = true,
+                example = "1",
+            ),
+        ],
+        requestBody =
+            io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "사용자가 응답하는 대화 정보",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = RespondToConversationRequest::class),
+                    ),
+                ],
+            ),
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "대화 응답 성공",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ConversationResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description =
+                    "시스템 응답 최대횟수에 도달한 경우 (code: CONVERSATION_4), " +
+                        "유저가 응답할 차례가 아니었을 경우 (code: CONVERSATION_5)",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "대화가 존재하지 않는 경우 (code: CONVERSATION_3)",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun respondToConversation(
+        @PathVariable conversationId: Long,
+        @RequestBody @Valid request: RespondToConversationRequest,
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ConversationResponse> =
+        ResponseEntity.ok(
+            ConversationResponse.of(
+                respondToConversationApplication
+                    .run(
+                        RespondToConversationApplication.Request(
+                            conversationId = conversationId,
+                            responseMessage = request.responseMessage,
+                            user = user,
+                        ),
+                    ).updatedConversation,
             ),
         )
 }
