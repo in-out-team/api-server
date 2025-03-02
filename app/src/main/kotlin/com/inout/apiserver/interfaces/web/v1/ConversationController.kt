@@ -128,6 +128,63 @@ class ConversationController(
         )
 
     @PostMapping("/{conversationId}/respond")
+    @Operation(
+        summary = "마지막 대화에 응답",
+        description = "conversation 학습의 마지막 대화에 사용자가 응답하는 API 입니다.",
+        parameters = [
+            Parameter(
+                name = "conversationId",
+                description = "대화 ID",
+                required = true,
+                example = "1",
+            ),
+        ],
+        requestBody =
+            io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "사용자가 응답하는 대화 정보",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = RespondToConversationRequest::class),
+                    ),
+                ],
+            ),
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "대화 응답 성공",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = ConversationResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description =
+                    "시스템 응답 최대횟수에 도달한 경우 (code: CONVERSATION_4), " +
+                        "유저가 응답할 차례가 아니었을 경우 (code: CONVERSATION_5)",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "대화가 존재하지 않는 경우 (code: CONVERSATION_3)",
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
     fun respondToConversation(
         @PathVariable conversationId: Long,
         @RequestBody @Valid request: RespondToConversationRequest,
