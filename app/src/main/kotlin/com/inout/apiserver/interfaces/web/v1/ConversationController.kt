@@ -1,10 +1,12 @@
 package com.inout.apiserver.interfaces.web.v1
 
 import com.inout.apiserver.application.word.GetConversationsApplication
+import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.application.word.StartConversationApplication
 import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.interfaces.web.v1.request.RespondToConversationRequest
 import com.inout.apiserver.interfaces.web.v1.request.StartConversationRequest
 import com.inout.apiserver.interfaces.web.v1.response.ConversationResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponseListWrapper
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus.OK
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 class ConversationController(
     private val getConversationsApplication: GetConversationsApplication,
     private val startConversationApplication: StartConversationApplication,
+    private val respondToConversationApplication: RespondToConversationApplication,
 ) {
     @GetMapping
     @Operation(
@@ -120,6 +124,25 @@ class ConversationController(
                             user = user,
                         ),
                     ).conversation,
+            ),
+        )
+
+    @PostMapping("/{conversationId}/respond")
+    fun respondToConversation(
+        @PathVariable conversationId: Long,
+        @RequestBody @Valid request: RespondToConversationRequest,
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ConversationResponse> =
+        ResponseEntity.ok(
+            ConversationResponse.of(
+                respondToConversationApplication
+                    .run(
+                        RespondToConversationApplication.Request(
+                            conversationId = conversationId,
+                            responseMessage = request.responseMessage,
+                            user = user,
+                        ),
+                    ).updatedConversation,
             ),
         )
 }

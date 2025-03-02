@@ -1,5 +1,6 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.alias.ConversationId
 import com.inout.apiserver.base.alias.SentenceFeedbackId
 import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.alias.UserId
@@ -184,6 +185,8 @@ class WordService(
     fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<SentenceFeedbackId>): List<SentenceFeedback> =
         sentenceFeedbackRepository.findAllByIdIn(sentenceFeedbackIds)
 
+    fun getConversationById(conversationId: ConversationId): Conversation? = conversationRepository.findById(conversationId).orElse(null)
+
     fun getConversationsBy(
         user: User,
         wordDefinitionId: WordDefinitionId,
@@ -196,4 +199,6 @@ class WordService(
 
     fun createConversation(conversationCreateObject: ConversationCreateObject): Conversation =
         conversationRepository.save(Conversation.fromCreateObject(conversationCreateObject))
+
+    fun updateConversation(conversation: Conversation): Conversation = conversationRepository.save(conversation)
 }

@@ -10,7 +10,9 @@ import com.aallam.openai.api.chat.ChatResponseFormat
 import com.aallam.openai.api.chat.ChatRole
 import com.aallam.openai.api.file.FileSource
 import com.aallam.openai.api.model.ModelId
+import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.base.enums.AiVoiceType
+import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.error.BadRequestException
 import okio.source
 import org.springframework.stereotype.Component
@@ -94,8 +96,8 @@ class OpenAIRequestProvider {
                     You are an English to Korean dictionary which has list of example sentences .
                     Generate 10 example sentences in English using the given word and it's meaning in Korean.
                     
-                    Each sentence should:
-                    0. Must include the given word and provide sentence which uses the given meaning
+                    Each sentence must:
+                    0. Include the given word and provide sentence which uses the given meaning
                      - ex: If given word and meaning is "book" and "책", there must only be sentences using the meaning "책". Sentences using "book" with meaning "예약하다" is strictly prohibited
                     1. Be unique in context, avoiding repetitive themes
                     2. Contain approximately 10 words
@@ -116,6 +118,7 @@ class OpenAIRequestProvider {
                          - lexicalCategory: lexical category of the word
                          - possible lexical category: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, article
                        - ex) for "I'm reading a book", [{word: "I'm", lexicalCategory: "pronoun"}, {word: "reading", lexicalCategory: "verb"}, {word: "a", lexicalCategory: "article"}, {word: "book", lexicalCategory: "noun"}]
+                       - therefore, length of lexicalCategories must be equal to the number of words in the content when split by space
                     """.trimIndent(),
             )
         val queryMessage =
@@ -231,6 +234,68 @@ class OpenAIRequestProvider {
         input = text,
         voice = voiceType.toOpenAIVoice(),
         responseFormat = speechResponseFormat,
-        speed = 0.90,
     )
+
+    fun genConversationRequest(
+        fromLanguage: String,
+        toLanguage: String,
+        wordName: String,
+        wordMeaning: String,
+        // first: SenderType, second: message content
+        messages: List<Pair<SenderType, String>>,
+    ): ChatCompletionRequest {
+        val continueConversation =
+            messages.count { it.first == SenderType.SYSTEM } < RespondToConversationApplication.MAX_SYSTEM_RESPONSES - 1
+        val systemDefinition =
+            ChatMessage(
+                role = ChatRole.System,
+                content =
+                    """
+                    You are an AI language conversation tutor helping users practice vocabulary in $fromLanguage.
+                    ${
+                        when (continueConversation) {
+                            true ->
+                                """
+                                Your goal is to ensure the user naturally incorporates the target word into conversation while maintaining proper grammar and sentence structure.
+                                
+                                # Response Rules (Strict Adherence Mandatory):
+                                1. Directly address the user's last message first before guiding them toward using the target word.
+                                2. Encourage the user to use the target word if they haven't yet. Guide them with relevant, engaging questions.
+                                3. Expand naturally on the conversation if the user has already used the word correctly.
+                                4. Correct grammatical errors gently by providing a natural alternative without disrupting the flow.
+                                5. Correct misuse of the word by offering a better usage example and a short explanation.
+                                6. Redirect inappropriate or off-topic responses professionally while keeping the conversation engaging.
+                                7. Keep responses concise (≤ 200 characters), engaging, and contextually relevant.
+                                """.trimIndent()
+
+                            false ->
+                                """
+                                Your goal is to conclude the conversation naturally. 
+                                Acknowledge the user's last message in a meaningful way, ensuring proper grammar and sentence structure. 
+                                Do not ask further questions or introduce new topics. Respond concisely (≤ 200 characters).
+                                """.trimIndent()
+                        }
+                    }
+                    """.trimIndent(),
+            )
+
+        val queryMessage =
+            ChatMessage(
+                role = ChatRole.User,
+                content =
+                    """
+                    Target word: "$wordName"
+                    Meaning of the word in $toLanguage: "$wordMeaning"
+                    Continue: $continueConversation
+                    Conversation history:
+                    ${messages.joinToString(" --> ") { "${it.first}: ${it.second}" }}
+                    """.trimIndent(),
+            )
+
+        return ChatCompletionRequest(
+            model = chatCompletionModel,
+            messages = listOf(systemDefinition, queryMessage),
+            responseFormat = ChatResponseFormat.Text,
+        )
+    }
 }

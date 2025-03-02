@@ -16,6 +16,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.Index
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import org.hibernate.annotations.DynamicInsert
 import org.hibernate.annotations.DynamicUpdate
@@ -40,6 +41,7 @@ data class Conversation(
     val wordDefinitionId: WordDefinitionId,
     @OneToMany(cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "conversation_id")
+    @OrderBy("createdAt ASC")
     val messages: MutableList<ConversationMessage> = mutableListOf(),
 ) : TimestampedEntity() {
     companion object {
@@ -79,5 +81,29 @@ data class Conversation(
         result = 31 * result + messages.toList().hashCode()
 
         return result
+    }
+
+    fun addUserMessage(messageContent: String): Conversation {
+        messages.add(
+            ConversationMessage(
+                sender = SenderType.USER,
+                content = messageContent,
+            ),
+        )
+        return this
+    }
+
+    fun addSystemMessage(
+        messageContent: String,
+        audio: AiAudio,
+    ): Conversation {
+        messages.add(
+            ConversationMessage(
+                sender = SenderType.SYSTEM,
+                content = messageContent,
+                audio = audio,
+            ),
+        )
+        return this
     }
 }
