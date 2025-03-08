@@ -23,6 +23,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.DynamicInsert
@@ -57,6 +58,7 @@ data class Study(
     val lastReview: Instant?,
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "study_id")
+    @OrderBy("createdAt ASC")
     val reviewLogs: List<StudyReviewLog> = emptyList(),
 ) : TimestampedEntity() {
     companion object {
