@@ -26,6 +26,7 @@ class EmailPasswordLoginApplication(
 
     data class Response(
         val accessToken: String,
+        val refreshToken: String,
     )
 
     fun run(request: Request): Response {
@@ -33,9 +34,10 @@ class EmailPasswordLoginApplication(
         val user =
             userService.getUserByEmail(request.email)
                 ?: throw NotFoundException(message = "User not found", code = "USER_2")
-        val accessToken = tokenService.generate(user)
+        val accessToken = tokenService.generateAccessToken(user, mapOf("userId" to user.id!!))
+        val refreshToken = tokenService.generateRefreshToken(user, mapOf("userId" to user.id!!))
 
-        return Response(accessToken = accessToken)
+        return Response(accessToken = accessToken, refreshToken = refreshToken)
     }
 
     private fun validateRequest(

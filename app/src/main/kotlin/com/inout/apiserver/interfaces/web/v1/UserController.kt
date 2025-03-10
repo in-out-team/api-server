@@ -25,6 +25,7 @@ class UserController(
     private val updateUserApplication: UpdateUserApplication,
     private val readUserApplication: ReadUserApplication,
 ) : UserApiSpec {
+    // TODO: should only be allowed in non-production environments
     override fun createUser(
         @RequestBody @Valid request: CreateUserRequest,
     ): ResponseEntity<UserResponse> =

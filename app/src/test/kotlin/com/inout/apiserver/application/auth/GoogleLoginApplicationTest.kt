@@ -1,92 +1,108 @@
 package com.inout.apiserver.application.auth
 
-import com.inout.apiserver.config.jwt.JwtProperties
 import com.inout.apiserver.domain.auth.GoogleApiClientService
 import com.inout.apiserver.domain.auth.TokenService
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.user.UserService
-import com.inout.apiserver.infrastructure.db.user.User
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.spyk
-import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Test
+import com.inout.apiserver.error.GoogleIdTokenVerificationException
+import com.inout.apiserver.extension.cleanUp
+import com.inout.apiserver.helper.InOutSpringBootTest
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.doThrow
+import org.mockito.kotlin.whenever
+import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.jdbc.core.JdbcTemplate
 
-class GoogleLoginApplicationTest {
-    private val userService = mockk<UserService>()
-    private val googleApiClientService = mockk<GoogleApiClientService>()
-    private val jwtProperties =
-        JwtProperties(
-            key = "super-long-secret-key-long-enough-to-have-a-size-over-256-bits",
-            accessTokenExpiration = 1000L,
-            refreshTokenExpiration = 1000L,
-        )
-    private val tokenService = spyk(TokenService(jwtProperties))
-    private val googleLoginApplication = GoogleLoginApplication(userService, googleApiClientService, tokenService)
-    private val email = "test@1.com"
-    private val invalidIdToken = "invalid-id-token"
-    private val validIdToken = "valid-id-token"
+@InOutSpringBootTest
+class GoogleLoginApplicationTest(
+    private val subject: GoogleLoginApplication,
+    // services
+    private val userService: UserService,
+    @SpyBean
+    private val tokenService: TokenService,
+    @SpyBean
+    private val googleApiClientService: GoogleApiClientService,
+    // factories
+    private val userFactory: UserFactory,
+    // etc
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        val email = "test@1.com"
+        var idToken = ""
 
-    @Test
-    fun `run - should raise error if invalid idToken`() {
-        // given
-        every { googleApiClientService.extractEmail(invalidIdToken) } throws RuntimeException("Invalid idToken")
+        beforeEach {
+            doReturn(email)
+                .whenever(googleApiClientService)
+                .extractEmail("valid-id-token")
 
-        // when
-        val exception =
-            assertThrows(RuntimeException::class.java) {
-                googleLoginApplication.run(
-                    GoogleLoginApplication.Request(idToken = invalidIdToken),
-                )
+            doThrow(GoogleIdTokenVerificationException(message = "Invalid ID token", code = "GOOGLE_AUTH_1"))
+                .whenever(googleApiClientService)
+                .extractEmail("invalid-id-token")
+        }
+
+        afterEach {
+            jdbcTemplate.cleanUp()
+        }
+
+        describe("when provided with an invalid idToken") {
+            beforeEach {
+                idToken = "invalid-id-token"
             }
 
-        // then
-        assertEquals("Invalid idToken", exception.message)
-    }
+            it("should raise GoogleIdTokenVerificationException") {
+                // when
+                val exception =
+                    shouldThrow<GoogleIdTokenVerificationException> {
+                        subject.run(GoogleLoginApplication.Request(idToken = idToken))
+                    }
 
-    @Test
-    fun `run - should create user if user with email does not exist`() {
-        // given
-        val newUser =
-            mockk<User> {
-                every { id } returns 1L
+                // then
+                exception.message shouldBe "Invalid ID token"
+                exception.code shouldBe "GOOGLE_AUTH_1"
             }
-        every { googleApiClientService.extractEmail(validIdToken) } returns email
-        every { userService.getUserByEmail(email) } returns null
-        every { userService.createUser(any(), any(), any()) } returns newUser
-        every { tokenService.generate(newUser, any(), any()) } returns "accessToken"
+        }
 
-        // when
-        val sut =
-            googleLoginApplication.run(
-                GoogleLoginApplication.Request(idToken = validIdToken),
-            )
-
-        // then
-        verify(exactly = 1) { userService.createUser(any(), any(), any()) }
-        assertEquals("accessToken", sut.accessToken)
-    }
-
-    @Test
-    fun `run - should not create user if user with email exists`() {
-        // given
-        val user =
-            mockk<User> {
-                every { id } returns 1L
+        describe("when provided with a valid idToken") {
+            beforeEach {
+                idToken = "valid-id-token"
             }
-        every { googleApiClientService.extractEmail(validIdToken) } returns email
-        every { userService.getUserByEmail(email) } returns user
-        every { tokenService.generate(user, any(), any()) } returns "accessToken"
 
-        // when
-        val sut =
-            googleLoginApplication.run(
-                GoogleLoginApplication.Request(idToken = validIdToken),
-            )
+            describe("when user with email does not exist") {
+                it("should create user") {
+                    // given
+                    userService.getUserByEmail(email) shouldBe null
 
-        // then
-        verify(exactly = 0) { userService.createUser(any(), any(), any()) }
-        assertEquals("accessToken", sut.accessToken)
-    }
-}
+                    // when
+                    val result = subject.run(GoogleLoginApplication.Request(idToken = idToken))
+
+                    // then
+                    result.accessToken.isNotEmpty() shouldBe true
+                    result.refreshToken.isNotEmpty() shouldBe true
+                    userService.getUserByEmail(email) shouldNotBe null
+                }
+            }
+
+            describe("when user with email exists") {
+                it("should not create a new user and return tokens") {
+                    // given
+                    val user = userFactory.createUser(email = email)
+                    userService.getUserByEmail(user.email) shouldNotBe null
+
+                    // when
+                    val result = subject.run(GoogleLoginApplication.Request(idToken = idToken))
+
+                    // then
+                    result.accessToken.isNotEmpty() shouldBe true
+                    result.refreshToken.isNotEmpty() shouldBe true
+                    tokenService.extractEmail(result.accessToken) shouldBe email
+                    tokenService.extractEmail(result.refreshToken) shouldBe email
+                    tokenService.isValid(result.accessToken, user.email) shouldBe true
+                    tokenService.isValid(result.refreshToken, user.email) shouldBe true
+                }
+            }
+        }
+    })

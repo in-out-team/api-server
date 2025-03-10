@@ -14,8 +14,7 @@ class GoogleApiClientService(
         return payload.email
     }
 
-    fun verifyIdToken(idToken: String): GoogleIdToken {
-        return verifier.verify(idToken)
+    fun verifyIdToken(idToken: String): GoogleIdToken =
+        verifier.verify(idToken)
             ?: throw GoogleIdTokenVerificationException(message = "Invalid ID token", code = "GOOGLE_AUTH_1")
-    }
 }
