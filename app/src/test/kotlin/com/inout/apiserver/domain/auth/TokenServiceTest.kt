@@ -1,146 +1,253 @@
 package com.inout.apiserver.domain.auth
 
-import com.inout.apiserver.config.jwt.JwtConfig
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.extension.cleanUp
+import com.inout.apiserver.helper.InOutSpringBootTest
+import com.inout.apiserver.infrastructure.db.user.RefreshToken
+import com.inout.apiserver.infrastructure.db.user.RefreshTokenRepository
 import com.inout.apiserver.infrastructure.db.user.User
-import io.jsonwebtoken.Claims
-import io.mockk.every
-import io.mockk.mockk
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ContextConfiguration
-import java.lang.reflect.Method
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.comparables.shouldBeGreaterThan
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import org.mockito.kotlin.any
+import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.jdbc.core.JdbcTemplate
+import java.time.Instant
 import java.util.Date
 
-@SpringBootTest
-@ContextConfiguration(classes = [TokenService::class, JwtConfig::class])
+@InOutSpringBootTest
 class TokenServiceTest(
-    @Autowired private val tokenService: TokenService,
-) {
-    private val user = mockk<User>()
-    private val testEmail = "test@1.com"
+    @SpyBean
+    private val subject: TokenService,
+    // repositories
+    private val refreshTokenRepository: RefreshTokenRepository,
+    // factories
+    private val userFactory: UserFactory,
+    // ect
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        var user: User? = null
 
-    @BeforeEach
-    fun setUp() {
-        every { user.email } returns testEmail
-    }
+        beforeEach {
+            user = userFactory.createUser()
+        }
 
-    /**
-     * since we are trying to test the feature of 3rd party library, use getClaims method existing in TokenService
-     * which leverages the 3rd party library to get the claims from the token
-     */
-    private fun useTokenServiceGetClaimsWithToken(token: String): Claims {
-        val getClaimsMethod: Method =
-            TokenService::class.java
-                .getDeclaredMethod("getClaims", String::class.java)
-                .apply { isAccessible = true }
-        return getClaimsMethod.invoke(tokenService, token) as Claims
-    }
+        afterEach {
+            jdbcTemplate.cleanUp()
+            clearInvocations(subject)
+        }
 
-    @Test
-    fun `generate - should generate a token with right claims`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val extraClaims = mapOf("key1" to "value1", "key2" to "value2")
+        describe("generate") {
+            it("should create a token with given user, expiration date and extraClaims") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
+                val extraClaims = mapOf("key1" to "value1", "key2" to "value2")
 
-        // when
-        val token = tokenService.generate(user, expirationDate, extraClaims)
+                // when
+                val token = subject.generate(user!!, expirationDate, extraClaims)
 
-        // then
-        Assertions.assertTrue(token.isNotBlank())
-        val claims = useTokenServiceGetClaimsWithToken(token)
-        // check if expiration matches up to second
-        // - this is because implementation of JwtBuilder's expiration method slices out milliseconds
-        Assertions.assertEquals(expirationDate.time / 1000, claims.expiration.time / 1000)
-        Assertions.assertEquals(user.email, claims.subject)
-        Assertions.assertEquals(extraClaims["key1"], claims["key1"])
-        Assertions.assertEquals(extraClaims["key2"], claims["key2"])
-    }
+                // then
+                token.isNotEmpty() shouldBe true
+                val claims = subject.getClaims(token)
+                (claims.expiration.time - expirationDate.time) / 1000 shouldBe 0
+                claims.subject shouldBe user!!.email
+                claims["key1"] shouldBe extraClaims["key1"]
+                claims["key2"] shouldBe extraClaims["key2"]
+            }
+        }
 
-    @Test
-    fun `isValid - should return true if token is valid and email matches`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(user, expirationDate)
+        describe("generateAccessToken") {
+            it("should internally call generate with accessTokenExpiration") {
+                // given
+                val extraClaims = mapOf("key1" to "value1", "key2" to "value2")
 
-        // when
-        val isValid = tokenService.isValid(token, user.email)
+                // when
+                val token = subject.generateAccessToken(user!!, extraClaims)
 
-        // then
-        Assertions.assertTrue(isValid)
-    }
+                // then
+                token.isNotEmpty() shouldBe true
+                val claims = subject.getClaims(token)
+                claims.subject shouldBe user!!.email
+                claims["key1"] shouldBe extraClaims["key1"]
+                claims["key2"] shouldBe extraClaims["key2"]
+                verify(subject, times(1)).generate(eq(user!!), any(), eq(extraClaims))
+            }
+        }
 
-    @Test
-    fun `isValid - should return false if token is expired`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
-        val token = tokenService.generate(user, expirationDate)
+        describe("generateRefreshToken") {
+            it("should internally call generate with refreshTokenExpiration") {
+                // given
+                val extraClaims = mapOf("key1" to "value1", "key2" to "value2")
 
-        // when & then
-        Assertions.assertFalse(tokenService.isValid(token, user.email))
-    }
+                // when
+                val token = subject.generateRefreshToken(user!!, extraClaims)
 
-    @Test
-    fun `isValid - should return false if email does not match`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(user, expirationDate)
+                // then
+                token.isNotEmpty() shouldBe true
+                val claims = subject.getClaims(token)
+                claims.subject shouldBe user!!.email
+                claims["key1"] shouldBe extraClaims["key1"]
+                claims["key2"] shouldBe extraClaims["key2"]
+                verify(subject, times(1)).generate(eq(user!!), any(), eq(extraClaims))
+            }
 
-        // when & then
-        Assertions.assertFalse(tokenService.isValid(token, user.email + "1"))
-    }
+            it("should save the token to the database") {
+                // given
+                refreshTokenRepository.count() shouldBe 0
+                val extraClaims = mapOf("key1" to "value1", "key2" to "value2")
 
-    @Test
-    fun `isExpired - should return true if token is expired`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
-        val token = tokenService.generate(user, expirationDate)
+                // when
+                val token = subject.generateRefreshToken(user!!, extraClaims)
 
-        // when
-        val isExpired = tokenService.isExpired(token)
+                // then
+                val refreshToken = refreshTokenRepository.findByToken(token)
+                refreshToken shouldNotBe null
+                refreshToken!!.userId shouldBe user!!.id
+                refreshToken.token shouldBe token
+                refreshToken.expiresAt shouldBeGreaterThan Instant.now()
+            }
+        }
 
-        // then
-        Assertions.assertTrue(isExpired)
-    }
+        describe("getByToken") {
+            it("should return the refresh token by token") {
+                // given
+                val refreshToken =
+                    refreshTokenRepository.save(
+                        RefreshToken(
+                            userId = user!!.id!!,
+                            token = "token",
+                            expiresAt = Instant.now(),
+                        ),
+                    )
 
-    @Test
-    fun `isExpired - should return false if token is not expired`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(user, expirationDate)
+                // when
+                val result = subject.getByToken("token")
 
-        // when
-        val isExpired = tokenService.isExpired(token)
+                // then
+                result shouldBe refreshToken
+            }
+        }
 
-        // then
-        Assertions.assertFalse(isExpired)
-    }
+        describe("deleteRefreshToken") {
+            it("should delete the refresh token") {
+                // given
+                val refreshToken =
+                    refreshTokenRepository.save(
+                        RefreshToken(
+                            userId = user!!.id!!,
+                            token = "token",
+                            expiresAt = Instant.now(),
+                        ),
+                    )
 
-    @Test
-    fun `extractEmail - should return email if token is valid`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
-        val token = tokenService.generate(user, expirationDate)
+                // when
+                subject.deleteRefreshToken(refreshToken)
 
-        // when
-        val email = tokenService.extractEmail(token)
+                // then
+                refreshTokenRepository.findByToken("token") shouldBe null
+            }
+        }
 
-        // then
-        Assertions.assertEquals(user.email, email)
-    }
+        describe("isValid") {
+            it("should return true if token is valid and email matches") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
+                val token = subject.generate(user!!, expirationDate)
 
-    @Test
-    fun `extractEmail - should return null if token is invalid`() {
-        // given
-        val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
-        val token = tokenService.generate(user, expirationDate)
+                // when
+                val isValid = subject.isValid(token, user!!.email)
 
-        // when
-        val email = tokenService.extractEmail(token)
+                // then
+                isValid shouldBe true
+            }
 
-        // then
-        Assertions.assertNull(email)
-    }
-}
+            it("should return false if token is expired") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
+                val token = subject.generate(user!!, expirationDate)
+
+                // when & then
+                subject.isValid(token, user!!.email) shouldBe false
+            }
+
+            it("should return false if email does not match") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
+                val token = subject.generate(user!!, expirationDate)
+
+                // when & then
+                subject.isValid(token, user!!.email + "1") shouldBe false
+            }
+        }
+
+        describe("isExpired") {
+            it("should return true if token is expired") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
+                val token = subject.generate(user!!, expirationDate)
+
+                // when
+                val isExpired = subject.isExpired(token)
+
+                // then
+                isExpired shouldBe true
+            }
+
+            it("should return false if token is not expired") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
+                val token = subject.generate(user!!, expirationDate)
+
+                // when
+                val isExpired = subject.isExpired(token)
+
+                // then
+                isExpired shouldBe false
+            }
+        }
+
+        describe("extractEmail") {
+            it("should return email if token is valid") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
+                val token = subject.generate(user!!, expirationDate)
+
+                // when
+                val email = subject.extractEmail(token)
+
+                // then
+                email shouldBe user!!.email
+            }
+
+            it("should return null if token is invalid") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() - 1000L) // 1 second ago
+                val token = subject.generate(user!!, expirationDate)
+
+                // when
+                val email = subject.extractEmail(token)
+
+                // then
+                email shouldBe null
+            }
+        }
+
+        describe("getClaims") {
+            it("should return claims from the token") {
+                // given
+                val expirationDate = Date(System.currentTimeMillis() + 1000L) // 1 second from now
+                val token = subject.generate(user!!, expirationDate)
+
+                // when
+                val claims = subject.getClaims(token)
+
+                // then
+                claims.subject shouldBe user!!.email
+            }
+        }
+    })

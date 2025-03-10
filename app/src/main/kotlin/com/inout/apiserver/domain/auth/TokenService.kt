@@ -87,7 +87,7 @@ class TokenService(
     /**
      * throws ExpiredJwtException if the token is expired or any other exception if the token is invalid
      */
-    private fun getClaims(token: String): Claims =
+    fun getClaims(token: String): Claims =
         Jwts
             .parser()
             .verifyWith(key)
