@@ -1,6 +1,8 @@
 package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
+import com.inout.apiserver.infrastructure.db.user.RefreshToken
+import com.inout.apiserver.infrastructure.db.user.RefreshTokenRepository
 import com.inout.apiserver.infrastructure.db.user.User
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
@@ -12,6 +14,7 @@ import java.util.Date
 @Service
 class TokenService(
     private val jwtProperties: JwtProperties,
+    private val refreshTokenRepository: RefreshTokenRepository,
 ) {
     private val key = Keys.hmacShaKeyFor(jwtProperties.key.toByteArray())
 
@@ -30,6 +33,34 @@ class TokenService(
             .and()
             .signWith(key)
             .compact()
+
+    fun generateAccessToken(
+        user: User,
+        extraClaims: Map<String, Any> = emptyMap(),
+    ): String {
+        val expirationDate = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
+        return generate(user, expirationDate, extraClaims)
+    }
+
+    fun generateRefreshToken(
+        user: User,
+        extraClaims: Map<String, Any> = emptyMap(),
+    ): String {
+        val expirationDate = Date(System.currentTimeMillis() + jwtProperties.refreshTokenExpiration)
+        val refreshToken =
+            refreshTokenRepository.save(
+                RefreshToken(
+                    userId = user.id!!,
+                    token = generate(user, expirationDate, extraClaims),
+                    expiresAt = expirationDate.toInstant(),
+                ),
+            )
+        return refreshToken.token
+    }
+
+    fun getByToken(token: String): RefreshToken? = refreshTokenRepository.findByToken(token)
+
+    fun deleteRefreshToken(refreshToken: RefreshToken) = refreshTokenRepository.delete(refreshToken)
 
     fun isValid(
         token: String,
@@ -56,7 +87,7 @@ class TokenService(
     /**
      * throws ExpiredJwtException if the token is expired or any other exception if the token is invalid
      */
-    private fun getClaims(token: String): Claims =
+    fun getClaims(token: String): Claims =
         Jwts
             .parser()
             .verifyWith(key)

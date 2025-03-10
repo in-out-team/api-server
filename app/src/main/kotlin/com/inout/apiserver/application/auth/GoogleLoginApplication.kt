@@ -18,25 +18,22 @@ class GoogleLoginApplication(
 
     data class Response(
         val accessToken: String,
+        val refreshToken: String,
     )
 
     fun run(request: Request): Response {
         val email = googleApiClientService.extractEmail(request.idToken)
-        val user = userService.getUserByEmail(email)
-        val accessToken =
-            if (user != null) {
-                tokenService.generate(user = user, extraClaims = mapOf("userId" to user.id!!))
-            } else {
-                val newUser =
-                    userService.createUser(
-                        email = email,
-                        // this password is not used for authentication
-                        password = Md5Crypt.md5Crypt(email.toByteArray()),
-                        nickname = email.split("@").first(),
-                    )
-                tokenService.generate(newUser, extraClaims = mapOf("userId" to newUser.id!!))
-            }
+        val user =
+            userService.getUserByEmail(email)
+                ?: userService.createUser(
+                    email = email,
+                    // this password is not used for authentication
+                    password = Md5Crypt.md5Crypt(email.toByteArray()),
+                    nickname = email.split("@").first(),
+                )
+        val accessToken = tokenService.generateAccessToken(user, mapOf("userId" to user.id!!))
+        val refreshToken = tokenService.generateRefreshToken(user, mapOf("userId" to user.id!!))
 
-        return Response(accessToken = accessToken)
+        return Response(accessToken = accessToken, refreshToken = refreshToken)
     }
 }
