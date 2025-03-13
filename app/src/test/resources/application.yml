@@ -13,6 +13,8 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           time_zone: UTC
+  flyway:
+    enabled: false
 jwt:
   key: "test-super-long-secret-key-1234567890"
   access-token-expiration: 60000000
@@ -31,3 +33,11 @@ openai:
 auth:
   google:
     ios-client-id: ${GOOGLE_IOS_CLIENT_ID:111111111111-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com}
+cloud:
+  aws:
+    s3:
+      bucket: ${AWS_S3_BUCKET:inout-local}
+      region: ${AWS_REGION:ap-northeast-2}
+      credentials:
+        access-key: ${AWS_S3_ACCESS_KEY:ABCD12ABC1ABC1AB1AB1}
+        secret-key: ${AWS_S3_SECRET_KEY:abCDE12A/AbcdEfGhIJkLm123a12ABcdEfGHIJ1a}

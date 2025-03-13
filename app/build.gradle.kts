@@ -53,6 +53,7 @@ dependencies {
     // db
     runtimeOnly("org.postgresql:postgresql")
     implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
+    implementation("org.flywaydb:flyway-core:9.22.3")
 
     // logins
     // google api client

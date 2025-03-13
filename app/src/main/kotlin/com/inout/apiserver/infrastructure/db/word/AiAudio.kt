@@ -11,10 +11,19 @@ import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.Index
 import jakarta.persistence.Table
 
 @Entity
-@Table(name = "ai_audios")
+@Table(
+    name = "ai_audios",
+    indexes = [
+        Index(
+            name = "idx_ai_audios_language_voice_type_content",
+            columnList = "language, voice_type, content",
+        ),
+    ],
+)
 data class AiAudio(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

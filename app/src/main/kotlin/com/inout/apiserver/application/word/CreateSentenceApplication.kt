@@ -28,6 +28,7 @@ class CreateSentenceApplication(
                 code = "WORD_4",
             )
         // TODO: need to bulk create sentences
+        // TODO: need to add jobrunr for async job
         word.definitions.forEach { wordDefinition ->
             wordService.getSentencesByWordDefinitionId(wordDefinition.id!!).let {
                 if (it.isNotEmpty()) return@forEach
