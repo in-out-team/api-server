@@ -44,7 +44,6 @@ data class Study(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: StudyId? = null,
     val userId: UserId,
-    // should be unmodifiable
     val wordDefinitionId: WordDefinitionId,
     @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
