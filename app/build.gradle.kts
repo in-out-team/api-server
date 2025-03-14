@@ -63,6 +63,9 @@ dependencies {
     // TODO: aws-java-sdk 1.x entered maintenance mode and support ends on Dec 31, 2025
     implementation("com.amazonaws:aws-java-sdk-s3:1.12.780")
 
+    // background processing
+    implementation("org.jobrunr:jobrunr-spring-boot-3-starter:7.4.1")
+
     // test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
