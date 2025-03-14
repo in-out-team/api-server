@@ -18,9 +18,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import org.jobrunr.scheduling.JobScheduler
 import org.springdoc.core.converters.models.PageableAsQueryParam
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus.CREATED
@@ -39,6 +37,7 @@ class WordController(
     private val createWordApplication: CreateWordApplication,
     private val readWordsApplication: ReadWordsApplication,
     private val createSentenceApplication: CreateSentenceApplication,
+    private val jobScheduler: JobScheduler,
 ) {
     @PostMapping
     @Operation(
@@ -90,14 +89,8 @@ class WordController(
                     toLanguage = request.toLanguage,
                 ),
             )
-        // TODO: send it to some sort of queue implemented later (e.g. Kafka)
-        CoroutineScope(Dispatchers.IO).launch {
-            createSentenceApplication.run(
-                CreateSentenceApplication.Request(
-                    wordId = result.word.id!!,
-                ),
-            )
-        }
+        jobScheduler.enqueue { createSentenceApplication.run(CreateSentenceApplication.Request(wordId = result.word.id!!)) }
+
         return ResponseEntity(
             WordResponse.of(result.word),
             CREATED,

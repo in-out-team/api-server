@@ -20,12 +20,15 @@ spring:
       max-request-size: 5MB
   flyway:
     enabled: true
+
 # disable spring security's basic auth
 security:
   basic:
     enabled: false
+
 # debug true for development
 debug: true
+
 # set bindings for SQL
 logging:
   level:
@@ -34,20 +37,24 @@ logging:
         orm:
           jdbc:
             bind: trace
+
 # jwt token configuration
 jwt:
   key: ${JWT_KEY}
   access-token-expiration: 604800000
   refresh-token-expiration: 18144000000
+
 # openai configuration
 openai:
   token: ${OPENAI_API_KEY}
   organization: ${OPENAI_ORGANIZATION}
+
 # Social Login Configuration
 auth:
   google:
     ios-client-id: ${GOOGLE_IOS_CLIENT_ID}
 
+# Cloud Configuration
 cloud:
   aws:
     s3:
@@ -56,3 +63,17 @@ cloud:
       credentials:
         access-key: ${AWS_S3_ACCESS_KEY}
         secret-key: ${AWS_S3_SECRET_KEY}
+org:
+# Jobrunr Configuration
+  jobrunr:
+    database:
+      datasource: ${JOBRUNR_DB_DATASOURCE:jdbc:postgresql://localhost:5432/in-out-jobrunr-local}
+    background-job-server:
+      enabled: true # use background job server due to limited resources on cloud
+    dashboard:
+      enabled: true # Enable the JobRunr dashboard on local/dev environment
+
+app:
+  jobrunr:
+    data-source-username: ${JOBRUNR_DB_USERNAME:admin}
+    data-source-password: ${JOBRUNR_DB_PASSWORD:inout1234}
