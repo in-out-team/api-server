@@ -1,8 +1,11 @@
 package com.inout.apiserver.application.word
 
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class ReadWordsApplication(
     private val wordService: WordService,
+    private val studyService: StudyService,
 ) {
     data class Request(
         val fromLanguage: LanguageType,
@@ -17,15 +21,17 @@ class ReadWordsApplication(
         val prefix: String,
         val lexicalCategoryType: LexicalCategoryType?,
         val pageable: Pageable,
+        val user: User,
     )
 
     data class Response(
         val totalCount: Long,
         val words: List<Word>,
+        val studyingWordDefinitionIds: List<WordDefinitionId>,
     )
 
     fun run(request: Request): Response {
-        val words =
+        val wordsPage =
             wordService.getWordsWithDefinitions(
                 fromLanguage = request.fromLanguage,
                 toLanguage = request.toLanguage,
@@ -33,10 +39,20 @@ class ReadWordsApplication(
                 lexicalCategory = request.lexicalCategoryType,
                 pageable = request.pageable,
             )
+        val studyingWordDefinitionIds =
+            studyService
+                .getStudiesByUserIdAndWordDefinitionIds(
+                    userId = request.user.id!!,
+                    wordDefinitionIds =
+                        wordsPage.content
+                            .flatMap { it.definitions }
+                            .map { it.id!! },
+                ).map { it.wordDefinitionId }
 
         return Response(
-            totalCount = words.totalElements,
-            words = words.content,
+            totalCount = wordsPage.totalElements,
+            words = wordsPage.content,
+            studyingWordDefinitionIds = studyingWordDefinitionIds,
         )
     }
 }

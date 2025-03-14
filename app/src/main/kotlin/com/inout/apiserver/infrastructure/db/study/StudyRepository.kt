@@ -32,6 +32,11 @@ interface StudyJpaRepository : JpaRepository<Study, StudyId> {
         excludeIds: List<Long>,
         pageable: Pageable,
     ): Page<Study>
+
+    fun findAllByUserIdAndWordDefinitionIdIn(
+        userId: UserId,
+        wordDefinitionIds: List<WordDefinitionId>,
+    ): List<Study>
 }
 
 @Repository

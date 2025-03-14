@@ -154,4 +154,9 @@ class StudyService(
 
         return dailyStudySetRepository.save(DailyStudySet.fromCreateObject(dailyStudySetCreateObject))
     }
+
+    fun getStudiesByUserIdAndWordDefinitionIds(
+        userId: UserId,
+        wordDefinitionIds: List<WordDefinitionId>,
+    ): List<Study> = studyRepository.findAllByUserIdAndWordDefinitionIdIn(userId, wordDefinitionIds)
 }
