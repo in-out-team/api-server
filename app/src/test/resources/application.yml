@@ -4,6 +4,14 @@ spring:
     driver-class-name: org.postgresql.Driver
     username: admin
     password: inout1234
+    # see: https://stackoverflow.com/questions/68468851/testcontainers-sql-too-many-connections-exception
+    # setting pool size in order to avoid connection pool exhaustion
+    # - @SpringBootTest creates a new application context for each test class
+    # - while it tries its best to reuse the same connection pool, having a @SpyBean or @MockBean will force tests to
+    #   create a new application context, and thus a new connection pool (depleting the connection pool)
+    # - setting the maximum pool size will prevent excessive connections from being created (thus, this is a workaround)
+    hikari:
+      maximum-pool-size: 5
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -15,11 +23,14 @@ spring:
           time_zone: UTC
   flyway:
     enabled: false
+
 jwt:
   key: "test-super-long-secret-key-1234567890"
   access-token-expiration: 60000000
   refresh-token-expiration: 300000000
+
 # debug: true
+
 logging:
   level:
     org:
@@ -27,12 +38,15 @@ logging:
         orm:
           jdbc:
             bind: trace
+
 openai:
   token: ${OPENAI_API_KEY:sk-1234567890}
   organization: ${OPENAI_ORGANIZATION:org-1234567890}
+
 auth:
   google:
     ios-client-id: ${GOOGLE_IOS_CLIENT_ID:111111111111-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com}
+
 cloud:
   aws:
     s3:
@@ -41,3 +55,16 @@ cloud:
       credentials:
         access-key: ${AWS_S3_ACCESS_KEY:ABCD12ABC1ABC1AB1AB1}
         secret-key: ${AWS_S3_SECRET_KEY:abCDE12A/AbcdEfGhIJkLm123a12ABcdEfGHIJ1a}
+
+org:
+  # Jobrunr Configuration
+  jobrunr:
+    database:
+      datasource: ${JOBRUNR_DB_DATASOURCE:jdbc:postgresql://localhost:5432/in-out-jobrunr-test}
+    background-job-server:
+      enabled: false
+
+app:
+  jobrunr:
+    data-source-username: ${JOBRUNR_DB_USERNAME:admin}
+    data-source-password: ${JOBRUNR_DB_PASSWORD:inout1234}

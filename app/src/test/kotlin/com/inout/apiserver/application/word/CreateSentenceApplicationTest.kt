@@ -4,31 +4,54 @@ import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
 import com.inout.apiserver.base.service.openai.dto.Sentence
 import com.inout.apiserver.domain.word.WordFactory
-import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
+import com.zaxxer.hikari.HikariDataSource
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import org.jobrunr.jobs.JobId
+import org.jobrunr.scheduling.JobScheduler
 import org.mockito.kotlin.any
+import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.test.annotation.DirtiesContext
+import java.util.UUID
 
 @InOutSpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class CreateSentenceApplicationTest(
     private val subject: CreateSentenceApplication,
+    // services
     @SpyBean
     private val openAIService: OpenAIService,
-    private val wordService: WordService,
     // factories
     private val wordFactory: WordFactory,
     // etc
     private val jdbcTemplate: JdbcTemplate,
+    @SpyBean
+    private val jobScheduler: JobScheduler,
+    private val jobrunrDataSource: javax.sql.DataSource,
 ) : DescribeSpec({
+        beforeEach {
+            doReturn(JobId(UUID.randomUUID()))
+                .whenever(jobScheduler)
+                .enqueue(any())
+        }
+
         afterEach {
             jdbcTemplate.cleanUp()
+            clearInvocations(jobScheduler)
+        }
+
+        afterSpec {
+            (jobrunrDataSource as HikariDataSource).close()
         }
 
         describe("CreateSentenceApplication") {
@@ -54,12 +77,10 @@ class CreateSentenceApplicationTest(
             }
 
             context("when word is found") {
-                it("should create sentences for word") {
+                it("should queue for creating sentences") {
                     // given
                     val word = wordFactory.createWord()
-                    word.definitions.size shouldBe 1
                     val wordId = word.id!!
-                    val wordDefinition = word.definitions.first()
                     val sentences =
                         listOf(
                             Sentence(
@@ -122,18 +143,7 @@ class CreateSentenceApplicationTest(
                     )
 
                     // then
-                    val result = wordService.getSentencesByWordDefinitionId(wordDefinition.id!!)
-                    result.size shouldBe sentences.size
-                    result.first { it.content == "I read a book" }.let { sentence ->
-                        sentence.wordDefinitionId shouldBe wordDefinition.id
-                        sentence.translation shouldBe "나는 책을 읽었다"
-                        sentence.lexicalCategories.size shouldBe 4
-                    }
-                    result.first { it.content == "I wrote a book" }.let { sentence ->
-                        sentence.wordDefinitionId shouldBe wordDefinition.id
-                        sentence.translation shouldBe "나는 책을 썼다"
-                        sentence.lexicalCategories.size shouldBe 4
-                    }
+                    verify(jobScheduler, times(word.definitions.size)).enqueue(any())
                 }
             }
         }
