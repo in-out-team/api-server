@@ -2,107 +2,176 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.base.service.openai.dto.Definition
+import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
+import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.infrastructure.db.word.Word
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Test
+import com.inout.apiserver.extension.cleanUp
+import com.inout.apiserver.helper.InOutSpringBootTest
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import org.mockito.kotlin.any
+import org.mockito.kotlin.clearInvocations
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.whenever
+import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.jdbc.core.JdbcTemplate
 
-class CreateWordApplicationTest {
-    private val wordService = mockk<WordService>()
-    private val openAIService = mockk<OpenAIService>()
-    private val createWordApplication = CreateWordApplication(wordService, openAIService)
+@InOutSpringBootTest
+class CreateWordApplicationTest(
+    private val subject: CreateWordApplication,
+    // services
+    @SpyBean
+    private val openAIService: OpenAIService,
+    // factories
+    private val wordFactory: WordFactory,
+    // etc
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        afterEach {
+            jdbcTemplate.cleanUp()
+        }
 
-    @Test
-    fun `run - should throw ConflictException if word already exists`() {
-        // Given
-        val request =
-            CreateWordApplication.Request(
-                name = "name",
-                fromLanguage = LanguageType.ENGLISH,
-                toLanguage = LanguageType.KOREAN,
-            )
-        val word =
-            Word(
-                id = 1L,
-                name = request.name,
-                fromLanguage = request.fromLanguage,
-                toLanguage = request.toLanguage,
-                definitions = emptyList(),
-            )
-        every {
-            wordService.getWordByNameAndFromLanguageAndToLanguage(
-                request.name,
-                request.fromLanguage,
-                request.toLanguage,
-            )
-        } returns word
+        describe("when given word already exists") {
+            it("should throw ConflictException") {
+                // Given
+                val word = wordFactory.createWord()
+                val request =
+                    CreateWordApplication.Request(
+                        name = word.name,
+                        fromLanguage = word.fromLanguage,
+                        toLanguage = word.toLanguage,
+                    )
 
-        // When
-        val exception =
-            assertThrows(ConflictException::class.java) {
-                createWordApplication.run(request)
+                // When
+                val exception = shouldThrow<ConflictException> { subject.run(request) }
+
+                // Then
+                exception.message shouldBe "Word already exists"
+                exception.code shouldBe "WORD_1"
+            }
+        }
+
+        describe("when given word does not exist") {
+            describe("when word definition not found") {
+                beforeEach {
+                    doReturn(OpenAIWordDefinitionResponse(definitions = emptyList()))
+                        .whenever(openAIService)
+                        .fetchWordDefinition(any(), any(), any())
+                }
+
+                afterEach {
+                    clearInvocations(openAIService)
+                }
+
+                it("should throw BadRequestException") {
+                    // Given
+                    val request =
+                        CreateWordApplication.Request(
+                            name = "book",
+                            fromLanguage = LanguageType.ENGLISH,
+                            toLanguage = LanguageType.KOREAN,
+                        )
+
+                    // When
+                    val exception = shouldThrow<BadRequestException> { subject.run(request) }
+
+                    // Then
+                    exception.message shouldBe "Valid Word Definition not found"
+                    exception.code shouldBe "WORD_3"
+                }
             }
 
-        // Then
-        assertEquals("Word already exists", exception.message)
-        verify(exactly = 1) {
-            wordService.getWordByNameAndFromLanguageAndToLanguage(
-                request.name,
-                request.fromLanguage,
-                request.toLanguage,
-            )
-        }
-    }
+            describe("when word definition is found but there are no valid definitions") {
+                beforeEach {
+                    doReturn(
+                        OpenAIWordDefinitionResponse(
+                            definitions =
+                                listOf(
+                                    Definition(
+                                        type = "noun",
+                                        definition = "얄리얄리얄랄라",
+                                        preContext = "얄라리얄라",
+                                    ),
+                                ),
+                        ),
+                    ).whenever(openAIService)
+                        .fetchWordDefinition(any(), any(), any())
 
-    @Test
-    fun `run - should return created word`() {
-        // Given
-        val request =
-            CreateWordApplication.Request(
-                name = "name",
-                fromLanguage = LanguageType.ENGLISH,
-                toLanguage = LanguageType.KOREAN,
-            )
-        val word =
-            Word(
-                id = 1L,
-                name = request.name,
-                fromLanguage = request.fromLanguage,
-                toLanguage = request.toLanguage,
-                definitions = emptyList(),
-            )
-        every {
-            wordService.getWordByNameAndFromLanguageAndToLanguage(
-                request.name,
-                request.fromLanguage,
-                request.toLanguage,
-            )
-        } returns null
-        every { openAIService.fetchWordDefinition(any(), any(), any()) } returns
-            mockk {
-                every { definitions } returns emptyList()
+                    doReturn(
+                        OpenAIWordDefinitionResponse(definitions = emptyList()),
+                    ).whenever(openAIService)
+                        .validateAndTrimWordDefinition(any(), any(), any(), any())
+                }
+
+                afterEach {
+                    clearInvocations(openAIService)
+                }
+
+                it("should throw BadRequestException") {
+                    // Given
+                    val request =
+                        CreateWordApplication.Request(
+                            name = "book",
+                            fromLanguage = LanguageType.ENGLISH,
+                            toLanguage = LanguageType.KOREAN,
+                        )
+
+                    // When
+                    val exception = shouldThrow<BadRequestException> { subject.run(request) }
+
+                    // Then
+                    exception.message shouldBe "Valid Word Definition not found"
+                    exception.code shouldBe "WORD_3"
+                }
             }
-        every { wordService.createWord(any()) } returns word
 
-        // When
-        val result = createWordApplication.run(request)
+            describe("when word definition is found and there are valid definitions") {
+                beforeEach {
+                    val definitions =
+                        listOf(
+                            Definition(
+                                type = "noun",
+                                definition = "책",
+                                preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                            ),
+                            Definition(
+                                type = "verb",
+                                definition = "예약하다",
+                                preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                            ),
+                        )
+                    doReturn(OpenAIWordDefinitionResponse(definitions = definitions))
+                        .whenever(openAIService)
+                        .fetchWordDefinition(any(), any(), any())
 
-        // Then
-        assertNotNull(result.word.id)
-        verify(exactly = 1) {
-            wordService.getWordByNameAndFromLanguageAndToLanguage(
-                request.name,
-                request.fromLanguage,
-                request.toLanguage,
-            )
-            openAIService.fetchWordDefinition(any(), any(), any())
-            wordService.createWord(any())
+                    doReturn(OpenAIWordDefinitionResponse(definitions = definitions))
+                        .whenever(openAIService)
+                        .validateAndTrimWordDefinition(any(), any(), any(), any())
+                }
+
+                afterEach {
+                    clearInvocations(openAIService)
+                }
+
+                it("should return created word") {
+                    // Given
+                    val request =
+                        CreateWordApplication.Request(
+                            name = "book",
+                            fromLanguage = LanguageType.ENGLISH,
+                            toLanguage = LanguageType.KOREAN,
+                        )
+
+                    // When
+                    val result = subject.run(request)
+
+                    // Then
+                    result.word.id shouldNotBe null
+                }
+            }
         }
-    }
-}
+    })

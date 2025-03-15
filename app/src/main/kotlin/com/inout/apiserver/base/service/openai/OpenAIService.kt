@@ -4,6 +4,7 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.SenderType
+import com.inout.apiserver.base.service.openai.dto.Definition
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
 import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
 import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
@@ -78,6 +79,38 @@ class OpenAIService(
         return OpenAIWordDefinitionResponse.fromJson(chatMessageContent.content)
     }
 
+    /**
+     * TODO: need to run this in a non-blocking way (parallel processing)
+     */
+    fun validateAndTrimWordDefinition(
+        word: String,
+        fromLanguage: String,
+        toLanguage: String,
+        definitions: List<Triple<String, String, String>>, // type, definition, preContext
+    ): OpenAIWordDefinitionResponse {
+        val chatCompletionRequest =
+            openAIRequestProvider.genValidateAndTrimWordDefinitionRequest(
+                word = word,
+                fromLanguage = fromLanguage,
+                toLanguage = toLanguage,
+                definitions =
+                    definitions.map {
+                        Definition(
+                            type = it.first,
+                            definition = it.second,
+                            preContext = it.third,
+                        )
+                    },
+            )
+        val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
+        val chatMessageContent =
+            response.choices
+                .first()
+                .message.messageContent as TextContent
+
+        return OpenAIWordDefinitionResponse.fromJson(chatMessageContent.content)
+    }
+
     fun fetchWordDefinitionSentence(
         word: String,
         meaning: String,
@@ -101,7 +134,12 @@ class OpenAIService(
         toLanguage: String = "Korean",
     ): OpenAIWritingSentenceFeedbackResponse {
         val chatCompletionRequest =
-            openAIRequestProvider.genWritingSentenceFeedbackRequest(originalContent, userSubmittedContent, fromLanguage, toLanguage)
+            openAIRequestProvider.genWritingSentenceFeedbackRequest(
+                originalContent,
+                userSubmittedContent,
+                fromLanguage,
+                toLanguage,
+            )
         val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
         val chatMessageContent =
             response.choices

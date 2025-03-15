@@ -66,6 +66,16 @@ class WordController(
                 ],
             ),
             ApiResponse(
+                responseCode = "400",
+                description = "사전 정의를 찾을 수 없음 (code: WORD_3)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
                 responseCode = "409",
                 description = "사전 단어 등록 실패 (code: WORD_1) - 이미 존재하는 단어",
                 content = [
@@ -75,7 +85,6 @@ class WordController(
                     ),
                 ],
             ),
-            // TODO: add more error codes (ex. in case openai service is down, or returns unexpected output)
         ],
     )
     fun createWord(

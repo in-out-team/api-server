@@ -11,7 +11,7 @@ spring:
     #   create a new application context, and thus a new connection pool (depleting the connection pool)
     # - setting the maximum pool size will prevent excessive connections from being created (thus, this is a workaround)
     hikari:
-      maximum-pool-size: 5
+      maximum-pool-size: 2
   jpa:
     hibernate:
       ddl-auto: create-drop
