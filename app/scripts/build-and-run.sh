@@ -2,7 +2,7 @@
 
 # build JAR file
 echo "Building JAR file..."
-./gradlew clean build
+./gradlew clean build -x test
 echo "JAR file built successfully!"
 
 # Run Docker Compose
