@@ -5,7 +5,7 @@
 ### Environment Variables
 
 - DB_URL: Database URL
-  - ex) jdbc:postgresql://localhost:5432/in_out
+  - ex) jdbc:postgresql://localhost:5432/in-out
 - DB_USERNAME: Database username
   - ex) postgres
 - DB_PASSWORD: Database password
@@ -19,6 +19,12 @@
   - ex) org-123456
 - GOOGLE_IOS_CLIENT_ID: Google OAuth Client ID for iOS
   - ex) 111111111111-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.apps.googleusercontent.com
+- AWS_S3_ACCESS_KEY: AWS S3 Access Key
+  - ex) AKIAAAAAAAAAAAAAAAAA
+- AWS_S3_SECRET_KEY: AWS S3 Secret Key
+  - ex) aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+- JOBRUNR_DB_DATASOURCE: JobRunr Database URL
+  - ex) jdbc:postgresql://localhost:5432/in-out-jobrunr-local
 
 ## TODO
 
