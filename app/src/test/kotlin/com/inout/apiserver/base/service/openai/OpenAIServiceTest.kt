@@ -1,7 +1,6 @@
 package com.inout.apiserver.base.service.openai
 
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.extension.cleanUp
@@ -24,7 +23,6 @@ class OpenAIServiceTest(
     // factories
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
-    private val studyFactory: StudyFactory,
     // etc
     private val jdbcTemplate: JdbcTemplate,
 ) : DescribeSpec({
@@ -44,6 +42,34 @@ class OpenAIServiceTest(
 
                 // Then
                 response.definitions.size shouldBeGreaterThan 0
+            }
+        }
+
+        xdescribe("validateAndTrimWordDefinition") {
+            it("should return trimmed and valid word definition") {
+                // Given
+                val word = "book"
+                val fromLanguage = "English"
+                val toLanguage = "Korean"
+                val definitions =
+                    listOf(
+                        Triple("NOUN", "책", "영어나 다른 언어의 글씨가 적힌 종이들이 묶여 있는 것"),
+                        Triple("NOUN", "바나나", "먹는 식품"),
+                        Triple("NOUN", "도서", "지식을 얻을 수 있는 출판물"),
+                        Triple("VERB", "예약하다", "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다"),
+                    )
+
+                // When
+                val result =
+                    openAIService.validateAndTrimWordDefinition(
+                        word = word,
+                        fromLanguage = fromLanguage,
+                        toLanguage = toLanguage,
+                        definitions = definitions,
+                    )
+
+                // Then
+                result.definitions.size shouldBe 2
             }
         }
 
