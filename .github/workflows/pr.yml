@@ -39,4 +39,5 @@ jobs:
         run: chmod +x gradlew
 
       - name: Run test
-        run: ./gradlew clean test
+        # need to be verbose to see the test results
+        run: ./gradlew clean test --debug

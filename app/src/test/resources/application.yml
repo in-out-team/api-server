@@ -10,7 +10,7 @@ spring:
       maximum-pool-size: 2
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
 #    show-sql: true
   flyway:
     enabled: false
