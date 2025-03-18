@@ -5,7 +5,6 @@ import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.UserSentenceId
 import com.inout.apiserver.base.alias.WordDefinitionId
-import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
@@ -33,34 +32,6 @@ class WordFactory(
     private val userSentenceFeedbackRepository: UserSentenceFeedbackRepository,
     private val conversationRepository: ConversationRepository,
 ) {
-    companion object {
-        @Deprecated("Use member function createWord instead")
-        fun createWord(
-            id: WordId = 1L,
-            name: String = "book",
-            fromLanguage: LanguageType = LanguageType.ENGLISH,
-            toLanguage: LanguageType = LanguageType.KOREAN,
-            lexicalCategory: LexicalCategoryType = LexicalCategoryType.NOUN,
-            meaning: String = "책",
-            preContext: String = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
-        ): Word {
-            val wordDefinition =
-                WordDefinition(
-                    id = id,
-                    lexicalCategory = lexicalCategory,
-                    meaning = meaning,
-                    preContext = preContext,
-                )
-            return Word(
-                id = id,
-                name = name,
-                fromLanguage = fromLanguage,
-                toLanguage = toLanguage,
-                definitions = listOf(wordDefinition),
-            )
-        }
-    }
-
     fun createWord(
         name: String = "book",
         fromLanguage: LanguageType = LanguageType.ENGLISH,
@@ -74,14 +45,17 @@ class WordFactory(
                 ),
             ),
     ): Word =
-        wordRepository.save(
-            Word(
-                name = name,
-                fromLanguage = fromLanguage,
-                toLanguage = toLanguage,
-                definitions = wordDefinitions,
-            ),
-        )
+        wordRepository
+            .save(
+                Word(
+                    name = name,
+                    fromLanguage = fromLanguage,
+                    toLanguage = toLanguage,
+                    definitions = wordDefinitions,
+                ),
+            ).let {
+                wordRepository.findById(it.id!!).get()
+            }
 
     fun createSentence(
         wordDefinitionId: WordDefinitionId,
@@ -108,28 +82,34 @@ class WordFactory(
             ),
         type: SentenceType = SentenceType.READING,
     ): Sentence =
-        sentenceRepository.save(
-            Sentence(
-                wordDefinitionId = wordDefinitionId,
-                type = type,
-                content = content,
-                translation = translation,
-                lexicalCategories = lexicalCategories,
-            ),
-        )
+        sentenceRepository
+            .save(
+                Sentence(
+                    wordDefinitionId = wordDefinitionId,
+                    type = type,
+                    content = content,
+                    translation = translation,
+                    lexicalCategories = lexicalCategories,
+                ),
+            ).let {
+                sentenceRepository.findById(it.id!!).get()
+            }
 
     fun createSentenceFeedback(
         sentenceId: SentenceId,
         submittedContent: String = "I read book",
         feedback: String = "주어와 동사 사이에 'a'를 넣어야 합니다. 'a'는 무언가 특정한 책을 가리키는데 도움을 줍니다. 모호함을 없애고 명확한 문장을 만들기 위해 필요한 내용입니다.",
     ): SentenceFeedback =
-        sentenceFeedbackRepository.save(
-            SentenceFeedback(
-                sentenceId = sentenceId,
-                submittedContent = submittedContent,
-                feedback = feedback,
-            ),
-        )
+        sentenceFeedbackRepository
+            .save(
+                SentenceFeedback(
+                    sentenceId = sentenceId,
+                    submittedContent = submittedContent,
+                    feedback = feedback,
+                ),
+            ).let {
+                sentenceFeedbackRepository.findById(it.id!!).get()
+            }
 
     fun createUserSentence(
         userId: UserId,
@@ -137,34 +117,43 @@ class WordFactory(
         sentenceId: SentenceId,
         type: SentenceType = SentenceType.WRITING,
     ): UserSentence =
-        userSentenceRepository.save(
-            UserSentence(
-                userId = userId,
-                wordDefinitionId = wordDefinitionId,
-                type = type,
-                sentenceId = sentenceId,
-            ),
-        )
+        userSentenceRepository
+            .save(
+                UserSentence(
+                    userId = userId,
+                    wordDefinitionId = wordDefinitionId,
+                    type = type,
+                    sentenceId = sentenceId,
+                ),
+            ).let {
+                userSentenceRepository.findById(it.id!!).get()
+            }
 
     fun createUserSentenceFeedback(
         userSentenceId: UserSentenceId,
         sentenceFeedbackId: SentenceFeedbackId,
     ): UserSentenceFeedback =
-        userSentenceFeedbackRepository.save(
-            UserSentenceFeedback(
-                userSentenceId = userSentenceId,
-                sentenceFeedbackId = sentenceFeedbackId,
-            ),
-        )
+        userSentenceFeedbackRepository
+            .save(
+                UserSentenceFeedback(
+                    userSentenceId = userSentenceId,
+                    sentenceFeedbackId = sentenceFeedbackId,
+                ),
+            ).let {
+                userSentenceFeedbackRepository.findById(it.id!!).get()
+            }
 
     fun createConversation(
         userId: UserId,
         wordDefinitionId: WordDefinitionId,
     ): Conversation =
-        conversationRepository.save(
-            Conversation(
-                userId = userId,
-                wordDefinitionId = wordDefinitionId,
-            ),
-        )
+        conversationRepository
+            .save(
+                Conversation(
+                    userId = userId,
+                    wordDefinitionId = wordDefinitionId,
+                ),
+            ).let {
+                conversationRepository.findById(it.id!!).get()
+            }
 }

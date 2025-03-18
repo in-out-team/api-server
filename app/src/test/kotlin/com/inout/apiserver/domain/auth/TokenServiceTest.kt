@@ -117,13 +117,16 @@ class TokenServiceTest(
             it("should return the refresh token by token") {
                 // given
                 val refreshToken =
-                    refreshTokenRepository.save(
-                        RefreshToken(
-                            userId = user!!.id!!,
-                            token = "token",
-                            expiresAt = Instant.now(),
-                        ),
-                    )
+                    refreshTokenRepository
+                        .save(
+                            RefreshToken(
+                                userId = user!!.id!!,
+                                token = "token",
+                                expiresAt = Instant.now(),
+                            ),
+                        ).let {
+                            refreshTokenRepository.findById(it.id!!).get()
+                        }
 
                 // when
                 val result = subject.getByToken("token")

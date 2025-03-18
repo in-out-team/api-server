@@ -1,0 +1,42 @@
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+      - release/**
+      - hotfix/**
+
+name: PR
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/wrapper/dists
+            ~/.gradle/caches/jars-3
+            ~/.gradle/caches/modules-2
+            ~/.gradle/caches/package-lists
+            ~/.gradle/caches/embedded-consul
+          key: ${{ runner.os }}-gradle-v1-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-v1-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run test
+        run: ./gradlew clean test
