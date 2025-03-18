@@ -16,6 +16,6 @@ abstract class TimestampedEntity {
     var createdAt: Instant? = null
 
     @UpdateTimestamp
-    @InstantColumn
+    @Column(columnDefinition = "timestamp(9) with time zone")
     var updatedAt: Instant? = null
 }

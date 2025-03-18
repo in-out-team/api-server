@@ -4,9 +4,9 @@ import com.inout.apiserver.base.alias.StudyReviewLogId
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.domain.study.StudyReviewLogCreateObject
-import com.inout.apiserver.infrastructure.db.InstantColumn
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import com.inout.fsrs.model.ReviewLog
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -26,14 +26,14 @@ data class StudyReviewLog(
     val rating: FsrsCardRating,
     @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
-    @InstantColumn
+    @Column(columnDefinition = "timestamp(9) with time zone")
     val due: Instant,
     val stability: Double,
     val difficulty: Double,
     val elapsedDays: Int,
     val lastElapsedDays: Int,
     val scheduledDays: Int,
-    @InstantColumn
+    @Column(columnDefinition = "timestamp(9) with time zone")
     val review: Instant,
 ) : TimestampedEntity() {
     companion object {
