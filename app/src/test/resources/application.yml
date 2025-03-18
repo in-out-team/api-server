@@ -11,7 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create
-#    show-sql: true
+    show-sql: true
     properties:
       hibernate:
         jdbc:
@@ -26,13 +26,13 @@ jwt:
 
 # debug: true
 
-#logging:
-#  level:
-#    org:
-#      hibernate:
-#        orm:
-#          jdbc:
-#            bind: trace
+logging:
+  level:
+    org:
+      hibernate:
+        orm:
+          jdbc:
+            bind: trace
 
 openai:
   token: ${OPENAI_API_KEY:sk-1234567890}
