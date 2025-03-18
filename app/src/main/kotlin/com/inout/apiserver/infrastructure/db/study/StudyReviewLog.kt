@@ -4,6 +4,7 @@ import com.inout.apiserver.base.alias.StudyReviewLogId
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.domain.study.StudyReviewLogCreateObject
+import com.inout.apiserver.infrastructure.db.InstantColumn
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import com.inout.fsrs.model.ReviewLog
 import jakarta.persistence.Entity
@@ -25,12 +26,14 @@ data class StudyReviewLog(
     val rating: FsrsCardRating,
     @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
+    @InstantColumn
     val due: Instant,
     val stability: Double,
     val difficulty: Double,
     val elapsedDays: Int,
     val lastElapsedDays: Int,
     val scheduledDays: Int,
+    @InstantColumn
     val review: Instant,
 ) : TimestampedEntity() {
     companion object {

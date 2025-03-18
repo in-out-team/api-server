@@ -1,8 +1,8 @@
 create table if not exists daily_study_sets
 (
     id         bigserial primary key,
-    created_at timestamp(6) with time zone,
-    updated_at timestamp(6) with time zone,
+    created_at timestamp(9) with time zone,
+    updated_at timestamp(9) with time zone,
     user_id    bigint   not null,
     date       date,
     study_ids  bigint[] not null

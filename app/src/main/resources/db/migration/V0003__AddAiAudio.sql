@@ -1,8 +1,8 @@
 create table if not exists ai_audios
 (
     id            bigserial primary key,
-    created_at    timestamp(6) with time zone,
-    updated_at    timestamp(6) with time zone,
+    created_at    timestamp(9) with time zone,
+    updated_at    timestamp(9) with time zone,
     language      varchar(255),
     voice_type    varchar(255),
     content       varchar(255),

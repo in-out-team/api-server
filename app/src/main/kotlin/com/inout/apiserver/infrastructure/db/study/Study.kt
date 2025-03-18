@@ -8,6 +8,7 @@ import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.domain.study.StudyCreateObject
 import com.inout.apiserver.error.InternalServerErrorException
+import com.inout.apiserver.infrastructure.db.InstantColumn
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import com.inout.fsrs.FSRS
 import com.inout.fsrs.model.Card
@@ -47,6 +48,7 @@ data class Study(
     val wordDefinitionId: WordDefinitionId,
     @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
+    @InstantColumn
     val due: Instant,
     val stability: Double,
     val difficulty: Double,
@@ -54,6 +56,7 @@ data class Study(
     val scheduledDays: Int,
     val reps: Int,
     val lapses: Int,
+    @InstantColumn
     val lastReview: Instant?,
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "study_id")

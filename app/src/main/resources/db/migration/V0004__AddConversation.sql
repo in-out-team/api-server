@@ -1,8 +1,8 @@
 create table if not exists conversations
 (
     id                 bigserial primary key,
-    created_at         timestamp(6) with time zone,
-    updated_at         timestamp(6) with time zone,
+    created_at         timestamp(9) with time zone,
+    updated_at         timestamp(9) with time zone,
     user_id            bigint not null,
     word_definition_id bigint not null
 );

@@ -1,6 +1,7 @@
 package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.infrastructure.db.InstantColumn
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -28,5 +29,6 @@ data class RefreshToken(
     val userId: UserId,
     @Column(unique = true)
     val token: String,
+    @InstantColumn
     val expiresAt: Instant,
 ) : TimestampedEntity()
