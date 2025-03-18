@@ -132,7 +132,7 @@ class StudyServiceTest(
                 val res = studyService.getById(study!!.id!!)
 
                 // then
-                res shouldBe study!!.copy(id = 333L)
+                res shouldBe study
             }
 
             it("should return null when study does not exist") {
@@ -271,6 +271,7 @@ class StudyServiceTest(
                 val res = studyService.getStudiesByIds(ids)
 
                 // then
+                // actual : expected
                 res shouldBe studies
             }
         }

@@ -31,22 +31,25 @@ class StudyFactory(
         lastReview: Instant? = null,
         reviewLogs: List<StudyReviewLog> = emptyList(),
     ): Study =
-        studyRepository.save(
-            Study(
-                userId = userId,
-                wordDefinitionId = wordDefinitionId,
-                state = state,
-                due = due,
-                stability = stability,
-                difficulty = difficulty,
-                elapsedDays = elapsedDays,
-                scheduledDays = scheduledDays,
-                reps = reps,
-                lapses = lapses,
-                lastReview = lastReview,
-                reviewLogs = reviewLogs,
-            ),
-        )
+        studyRepository
+            .save(
+                Study(
+                    userId = userId,
+                    wordDefinitionId = wordDefinitionId,
+                    state = state,
+                    due = due,
+                    stability = stability,
+                    difficulty = difficulty,
+                    elapsedDays = elapsedDays,
+                    scheduledDays = scheduledDays,
+                    reps = reps,
+                    lapses = lapses,
+                    lastReview = lastReview,
+                    reviewLogs = reviewLogs,
+                ),
+            ).let {
+                studyRepository.findById(it.id!!).get()
+            }
 
     fun createDailyStudySet(
         userId: UserId,
