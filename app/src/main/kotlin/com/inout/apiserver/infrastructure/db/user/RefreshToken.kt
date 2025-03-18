@@ -28,6 +28,5 @@ data class RefreshToken(
     val userId: UserId,
     @Column(unique = true)
     val token: String,
-    @Column(columnDefinition = "timestamp(9) with time zone")
     val expiresAt: Instant,
 ) : TimestampedEntity()

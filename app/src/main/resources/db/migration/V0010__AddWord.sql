@@ -1,8 +1,8 @@
 create table if not exists words
 (
     id            bigserial primary key,
-    created_at    timestamp(9) with time zone,
-    updated_at    timestamp(9) with time zone,
+    created_at    timestamp(6) with time zone,
+    updated_at    timestamp(6) with time zone,
     from_language varchar(255),
     name          varchar(255),
     to_language   varchar(255)

@@ -1,8 +1,8 @@
 create table if not exists user_sentence_feedbacks
 (
     id                   bigserial primary key,
-    created_at           timestamp(9) with time zone,
-    updated_at           timestamp(9) with time zone,
+    created_at           timestamp(6) with time zone,
+    updated_at           timestamp(6) with time zone,
     sentence_feedback_id bigint not null,
     user_sentence_id     bigint not null
 );

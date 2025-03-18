@@ -14,7 +14,6 @@ import com.inout.fsrs.model.Card
 import com.inout.fsrs.model.FSRSParameters
 import com.inout.fsrs.model.enums.Grade
 import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
@@ -48,7 +47,6 @@ data class Study(
     val wordDefinitionId: WordDefinitionId,
     @Enumerated(EnumType.STRING)
     val state: FsrsCardState,
-    @Column(columnDefinition = "timestamp(9) with time zone")
     val due: Instant,
     val stability: Double,
     val difficulty: Double,
@@ -56,7 +54,6 @@ data class Study(
     val scheduledDays: Int,
     val reps: Int,
     val lapses: Int,
-    @Column(columnDefinition = "timestamp(9) with time zone")
     val lastReview: Instant?,
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "study_id")

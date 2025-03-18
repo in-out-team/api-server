@@ -12,10 +12,9 @@ import java.time.Instant
 @EntityListeners(JpaAuditingConfig::class)
 abstract class TimestampedEntity {
     @CreationTimestamp
-    @Column(updatable = false, columnDefinition = "timestamp(9) with time zone")
+    @Column(updatable = false)
     var createdAt: Instant? = null
 
     @UpdateTimestamp
-    @Column(columnDefinition = "timestamp(9) with time zone")
     var updatedAt: Instant? = null
 }

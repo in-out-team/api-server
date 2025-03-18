@@ -1,8 +1,8 @@
 create table if not exists conversation_messages
 (
     id              bigserial primary key,
-    created_at      timestamp(9) with time zone,
-    updated_at      timestamp(9) with time zone,
+    created_at      timestamp(6) with time zone,
+    updated_at      timestamp(6) with time zone,
     content         varchar(255),
     sender          varchar(255),
     audio_id        bigint,
