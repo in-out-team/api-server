@@ -1,9 +1,5 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/test
-    driver-class-name: org.postgresql.Driver
-    username: admin
-    password: inout1234
     # see: https://stackoverflow.com/questions/68468851/testcontainers-sql-too-many-connections-exception
     # setting pool size in order to avoid connection pool exhaustion
     # - @SpringBootTest creates a new application context for each test class
@@ -15,12 +11,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        jdbc:
-          time_zone: UTC
+#    show-sql: true
   flyway:
     enabled: false
 
@@ -31,13 +22,13 @@ jwt:
 
 # debug: true
 
-logging:
-  level:
-    org:
-      hibernate:
-        orm:
-          jdbc:
-            bind: trace
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        orm:
+#          jdbc:
+#            bind: trace
 
 openai:
   token: ${OPENAI_API_KEY:sk-1234567890}
@@ -60,11 +51,11 @@ org:
   # Jobrunr Configuration
   jobrunr:
     database:
-      datasource: ${JOBRUNR_DB_DATASOURCE:jdbc:postgresql://localhost:5432/in-out-jobrunr-test}
+      datasource: ${JOBRUNR_DB_DATASOURCE}
     background-job-server:
       enabled: false
 
 app:
   jobrunr:
-    data-source-username: ${JOBRUNR_DB_USERNAME:admin}
-    data-source-password: ${JOBRUNR_DB_PASSWORD:inout1234}
+    data-source-username: ${JOBRUNR_DB_USERNAME}
+    data-source-password: ${JOBRUNR_DB_PASSWORD}
