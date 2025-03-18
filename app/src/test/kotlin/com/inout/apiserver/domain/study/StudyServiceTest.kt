@@ -3,6 +3,7 @@ package com.inout.apiserver.domain.study
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.helper.ClockProvider
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.ConflictException
@@ -23,7 +24,6 @@ import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.Instant
 import java.time.LocalDate
 import java.util.Optional
 
@@ -191,7 +191,7 @@ class StudyServiceTest(
 
         describe("getStudiesPastDue") {
             it("should return empty list when count is 0 or less") {
-                val now = Instant.now()
+                val now = ClockProvider.now()
                 listOf(0, -1).forEach { count ->
                     // when
                     val studies = studyService.getStudiesPastDue(user!!.id!!, now, emptyList(), count)
@@ -226,7 +226,7 @@ class StudyServiceTest(
                     )
 
                 // when
-                val res = studyService.getStudiesPastDue(user!!.id!!, Instant.now(), emptyList(), 2)
+                val res = studyService.getStudiesPastDue(user!!.id!!, ClockProvider.now(), emptyList(), 2)
 
                 // then
                 res shouldBe studies
@@ -415,7 +415,7 @@ class StudyServiceTest(
                 val word = wordFactory.createWord()
                 val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id!!)
                 val rating = FsrsCardRating.EASY
-                val now = Instant.now()
+                val now = ClockProvider.now()
 
                 // when
                 val res = studyService.updateStudy(study.rate(rating))

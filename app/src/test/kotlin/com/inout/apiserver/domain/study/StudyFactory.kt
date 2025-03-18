@@ -3,6 +3,7 @@ package com.inout.apiserver.domain.study
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.FsrsCardState
+import com.inout.apiserver.base.helper.ClockProvider
 import com.inout.apiserver.infrastructure.db.study.DailyStudySet
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
@@ -21,7 +22,7 @@ class StudyFactory(
         userId: UserId = 1L,
         wordDefinitionId: WordDefinitionId = 1L,
         state: FsrsCardState = FsrsCardState.NEW,
-        due: Instant = Instant.now(),
+        due: Instant = ClockProvider.now(),
         stability: Double = 0.0,
         difficulty: Double = 0.0,
         elapsedDays: Int = 0,

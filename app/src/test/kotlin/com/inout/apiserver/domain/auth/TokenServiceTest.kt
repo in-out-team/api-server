@@ -1,5 +1,6 @@
 package com.inout.apiserver.domain.auth
 
+import com.inout.apiserver.base.helper.ClockProvider
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
@@ -17,7 +18,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.Instant
 import java.util.Date
 
 @InOutSpringBootTest
@@ -109,7 +109,7 @@ class TokenServiceTest(
                 refreshToken shouldNotBe null
                 refreshToken!!.userId shouldBe user!!.id
                 refreshToken.token shouldBe token
-                refreshToken.expiresAt shouldBeGreaterThan Instant.now()
+                refreshToken.expiresAt shouldBeGreaterThan ClockProvider.now()
             }
         }
 
@@ -121,7 +121,7 @@ class TokenServiceTest(
                         RefreshToken(
                             userId = user!!.id!!,
                             token = "token",
-                            expiresAt = Instant.now(),
+                            expiresAt = ClockProvider.now(),
                         ),
                     )
 
@@ -141,7 +141,7 @@ class TokenServiceTest(
                         RefreshToken(
                             userId = user!!.id!!,
                             token = "token",
-                            expiresAt = Instant.now(),
+                            expiresAt = ClockProvider.now(),
                         ),
                     )
 

@@ -2,6 +2,7 @@ package com.inout.apiserver.application.study
 
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
+import com.inout.apiserver.base.helper.ClockProvider
 import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.WordFactory
@@ -20,7 +21,6 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.jdbc.core.JdbcTemplate
-import java.time.Instant
 import java.util.Optional
 
 @InOutSpringBootTest
@@ -166,7 +166,7 @@ class RateStudyWordApplicationTest(
                 result.difficulty shouldBeGreaterThan study!!.difficulty
                 result.scheduledDays shouldBeGreaterThan study!!.scheduledDays
                 result.reps shouldBe study!!.reps + 1
-                result.lastReview!! shouldBeGreaterThan Instant.now().minusSeconds(1)
+                result.lastReview!! shouldBeGreaterThan ClockProvider.now().minusSeconds(1)
                 result.reviewLogs.size shouldBe study!!.reviewLogs.size + 1
             }
 
