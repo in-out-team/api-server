@@ -271,7 +271,6 @@ class StudyServiceTest(
                 val res = studyService.getStudiesByIds(ids)
 
                 // then
-                // actual : expected
                 res shouldBe studies
             }
         }
