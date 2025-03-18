@@ -4,7 +4,6 @@ import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.base.helper.ClockProvider
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
@@ -19,12 +18,13 @@ import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 class CreateStudyApplicationTest {
     private val studyService = mockk<StudyService>()
     private val wordService = mockk<WordService>()
     private val createStudyApplication = CreateStudyApplication(studyService, wordService)
-    private val now = ClockProvider.now()
+    private val now = Instant.now()
 
     private fun createWords(count: Int): List<Word> =
         (1..count).map { i ->
