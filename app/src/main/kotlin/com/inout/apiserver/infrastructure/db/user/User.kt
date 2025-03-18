@@ -1,10 +1,13 @@
 package com.inout.apiserver.infrastructure.db.user
 
 import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.user.UserCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -20,6 +23,12 @@ data class User(
     val email: String,
     val password: String,
     val nickname: String,
+    @Enumerated(EnumType.STRING)
+    val studyLanguage: LanguageType = LanguageType.ENGLISH,
+    @Enumerated(EnumType.STRING)
+    val nativeLanguage: LanguageType = LanguageType.KOREAN,
+    val studyPerDay: Int = 5,
+    val timezone: String = "Asia/Seoul",
 ) : TimestampedEntity() {
     companion object {
         fun fromCreateObject(createObject: UserCreateObject): User =
