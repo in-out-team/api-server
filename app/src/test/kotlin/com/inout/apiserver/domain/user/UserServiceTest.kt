@@ -1,164 +1,144 @@
 package com.inout.apiserver.domain.user
 
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.user.UserRepository
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Test
+import com.inout.apiserver.extension.cleanUp
+import com.inout.apiserver.helper.InOutSpringBootTest
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.assertThrows
-import org.springframework.security.crypto.password.PasswordEncoder
-import java.util.Optional
+import org.springframework.jdbc.core.JdbcTemplate
 
-class UserServiceTest {
-    private val userRepository = mockk<UserRepository>()
-    private val passwordEncoder = mockk<PasswordEncoder>()
-    private val userService = UserService(userRepository, passwordEncoder)
+@InOutSpringBootTest
+class UserServiceTest(
+    private val subject: UserService,
+    // factories
+    private val userFactory: UserFactory,
+    // etc
+    private val jdbcTemplate: JdbcTemplate,
+) : DescribeSpec({
+        afterEach {
+            jdbcTemplate.cleanUp()
+        }
 
-    @Test
-    fun `createUser - should raise error when user already exists`() {
-        // Given
-        val email = "email@1.com"
-        val password = "password"
-        val nickname = "nickname"
-        val existingUser =
-            User(id = 1L, email = email, password = password, nickname = nickname)
-        every { userRepository.findByEmail(email) } returns existingUser
+        describe("createUser") {
+            it("should throw error when user already exists") {
+                // Given
+                val existingUser = userFactory.createUser()
+                val email = existingUser.email
+                val password = "password"
+                val nickname = "nickname"
 
-        // When
-        val exception =
-            assertThrows<ConflictException> {
-                userService.createUser(email = email, password = password, nickname = nickname)
+                // When
+                val exception =
+                    assertThrows<ConflictException> {
+                        subject.createUser(email = email, password = password, nickname = nickname)
+                    }
+
+                // Then
+                exception.message shouldBe "User already exists"
+                exception.code shouldBe "USER_1"
             }
 
-        // Then
-        assertEquals("User already exists", exception.message)
-        assertEquals("USER_1", exception.code)
-    }
+            it("should save user when user does not exist") {
+                // Given
+                val email = "test@1.com"
+                val password = "password"
+                val nickname = "nickname"
 
-    @Test
-    fun `createUser - should save user when user does not exist`() {
-        // Given
-        val email = "email@1.com"
-        val password = "password"
-        val nickname = "nickname"
-        val newUser =
-            User(id = 1L, email = email, password = password, nickname = nickname)
-        every { userRepository.findByEmail(email) } returns null
-        every { passwordEncoder.encode(any()) } returns password
-        every { userRepository.save(any()) } returns newUser
+                // When
+                val result = subject.createUser(email = email, password = password, nickname = nickname)
 
-        // When
-        val result = userService.createUser(email = email, password = password, nickname = nickname)
+                // Then
+                result.id shouldNotBe null
+                result.email shouldBe email
+                result.nickname shouldBe nickname
+                result.nativeLanguage shouldBe LanguageType.KOREAN
+                result.studyLanguage shouldBe LanguageType.ENGLISH
+                result.studyPerDay shouldBe 5
+                result.timezone shouldBe "Asia/Seoul"
+            }
+        }
 
-        // Then
-        assertEquals(newUser.email, result.email)
-        assertEquals(newUser.nickname, result.nickname)
-    }
+        describe("updateUser") {
+            it("should update user") {
+                // Given
+                val user = userFactory.createUser()
+                val newNickname = "newNickname"
+                val newStudyLanguage = LanguageType.KOREAN
+                val newNativeLanguage = LanguageType.ENGLISH
+                val newStudyPerDay = 10
+                val newTimezone = "Asia/New_York"
 
-    @Test
-    fun `getUserByEmail - should search user by lowercase email`() {
-        // Given
-        val email = "Email@1.com"
-        every { userRepository.findByEmail(email.lowercase()) } returns null
+                // When
+                val result =
+                    subject.updateUser(
+                        user = user,
+                        nickname = newNickname,
+                        studyLanguage = newStudyLanguage,
+                        nativeLanguage = newNativeLanguage,
+                        studyPerDay = newStudyPerDay,
+                        timezone = newTimezone,
+                    )
 
-        // When
-        val result = userService.getUserByEmail(email)
+                // Then
+                result.id shouldBe user.id
+                result.email shouldBe user.email
+                result.password shouldBe user.password
+                result.nickname shouldBe newNickname
+                result.studyLanguage shouldBe newStudyLanguage
+                result.nativeLanguage shouldBe newNativeLanguage
+                result.studyPerDay shouldBe newStudyPerDay
+                result.timezone shouldBe newTimezone
+            }
+        }
 
-        // Then
-        assertNull(result)
-    }
+        describe("getUserByEmail") {
+            it("should return user") {
+                // Given
+                val user = userFactory.createUser()
 
-    @Test
-    fun `getUserByEmail - should return user when user exists`() {
-        // Given
-        val email = "email@1.com"
-        val user =
-            User(id = 1L, email = email, password = "password", nickname = "nickname")
-        every { userRepository.findByEmail(email) } returns user
+                // When
+                val result = subject.getUserByEmail(user.email)
 
-        // When
-        val result = userService.getUserByEmail(email)
+                // Then
+                result shouldBe user
+            }
 
-        // Then
-        assertEquals(user.email, result?.email)
-        assertEquals(user.nickname, result?.nickname)
-    }
+            it("should return null when user does not exist") {
+                // Given
+                val email = "test@1.com"
 
-    @Test
-    fun `getUserByEmail - should return null when user does not exist`() {
-        // Given
-        val email = "email@1.com"
-        every { userRepository.findByEmail(email) } returns null
+                // When
+                val result = subject.getUserByEmail(email)
 
-        // When
-        val result = userService.getUserByEmail(email)
+                // Then
+                result shouldBe null
+            }
+        }
 
-        // Then
-        assertNull(result)
-    }
+        describe("getUserById") {
+            it("should return user") {
+                // Given
+                val user = userFactory.createUser()
 
-    @Test
-    fun `getUserById - should return user when user exists`() {
-        // Given
-        val id = 1L
-        val user =
-            User(
-                id = 1L,
-                email = "email@1.com",
-                password = "password",
-                nickname = "nickname",
-            )
-        every { userRepository.findById(id) } returns Optional.of(user)
+                // When
+                val result = subject.getUserById(user.id!!)
 
-        // When
-        val result = userService.getUserById(id)
+                // Then
+                result shouldBe user
+            }
 
-        // Then
-        assertEquals(user.id, result?.id)
-        assertEquals(user.email, result?.email)
-        assertEquals(user.nickname, result?.nickname)
-    }
+            it("should return null when user does not exist") {
+                // Given
+                val id = 1L
 
-    @Test
-    fun `getUserById - should return null when user does not exist`() {
-        // Given
-        val id = 1L
-        every { userRepository.findById(id) } returns Optional.empty()
+                // When
+                val result = subject.getUserById(id)
 
-        // When
-        val result = userService.getUserById(id)
-
-        // Then
-        assertNull(result)
-    }
-
-    @Test
-    fun `updateUser - should update user`() {
-        // Given
-        val user =
-            User(
-                id = 1L,
-                email = "email@1.com",
-                password = "password",
-                nickname = "nickname",
-            )
-        val newNickname = "newNickname"
-        val updatedUser = user.copy(nickname = newNickname)
-        every { userRepository.findById(any()) } returns Optional.of(user)
-        every { userRepository.save(any()) } returns updatedUser
-
-        // When
-        val result = userService.updateUser(user, newNickname)
-
-        // Then
-        assertEquals(user.id, result.id)
-        assertEquals(user.email, result.email)
-        assertEquals(user.password, result.password)
-        assertEquals(newNickname, result.nickname)
-        verify(exactly = 1) { userRepository.save(any()) }
-    }
-}
+                // Then
+                result shouldBe null
+            }
+        }
+    })

@@ -56,6 +56,10 @@ class UserController(
                             UpdateUserApplication.Request(
                                 user = user,
                                 newNickname = request.nickname,
+                                studyLanguage = request.studyLanguage,
+                                nativeLanguage = request.nativeLanguage,
+                                studyPerDay = request.studyPerDay,
+                                timezone = request.timezone,
                             ),
                         ).updatedUser,
             ),

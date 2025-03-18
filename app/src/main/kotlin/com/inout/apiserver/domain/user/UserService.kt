@@ -1,6 +1,7 @@
 package com.inout.apiserver.domain.user
 
 import com.inout.apiserver.base.alias.UserId
+import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.user.UserRepository
@@ -34,7 +35,20 @@ class UserService(
     fun updateUser(
         user: User,
         nickname: String,
-    ): User = userRepository.save(user.copy(nickname = nickname))
+        studyLanguage: LanguageType,
+        nativeLanguage: LanguageType,
+        studyPerDay: Int,
+        timezone: String,
+    ): User =
+        userRepository.save(
+            user.copy(
+                nickname = nickname,
+                studyLanguage = studyLanguage,
+                nativeLanguage = nativeLanguage,
+                studyPerDay = studyPerDay,
+                timezone = timezone,
+            ),
+        )
 
     fun getUserByEmail(email: String): User? = userRepository.findByEmail(email.lowercase())
 
