@@ -56,15 +56,18 @@ class StudyFactory(
         date: LocalDate = LocalDate.now(),
         studies: List<Study> = emptyList(),
     ): DailyStudySet =
-        dailyStudySetRepository.save(
-            DailyStudySet
-                .fromCreateObject(
-                    DailyStudySetCreateObject(
-                        userId = userId,
-                        date = date,
+        dailyStudySetRepository
+            .save(
+                DailyStudySet
+                    .fromCreateObject(
+                        DailyStudySetCreateObject(
+                            userId = userId,
+                            date = date,
+                        ),
+                    ).copy(
+                        studyIds = studies.map { it.id!! },
                     ),
-                ).copy(
-                    studyIds = studies.map { it.id!! },
-                ),
-        )
+            ).let {
+                dailyStudySetRepository.findById(it.id!!).get()
+            }
 }

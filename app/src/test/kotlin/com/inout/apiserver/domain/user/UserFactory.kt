@@ -13,11 +13,14 @@ class UserFactory(
         password: String = "password",
         nickname: String = "test",
     ): User =
-        userRepository.save(
-            User(
-                email = email,
-                password = password,
-                nickname = nickname,
-            ),
-        )
+        userRepository
+            .save(
+                User(
+                    email = email,
+                    password = password,
+                    nickname = nickname,
+                ),
+            ).let {
+                userRepository.findById(it.id!!).get()
+            }
 }

@@ -16,12 +16,15 @@ class AudioFactory(
         content: String = "Let's start a conversation about the word 'book'.",
         directory: String = "static/audio/english/ai_audios_f7365d23-b387-4b79-844d-a5f9f35b49cf.alloy.mp3",
     ): AiAudio =
-        aiAudioRepository.save(
-            AiAudio(
-                language = language,
-                voiceType = aiVoiceType,
-                content = content,
-                directory = directory,
-            ),
-        )
+        aiAudioRepository
+            .save(
+                AiAudio(
+                    language = language,
+                    voiceType = aiVoiceType,
+                    content = content,
+                    directory = directory,
+                ),
+            ).let {
+                aiAudioRepository.findById(it.id!!).get()
+            }
 }
