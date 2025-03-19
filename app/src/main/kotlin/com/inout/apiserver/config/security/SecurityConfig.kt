@@ -4,9 +4,9 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.inout.apiserver.config.filter.JwtAuthFilter
+import com.inout.apiserver.config.filter.JwtExceptionHandlerFilter
 import com.inout.apiserver.infrastructure.db.user.UserRepository
 import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
-import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -33,6 +33,7 @@ class SecurityConfig(
     fun securityFilterChain(
         http: HttpSecurity,
         jwtAuthFilter: JwtAuthFilter,
+        jwtExceptionHandlerFilter: JwtExceptionHandlerFilter,
     ): DefaultSecurityFilterChain {
         http
             .csrf { it.disable() }
@@ -51,22 +52,7 @@ class SecurityConfig(
             }.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // since we are using JWT
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
-            .exceptionHandling {
-                it.authenticationEntryPoint { _, response, _ ->
-                    response.contentType = "application/json;charset=UTF-8"
-                    response.status = HttpServletResponse.SC_UNAUTHORIZED
-                    // FIXME: unwanted error responses are also sent as unauthorized, need to fix this
-                    response.writer.write(
-                        """
-                        {
-                            "message": "Unauthorized: Invalid Token or No Token Provided",
-                            "code": "UNAUTHORIZED_1",
-                            "extraData": {}
-                        }
-                        """.trimIndent(),
-                    )
-                }
-            }
+            .addFilterBefore(jwtExceptionHandlerFilter, JwtAuthFilter::class.java)
 
         return http.build()
     }
