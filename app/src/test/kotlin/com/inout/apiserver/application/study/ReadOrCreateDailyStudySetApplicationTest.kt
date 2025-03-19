@@ -68,7 +68,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                     shouldThrow<BadRequestException> {
                         subject.run(
                             ReadOrCreateDailyStudySetApplication.Request(
-                                userId = user!!.id!!,
+                                user = user!!,
                                 date = date,
                             ),
                         )
@@ -90,7 +90,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                     shouldThrow<NotFoundException> {
                         subject.run(
                             ReadOrCreateDailyStudySetApplication.Request(
-                                userId = user!!.id!!,
+                                user = user!!,
                                 date = date,
                             ),
                         )
@@ -111,7 +111,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                 // when
                 subject.run(
                     ReadOrCreateDailyStudySetApplication.Request(
-                        userId = user!!.id!!,
+                        user = user!!,
                         date = date,
                     ),
                 )
@@ -136,7 +136,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                 val result =
                     subject.run(
                         ReadOrCreateDailyStudySetApplication.Request(
-                            userId = user!!.id!!,
+                            user = user!!,
                             date = date,
                         ),
                     )
@@ -161,7 +161,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                 val result =
                     subject.run(
                         ReadOrCreateDailyStudySetApplication.Request(
-                            userId = user!!.id!!,
+                            user = user!!,
                             date = date,
                         ),
                     )
@@ -189,7 +189,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                 val result =
                     subject.run(
                         ReadOrCreateDailyStudySetApplication.Request(
-                            userId = user!!.id!!,
+                            user = user!!,
                             date = date,
                         ),
                     )

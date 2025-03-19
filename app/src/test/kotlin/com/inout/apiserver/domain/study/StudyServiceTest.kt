@@ -5,6 +5,7 @@ import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
@@ -15,6 +16,8 @@ import com.inout.apiserver.infrastructure.db.word.Word
 import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainAnyOf
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ranges.shouldBeIn
@@ -360,6 +363,22 @@ class StudyServiceTest(
                     word!!.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id!!) }
             }
 
+            it("should raise error if given user does not own dailyStudySet") {
+                // given
+                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!)
+                val otherUser = userFactory.createUser(email = "test2@1.com")
+
+                // when
+                val exception =
+                    assertThrows<BadRequestException> {
+                        studyService.getStudiesByDailyStudySet(dailyStudySet, otherUser)
+                    }
+
+                // then
+                exception.message shouldBe "User does not match daily study set"
+                exception.code shouldBe "STUDY_8"
+            }
+
             it("should return daily study set studies when date is before today") {
                 // given
                 val dailyStudySet =
@@ -370,7 +389,7 @@ class StudyServiceTest(
                     )
 
                 // when
-                val res = studyService.getStudiesByDailyStudySet(dailyStudySet)
+                val res = studyService.getStudiesByDailyStudySet(dailyStudySet, user!!)
 
                 // then
                 res.size shouldBe 2
@@ -401,11 +420,62 @@ class StudyServiceTest(
                     )
 
                 // when
-                val res = studyService.getStudiesByDailyStudySet(dailyStudySet)
+                val res = studyService.getStudiesByDailyStudySet(dailyStudySet, user!!)
 
                 // then
                 res.size shouldBe 3
                 res shouldBe studies!! + pastDueStudies
+            }
+
+            it("should return amount of studies user has set when date is today") {
+                val studyPerDay = 3
+                user = user!!.copy(studyPerDay = studyPerDay)
+                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!, studies = studies!!)
+                val pastDueStudies =
+                    listOf(
+                        wordFactory
+                            .createWord(
+                                name = "booked",
+                                wordDefinitions =
+                                    listOf(
+                                        WordDefinition(
+                                            lexicalCategory = LexicalCategoryType.NOUN,
+                                            meaning = "예약된",
+                                            preContext = "미리 자리를 확보한",
+                                        ),
+                                    ),
+                            ).let { word ->
+                                studyFactory.createStudy(
+                                    userId = user!!.id!!,
+                                    wordDefinitionId = word.definitions.first().id!!,
+                                )
+                            },
+                        wordFactory
+                            .createWord(
+                                name = "bank",
+                                wordDefinitions =
+                                    listOf(
+                                        WordDefinition(
+                                            lexicalCategory = LexicalCategoryType.NOUN,
+                                            meaning = "은행",
+                                            preContext = "돈을 보관하거나 대출을 해주는 기관",
+                                        ),
+                                    ),
+                            ).let { word ->
+                                studyFactory.createStudy(
+                                    userId = user!!.id!!,
+                                    wordDefinitionId = word.definitions.first().id!!,
+                                )
+                            },
+                    )
+
+                // when
+                val res = studyService.getStudiesByDailyStudySet(dailyStudySet, user!!)
+
+                // then
+                res.size shouldBe studyPerDay
+                res shouldContainAll studies!! // both studies in dailyStudySet should be included
+                res shouldContainAnyOf pastDueStudies // one of the pastDueStudies should be included
             }
         }
 

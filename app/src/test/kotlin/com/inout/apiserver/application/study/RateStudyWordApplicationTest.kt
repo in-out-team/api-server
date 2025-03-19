@@ -62,7 +62,7 @@ class RateStudyWordApplicationTest(
                     assertThrows<NotFoundException> {
                         subject.run(
                             RateStudyWordApplication.Request(
-                                userId = user!!.id!!,
+                                user = user!!,
                                 dailyStudySetId = dailyStudySetId,
                                 studyId = study!!.id!!,
                                 rating = rating,
@@ -100,7 +100,7 @@ class RateStudyWordApplicationTest(
                     assertThrows<NotFoundException> {
                         subject.run(
                             RateStudyWordApplication.Request(
-                                userId = user!!.id!!,
+                                user = user!!,
                                 dailyStudySetId = otherUserDailyStudySet.id!!,
                                 studyId = otherUserStudy!!.id!!,
                                 rating = rating,
@@ -127,7 +127,7 @@ class RateStudyWordApplicationTest(
                     assertThrows<NotFoundException> {
                         subject.run(
                             RateStudyWordApplication.Request(
-                                userId = user!!.id!!,
+                                user = user!!,
                                 dailyStudySetId = dailyStudySet.id!!,
                                 studyId = studyId,
                                 rating = rating,
@@ -152,7 +152,7 @@ class RateStudyWordApplicationTest(
                     subject
                         .run(
                             RateStudyWordApplication.Request(
-                                userId = user!!.id!!,
+                                user = user!!,
                                 dailyStudySetId = dailyStudySet.id!!,
                                 studyId = study!!.id!!,
                                 rating = rating,
@@ -179,7 +179,7 @@ class RateStudyWordApplicationTest(
                 // when
                 subject.run(
                     RateStudyWordApplication.Request(
-                        userId = user!!.id!!,
+                        user = user!!,
                         dailyStudySetId = dailyStudySet.id!!,
                         studyId = study!!.id!!,
                         rating = rating,

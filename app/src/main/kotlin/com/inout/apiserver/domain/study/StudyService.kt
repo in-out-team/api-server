@@ -4,11 +4,13 @@ import com.inout.apiserver.base.alias.DailyStudySetId
 import com.inout.apiserver.base.alias.StudyId
 import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.alias.WordDefinitionId
+import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySet
 import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -22,10 +24,6 @@ class StudyService(
     private val studyRepository: StudyRepository,
     private val dailyStudySetRepository: DailyStudySetRepository,
 ) {
-    companion object {
-        const val DEFAULT_STUDY_SET_SIZE = 20 // TODO: later fix with user's settings
-    }
-
     fun getAllByUserId(
         userId: UserId,
         pageable: Pageable,
@@ -125,7 +123,14 @@ class StudyService(
         )
     }
 
-    fun getStudiesByDailyStudySet(dailyStudySet: DailyStudySet): List<Study> {
+    fun getStudiesByDailyStudySet(
+        dailyStudySet: DailyStudySet,
+        user: User,
+    ): List<Study> {
+        if (user.id != dailyStudySet.userId) {
+            throw BadRequestException(message = "User does not match daily study set", code = "STUDY_8")
+        }
+
         val todayDate = LocalDate.now()
         val dailyStudySetStudies = studyRepository.findAllById(dailyStudySet.studyIds)
         if (dailyStudySet.date.isBefore(todayDate)) {
@@ -139,7 +144,7 @@ class StudyService(
                 userId = dailyStudySet.userId,
                 due = due,
                 excludeIds = dailyStudySet.studyIds,
-                count = DEFAULT_STUDY_SET_SIZE - dailyStudySetStudies.size,
+                count = maxOf(user.studyPerDay - dailyStudySetStudies.size, 0),
             )
         return dailyStudySetStudies + studiesPastDue
     }
