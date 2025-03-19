@@ -1,6 +1,5 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.domain.study.DailyStudySetCreateObject
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.study.StudyWord
@@ -8,9 +7,11 @@ import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.study.DailyStudySet
+import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Component
 class ReadOrCreateDailyStudySetApplication(
@@ -18,7 +19,7 @@ class ReadOrCreateDailyStudySetApplication(
     private val wordService: WordService,
 ) {
     data class Request(
-        val userId: UserId,
+        val user: User,
         val date: LocalDate,
     )
 
@@ -28,22 +29,23 @@ class ReadOrCreateDailyStudySetApplication(
     )
 
     fun run(request: Request): Response {
-        val now = LocalDate.now()
+        val userZoneId = ZoneId.of(request.user.timezone)
+        val now = LocalDate.now(userZoneId)
         if (request.date.isAfter(now)) {
             throw BadRequestException(message = "Cannot request future daily study set", code = "STUDY_3")
         }
 
-        var dailyStudySet = studyService.getDailyStudySet(request.userId, request.date)
+        var dailyStudySet = studyService.getDailyStudySet(request.user.id!!, request.date)
         val isNotToday = request.date != now
         if (isNotToday && dailyStudySet == null) {
             throw NotFoundException(message = "DailyStudySet not found", code = "STUDY_4")
         }
 
         if (dailyStudySet == null) {
-            dailyStudySet = studyService.createDailyStudySet(DailyStudySetCreateObject(request.userId, request.date))
+            dailyStudySet = studyService.createDailyStudySet(DailyStudySetCreateObject(request.user.id!!, request.date))
         }
 
-        val studies = studyService.getStudiesByDailyStudySet(dailyStudySet)
+        val studies = studyService.getStudiesByDailyStudySet(dailyStudySet, request.user)
         val wordDefinitionIds = studies.map { it.wordDefinitionId }
         val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
         val wordByDefinitionIdMap = mutableMapOf<Long, Word>()
@@ -67,7 +69,10 @@ class ReadOrCreateDailyStudySetApplication(
                                                     definition.id == study.wordDefinitionId
                                                 }.also { definitions ->
                                                     if (definitions.isEmpty()) {
-                                                        throw NotFoundException(message = "Data Integrity Error", code = "STUDY_2")
+                                                        throw NotFoundException(
+                                                            message = "Data Integrity Error",
+                                                            code = "STUDY_2",
+                                                        )
                                                     }
                                                 },
                                     )
