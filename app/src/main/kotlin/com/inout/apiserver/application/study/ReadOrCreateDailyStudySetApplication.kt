@@ -11,6 +11,7 @@ import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.stereotype.Component
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Component
 class ReadOrCreateDailyStudySetApplication(
@@ -28,7 +29,8 @@ class ReadOrCreateDailyStudySetApplication(
     )
 
     fun run(request: Request): Response {
-        val now = LocalDate.now()
+        val userZoneId = ZoneId.of(request.user.timezone)
+        val now = LocalDate.now(userZoneId)
         if (request.date.isAfter(now)) {
             throw BadRequestException(message = "Cannot request future daily study set", code = "STUDY_3")
         }

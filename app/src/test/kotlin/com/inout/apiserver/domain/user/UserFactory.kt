@@ -12,6 +12,7 @@ class UserFactory(
         email: String = "test@1.com",
         password: String = "password",
         nickname: String = "test",
+        timezone: String = "UTC",
     ): User =
         userRepository
             .save(

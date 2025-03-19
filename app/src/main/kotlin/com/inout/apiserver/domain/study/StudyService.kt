@@ -17,7 +17,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.LocalTime
+import java.time.ZoneId
 
 @Service
 class StudyService(
@@ -131,18 +132,18 @@ class StudyService(
             throw BadRequestException(message = "User does not match daily study set", code = "STUDY_8")
         }
 
-        val todayDate = LocalDate.now()
+        val userZoneId = ZoneId.of(user.timezone)
+        val todayDate = LocalDate.now(userZoneId)
         val dailyStudySetStudies = studyRepository.findAllById(dailyStudySet.studyIds)
         if (dailyStudySet.date.isBefore(todayDate)) {
             return dailyStudySetStudies
         }
 
-        val endOfDay = todayDate.atStartOfDay().plusDays(1).toInstant(ZoneOffset.UTC)
-        val due = endOfDay.atZone(ZoneOffset.UTC).toInstant()
+        val endOfDay = todayDate.atTime(LocalTime.MAX).atZone(userZoneId).toInstant()
         val studiesPastDue =
             getStudiesPastDue(
                 userId = dailyStudySet.userId,
-                due = due,
+                due = endOfDay,
                 excludeIds = dailyStudySet.studyIds,
                 count = maxOf(user.studyPerDay - dailyStudySetStudies.size, 0),
             )
