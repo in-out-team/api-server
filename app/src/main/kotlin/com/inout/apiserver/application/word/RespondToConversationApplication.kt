@@ -3,7 +3,7 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.alias.ConversationId
 import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.domain.word.WordAIService
+import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.InternalServerErrorException
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component
 class RespondToConversationApplication(
     private val wordService: WordService,
     private val openAIService: OpenAIService,
-    private val wordAIService: WordAIService,
+    private val audioAIService: AudioAIService,
 ) {
     companion object {
         const val MAX_SYSTEM_RESPONSES = 4
@@ -63,7 +63,7 @@ class RespondToConversationApplication(
                 messages = conversation.messages.map { it.sender to it.content },
             )
         val systemAudio =
-            wordAIService.findOrCreateAudio(
+            audioAIService.findOrCreateAudio(
                 language = word.fromLanguage,
                 content = systemResponse, // TODO: error raised when response is too long (varchar of 255)
             )

@@ -4,8 +4,8 @@ import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.AudioFactory
-import com.inout.apiserver.domain.word.WordAIService
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.extension.cleanUp
@@ -30,7 +30,7 @@ class StartConversationApplicationTest(
     // services
     private val studyService: StudyService,
     @SpyBean
-    private val wordAIService: WordAIService,
+    private val audioAIService: AudioAIService,
     // repositories
     private val conversationRepository: ConversationRepository,
     // factories
@@ -50,7 +50,7 @@ class StartConversationApplicationTest(
 
             // mock calls to wordAIService to save and return a dummy audio
             doReturn(audioFactory.createAudio())
-                .`when`(wordAIService)
+                .`when`(audioAIService)
                 .findOrCreateAudio(any(), any())
         }
 

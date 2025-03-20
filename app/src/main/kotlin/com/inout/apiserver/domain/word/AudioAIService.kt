@@ -9,7 +9,7 @@ import com.inout.apiserver.infrastructure.s3.S3Service
 import org.springframework.stereotype.Service
 
 @Service
-class WordAIService(
+class AudioAIService(
     private val openAIService: OpenAIService,
     private val aiAudioRepository: AiAudioRepository,
     private val s3Service: S3Service,
