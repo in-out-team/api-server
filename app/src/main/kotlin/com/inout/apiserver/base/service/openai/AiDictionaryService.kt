@@ -8,8 +8,6 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.service.openai.dto.Definition
-import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 
@@ -28,7 +26,7 @@ class AiDictionaryService(
         word: String,
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
-    ): List<Definition> {
+    ): List<DictionaryService.Definition> {
         val content =
             """
 You are a highly accurate language dictionary. Your job is to provide definitions for a given word in the specified target language.
@@ -85,7 +83,7 @@ Example response:
                 .message.messageContent as TextContent
 
         return try {
-            OpenAIWordDefinitionResponse.fromJson(textContent.content).definitions
+            DictionaryService.DefinitionsResponse.fromJson(textContent.content).definitions
         } catch (e: Exception) {
             emptyList()
         }
@@ -95,7 +93,7 @@ Example response:
         word: String,
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
-        definition: Definition,
+        definition: DictionaryService.Definition,
     ): Boolean {
         val validationPrompt =
             """

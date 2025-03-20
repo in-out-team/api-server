@@ -1,7 +1,8 @@
 package com.inout.apiserver.base.service.openai
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.service.openai.dto.Definition
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 interface DictionaryService {
     fun fetchWordDefinitions(
@@ -16,4 +17,23 @@ interface DictionaryService {
         toLanguage: LanguageType,
         definition: Definition,
     ): Boolean
+
+    @Serializable
+    data class DefinitionsResponse(
+        val definitions: List<Definition>,
+    ) {
+        companion object {
+            fun fromJson(jsonString: String): DefinitionsResponse {
+                val json = Json { ignoreUnknownKeys = true }
+                return json.decodeFromString<DefinitionsResponse>(jsonString)
+            }
+        }
+    }
+
+    @Serializable
+    data class Definition(
+        val type: String,
+        val definition: String,
+        val preContext: String,
+    )
 }

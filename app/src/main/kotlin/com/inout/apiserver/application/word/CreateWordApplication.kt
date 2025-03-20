@@ -3,14 +3,14 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.service.openai.DictionaryService
-import com.inout.apiserver.base.service.openai.dto.Definition
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.word.Word
-import kotlinx.coroutines.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 
@@ -72,7 +72,7 @@ class CreateWordApplication(
         request: Request,
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
-    ): List<Definition> {
+    ): List<DictionaryService.Definition> {
         val definitions =
             dictionaryService
                 .fetchWordDefinitions(
@@ -103,7 +103,7 @@ class CreateWordApplication(
 
     private fun buildWordCreateObject(
         request: Request,
-        definitions: List<Definition>,
+        definitions: List<DictionaryService.Definition>,
     ): WordCreateObject =
         WordCreateObject(
             name = request.name,

@@ -1,7 +1,6 @@
 package com.inout.apiserver.base.service.openai
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.service.openai.dto.Definition
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
 import io.kotest.core.spec.style.DescribeSpec
@@ -54,7 +53,7 @@ class AiDictionaryServiceTest(
                 val fromLanguage = LanguageType.ENGLISH
                 val toLanguage = LanguageType.KOREAN
                 val definition =
-                    Definition(
+                    DictionaryService.Definition(
                         type = "noun",
                         definition = "봄",
                         preContext = "사계절 중 하나",
@@ -73,7 +72,7 @@ class AiDictionaryServiceTest(
                 val fromLanguage = LanguageType.ENGLISH
                 val toLanguage = LanguageType.KOREAN
                 val definition =
-                    Definition(
+                    DictionaryService.Definition(
                         type = "noun",
                         definition = "가을",
                         preContext = "사계절 중 하나",
