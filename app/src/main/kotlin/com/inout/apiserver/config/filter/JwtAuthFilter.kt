@@ -1,6 +1,7 @@
 package com.inout.apiserver.config.filter
 
 import com.inout.apiserver.domain.auth.TokenService
+import com.inout.apiserver.error.InvalidCredentialsException
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -23,40 +24,34 @@ class JwtAuthFilter(
         filterChain: FilterChain,
     ) {
         val authHeader: String = request.getHeader("Authorization") ?: ""
-        // if Authorization header is not present, continue to the next filter
-        if (!authHeader.containsBearerPrefix()) {
+        /**
+         * if Authorization header is not present, continue to the next filter
+         * if authentication is already set, no need to set it again
+         * - this is to prevent overriding the existing authentication
+         */
+        if (!authHeader.containsBearerPrefix() || SecurityContextHolder.getContext().authentication != null) {
             filterChain.doFilter(request, response)
             return
         }
 
         val token = authHeader.extractToken()
         val email = tokenService.extractEmail(token)
-        /**
-         * if email is null, it means the token is invalid (since application signs token with email)
-         * if authentication is already set, no need to set it again
-         * - this is to prevent overriding the existing authentication
-         */
-        if (email == null || SecurityContextHolder.getContext().authentication != null) {
-            filterChain.doFilter(request, response)
-            return
+
+        if (email == null || !tokenService.isValid(token, email)) {
+            throw InvalidCredentialsException(
+                message = "Unauthorized: Invalid Token or No Token Provided",
+                code = "UNAUTHORIZED_1",
+            )
         }
 
         val user = userDetailsService.loadUserByUsername(email)
-        // if token is valid, update security context
-        if (tokenService.isValid(token, user.username)) {
-            updateSecurityContext(user, request)
-        }
-
+        updateSecurityContext(user, request)
         filterChain.doFilter(request, response)
     }
 
-    private fun String.containsBearerPrefix(): Boolean {
-        return this.startsWith("Bearer ")
-    }
+    private fun String.containsBearerPrefix(): Boolean = this.startsWith("Bearer ")
 
-    private fun String.extractToken(): String {
-        return this.substringAfter("Bearer ")
-    }
+    private fun String.extractToken(): String = this.substringAfter("Bearer ")
 
     private fun updateSecurityContext(
         user: UserDetails,
