@@ -2,20 +2,22 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
+import com.inout.apiserver.base.service.openai.DictionaryService
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.infrastructure.db.word.Word
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Component
 
 @Component
 class CreateWordApplication(
     private val wordService: WordService,
-    private val openAIService: OpenAIService,
+    private val dictionaryService: DictionaryService,
 ) {
     data class Request(
         val name: String,
@@ -27,17 +29,25 @@ class CreateWordApplication(
         val word: Word,
     )
 
+    /**
+     * TODO: 3rd party service calls should be logged
+     * - who called the service
+     * - what was the request
+     * - what was the response
+     *   - what was the status code
+     *   - what was the error message
+     * - how long did it take
+     * - what was the cost (API token usage in this case)
+     */
     fun run(request: Request): Response {
         validateWordDoesNotExist(request.name, request.fromLanguage, request.toLanguage)
 
-        val fromLanguage = request.fromLanguage.format()
-        val toLanguage = request.toLanguage.format()
-        val openAIWordDefinitionResponse = fetchValidatedDefinitions(request, fromLanguage, toLanguage)
-        if (openAIWordDefinitionResponse.definitions.isEmpty()) {
+        val definitions = fetchValidatedDefinitions(request, request.fromLanguage, request.toLanguage)
+        if (definitions.isEmpty()) {
             throw BadRequestException(message = "Valid Word Definition not found", code = "WORD_3")
         }
 
-        val wordCreateObject = buildWordCreateObject(request, openAIWordDefinitionResponse)
+        val wordCreateObject = buildWordCreateObject(request, definitions)
         val word = wordService.createWord(wordCreateObject)
 
         return Response(word)
@@ -58,46 +68,51 @@ class CreateWordApplication(
             }
     }
 
-    private fun LanguageType.format(): String = name.lowercase().replaceFirstChar { it.uppercase() }
-
     private fun fetchValidatedDefinitions(
         request: Request,
-        fromLanguage: String,
-        toLanguage: String,
-    ): OpenAIWordDefinitionResponse {
-        val openAIWordDefinitionResponse =
-            openAIService.fetchWordDefinition(
-                word = request.name,
-                fromLanguage = fromLanguage,
-                toLanguage = toLanguage,
-            )
-        if (openAIWordDefinitionResponse.definitions.isEmpty()) {
-            return openAIWordDefinitionResponse
-        }
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+    ): List<DictionaryService.Definition> {
+        val definitions =
+            dictionaryService
+                .fetchWordDefinitions(
+                    word = request.name,
+                    fromLanguage = fromLanguage,
+                    toLanguage = toLanguage,
+                ).takeIf { it.isNotEmpty() }
+                ?: return emptyList()
 
-        return openAIService.validateAndTrimWordDefinition(
-            word = request.name,
-            fromLanguage = fromLanguage,
-            toLanguage = toLanguage,
-            definitions =
-                openAIWordDefinitionResponse.definitions.map {
-                    Triple(it.type, it.definition, it.preContext)
-                },
-        )
+        return runBlocking {
+            val allValid =
+                definitions
+                    .map { definition ->
+                        async {
+                            dictionaryService.validateWordDefinition(
+                                word = request.name,
+                                fromLanguage = fromLanguage,
+                                toLanguage = toLanguage,
+                                definition = definition,
+                            )
+                        }
+                    }.awaitAll()
+                    .all { it }
+
+            definitions.takeIf { allValid } ?: emptyList()
+        }
     }
 
     private fun buildWordCreateObject(
         request: Request,
-        openAIWordDefinitionResponse: OpenAIWordDefinitionResponse,
+        definitions: List<DictionaryService.Definition>,
     ): WordCreateObject =
         WordCreateObject(
             name = request.name,
             fromLanguage = request.fromLanguage,
             toLanguage = request.toLanguage,
             definitions =
-                openAIWordDefinitionResponse.definitions.map {
+                definitions.map {
                     WordDefinitionCreateObject(
-                        lexicalCategory = LexicalCategoryType.of(it.type),
+                        lexicalCategory = LexicalCategoryType.of(it.lexicalCategory),
                         meaning = it.definition,
                         preContext = it.preContext,
                     )

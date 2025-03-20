@@ -13,7 +13,6 @@ import com.aallam.openai.api.model.ModelId
 import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.base.service.openai.dto.Definition
 import com.inout.apiserver.error.BadRequestException
 import okio.source
 import org.springframework.stereotype.Component
@@ -27,124 +26,6 @@ class OpenAIRequestProvider {
     private val transcriptionResponseFormat = AudioResponseFormat.Text
     private val speechModel = ModelId("tts-1")
     private val speechResponseFormat = SpeechResponseFormat.Mp3
-
-    fun genWordInfoRequest(
-        word: String,
-        fromLanguage: String = "English",
-        toLanguage: String = "Korean",
-    ): ChatCompletionRequest {
-        val systemDefinition =
-            ChatMessage(
-                role = ChatRole.System,
-                content =
-                    """
-                    You are an $fromLanguage to $toLanguage dictionary listing the definitions of given word or phrase.
-                    response format must be JSON with following key value pairs:
-                    - definitions: list of definition objects
-                    - definition object:
-                     - type: lexical category
-                      - value must be in English, and must be one of the following: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, article
-                     - definition: meaning of the word in $toLanguage
-                      - provide matching $toLanguage word or phrase if found. Only when no matching word in $toLanguage exists, provide a sentence.
-                      - ex) for "book", respond with "책" instead of "종이를 여러 장 묶어 댄 물건"
-                     - preContext: context which provided definition is used in $toLanguage, helping user understand the use case of provided definition
-                      - ex) for "mandate", definition "강제하다, 요구하다" has preContext of "법, 규정 등으로" as it better explains how the definition is used
-                    
-                    List up to 3 definition objects which must be distinct in meaning.
-                    - ex) for "book", provide "책, 서적" in one definition object and "예약하다" in another instead of "책",
-                      "서적", "예약하다".
-                    
-                    Do not make up definitions.
-                    - ex) for "banana", "바나나 튀김" is never used as banana's definition.
-                    
-                    Do not try to provide maximum definitions if you can't find enough.
-                    - ex) for a given word "apple", you should not to provide 3 definition objects and try to make up
-                      definitions that do not exist. Simple "사과" is enough.
-                    
-                    Respond 0 definition objects if provided $fromLanguage word or phrase does not exist in $toLanguage.
-                    - ex) for "tteokbokki", since it is not an original English word, 0 definition objects should be returned.
-                    """.trimIndent(),
-            )
-        val queryMessage =
-            ChatMessage(
-                role = ChatRole.User,
-                content = word,
-            )
-
-        return ChatCompletionRequest(
-            model = chatCompletionModel,
-            messages = listOf(systemDefinition, queryMessage),
-            responseFormat = chatCompletionResponseFormat,
-        )
-    }
-
-    fun genValidateAndTrimWordDefinitionRequest(
-        word: String,
-        fromLanguage: String,
-        toLanguage: String,
-        definitions: List<Definition>,
-    ): ChatCompletionRequest {
-        val systemDefinition =
-            ChatMessage(
-                role = ChatRole.System,
-                content =
-                    """
-                    You are an AI language assistant validating and refining word definitions for a dictionary.
-                                    
-                    Your task is to:
-                    1. Validate the given definitions of a word to ensure accuracy.
-                    - Example: For the word "apple", "사과" is a valid definition, but "바나나" is not.
-                    - The definition must be a valid translation of the word in the specified target language (toLanguage).
-
-                    2. Ensure correctness of the lexical category, meaning, and preContext for each definition.
-                    - Lexical categories include: noun, verb, adjective, adverb, etc.
-                    - The preContext should correctly describe the usage or context of the word.
-
-                    3. Identify and eliminate overlapping or duplicate definitions.
-                    - Definitions are considered overlapping if their meanings are the same or very similar, even if expressed differently.
-                    - Example: For the word "book", "책" and "도서" are overlapping definitions because they both mean "book".
-                    - If definitions overlap, keep the most precise one or merge them if both provide useful information.
-
-                    4. Return only the valid, distinct, and relevant definitions in the response.
-                    
-                    Your response must be a JSON array containing only the valid and distinct definitions. 
-                    Follow this format:
-                    {
-                      "definitions": [
-                        {"type": "<lexical category>", "definition": "<valid definition>", "preContext": "<precontext>"},
-                        ...
-                      ]
-                    }
-                    """.trimIndent(),
-            )
-        val queryMessage =
-            ChatMessage(
-                role = ChatRole.User,
-                content =
-                    """
-                    word: $word
-                    fromLanguage: $fromLanguage
-                    toLanguage: $toLanguage
-                    definitions: 
-                    ${
-                        definitions
-                            .joinToString("\n") { definition ->
-                                """
-                                - type: ${definition.type}
-                                  definition: ${definition.definition}
-                                  preContext: ${definition.preContext}
-                                """.trimIndent()
-                            }
-                    }
-                    """.trimIndent(),
-            )
-
-        return ChatCompletionRequest(
-            model = chatCompletionModel,
-            messages = listOf(systemDefinition, queryMessage),
-            responseFormat = chatCompletionResponseFormat,
-        )
-    }
 
     fun genWordDefinitionSentenceInfoRequest(
         word: String,

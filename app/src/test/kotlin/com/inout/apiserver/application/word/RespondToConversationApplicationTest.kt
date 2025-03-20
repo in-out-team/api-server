@@ -3,8 +3,8 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.openai.OpenAIService
 import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.AudioFactory
-import com.inout.apiserver.domain.word.WordAIService
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
@@ -33,7 +33,7 @@ class RespondToConversationApplicationTest(
     @SpyBean
     private val openAIService: OpenAIService,
     @SpyBean
-    private val wordAIService: WordAIService,
+    private val audioAIService: AudioAIService,
     // factories
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
@@ -56,7 +56,7 @@ class RespondToConversationApplicationTest(
                 .`when`(openAIService)
                 .fetchConversation(any(), any(), any(), any(), any())
             doReturn(audioFactory.createAudio())
-                .`when`(wordAIService)
+                .`when`(audioAIService)
                 .findOrCreateAudio(any(), any())
         }
 
