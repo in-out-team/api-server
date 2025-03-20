@@ -1,9 +1,8 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.service.openai.DictionaryService
 import com.inout.apiserver.base.service.openai.dto.Definition
-import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionResponse
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
@@ -25,7 +24,7 @@ class CreateWordApplicationTest(
     private val subject: CreateWordApplication,
     // services
     @SpyBean
-    private val openAIService: OpenAIService,
+    private val dictionaryService: DictionaryService,
     // factories
     private val wordFactory: WordFactory,
     // etc
@@ -58,13 +57,13 @@ class CreateWordApplicationTest(
         describe("when given word does not exist") {
             describe("when word definition not found") {
                 beforeEach {
-                    doReturn(OpenAIWordDefinitionResponse(definitions = emptyList()))
-                        .whenever(openAIService)
-                        .fetchWordDefinition(any(), any(), any())
+                    doReturn(emptyList<Definition>())
+                        .whenever(dictionaryService)
+                        .fetchWordDefinitions(any(), any(), any())
                 }
 
                 afterEach {
-                    clearInvocations(openAIService)
+                    clearInvocations(dictionaryService)
                 }
 
                 it("should throw BadRequestException") {
@@ -88,27 +87,23 @@ class CreateWordApplicationTest(
             describe("when word definition is found but there are no valid definitions") {
                 beforeEach {
                     doReturn(
-                        OpenAIWordDefinitionResponse(
-                            definitions =
-                                listOf(
-                                    Definition(
-                                        type = "noun",
-                                        definition = "얄리얄리얄랄라",
-                                        preContext = "얄라리얄라",
-                                    ),
-                                ),
+                        listOf(
+                            Definition(
+                                type = "noun",
+                                definition = "얄리얄리얄랄라",
+                                preContext = "얄라리얄라",
+                            ),
                         ),
-                    ).whenever(openAIService)
-                        .fetchWordDefinition(any(), any(), any())
+                    ).whenever(dictionaryService)
+                        .fetchWordDefinitions(any(), any(), any())
 
-                    doReturn(
-                        OpenAIWordDefinitionResponse(definitions = emptyList()),
-                    ).whenever(openAIService)
-                        .validateAndTrimWordDefinition(any(), any(), any(), any())
+                    doReturn(false)
+                        .whenever(dictionaryService)
+                        .validateWordDefinition(any(), any(), any(), any())
                 }
 
                 afterEach {
-                    clearInvocations(openAIService)
+                    clearInvocations(dictionaryService)
                 }
 
                 it("should throw BadRequestException") {
@@ -144,17 +139,17 @@ class CreateWordApplicationTest(
                                 preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
                             ),
                         )
-                    doReturn(OpenAIWordDefinitionResponse(definitions = definitions))
-                        .whenever(openAIService)
-                        .fetchWordDefinition(any(), any(), any())
+                    doReturn(definitions)
+                        .whenever(dictionaryService)
+                        .fetchWordDefinitions(any(), any(), any())
 
-                    doReturn(OpenAIWordDefinitionResponse(definitions = definitions))
-                        .whenever(openAIService)
-                        .validateAndTrimWordDefinition(any(), any(), any(), any())
+                    doReturn(true)
+                        .whenever(dictionaryService)
+                        .validateWordDefinition(any(), any(), any(), any())
                 }
 
                 afterEach {
-                    clearInvocations(openAIService)
+                    clearInvocations(dictionaryService)
                 }
 
                 it("should return created word") {
