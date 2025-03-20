@@ -38,7 +38,7 @@ Requirements:
 
 Output Format:
 Return a JSON array of definitions, each object containing:
-  - type: One of ["noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection", "article", "particle", "determiner"]
+  - lexicalCategory: One of ["noun", "verb", "adjective", "adverb", "pronoun", "preposition", "conjunction", "interjection", "article", "particle", "determiner"]
   - definition: The meaning of the word in $toLanguage
   - preContext: A brief phrase or context in $toLanguage providing hints about when or how the definition is commonly used. (e.g., for "mandate" meaning "강제하다, 요구하다", the preContext could be "법, 규정 등으로")
 
@@ -57,8 +57,8 @@ To language: "Korean"
 Example response:
 {
   "definitions": [
-    {"type": "noun","definition": "책","preContext": "문학, 교육 등에서"},
-    {"type": "verb","definition": "예약하다","preContext": "호텔, 식당 등에서"}
+    {"lexicalCategory": "noun","definition": "책","preContext": "문학, 교육 등에서"},
+    {"lexicalCategory": "verb","definition": "예약하다","preContext": "호텔, 식당 등에서"}
   ]
 }
             """.trimIndent()
@@ -104,7 +104,7 @@ Source language: $fromLanguage
 Target language: $toLanguage
 
 Definition to validate:
-- type: ${definition.type}
+- lexicalCategory: ${definition.lexicalCategory}
  - lexical category of the word
 - definition: ${definition.definition}
 - preContext: ${definition.preContext}

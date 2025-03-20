@@ -88,7 +88,7 @@ class CreateWordApplicationTest(
                     doReturn(
                         listOf(
                             DictionaryService.Definition(
-                                type = "noun",
+                                lexicalCategory = "noun",
                                 definition = "얄리얄리얄랄라",
                                 preContext = "얄라리얄라",
                             ),
@@ -128,12 +128,12 @@ class CreateWordApplicationTest(
                     val definitions =
                         listOf(
                             DictionaryService.Definition(
-                                type = "noun",
+                                lexicalCategory = "noun",
                                 definition = "책",
                                 preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                             ),
                             DictionaryService.Definition(
-                                type = "verb",
+                                lexicalCategory = "verb",
                                 definition = "예약하다",
                                 preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
                             ),

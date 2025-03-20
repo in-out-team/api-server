@@ -112,7 +112,7 @@ class CreateWordApplication(
             definitions =
                 definitions.map {
                     WordDefinitionCreateObject(
-                        lexicalCategory = LexicalCategoryType.of(it.type),
+                        lexicalCategory = LexicalCategoryType.of(it.lexicalCategory),
                         meaning = it.definition,
                         preContext = it.preContext,
                     )

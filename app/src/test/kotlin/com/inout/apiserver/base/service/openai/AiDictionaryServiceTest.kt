@@ -54,7 +54,7 @@ class AiDictionaryServiceTest(
                 val toLanguage = LanguageType.KOREAN
                 val definition =
                     DictionaryService.Definition(
-                        type = "noun",
+                        lexicalCategory = "noun",
                         definition = "봄",
                         preContext = "사계절 중 하나",
                     )
@@ -73,7 +73,7 @@ class AiDictionaryServiceTest(
                 val toLanguage = LanguageType.KOREAN
                 val definition =
                     DictionaryService.Definition(
-                        type = "noun",
+                        lexicalCategory = "noun",
                         definition = "가을",
                         preContext = "사계절 중 하나",
                     )

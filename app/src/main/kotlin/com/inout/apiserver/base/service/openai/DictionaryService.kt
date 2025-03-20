@@ -32,7 +32,7 @@ interface DictionaryService {
 
     @Serializable
     data class Definition(
-        val type: String,
+        val lexicalCategory: String,
         val definition: String,
         val preContext: String,
     )
