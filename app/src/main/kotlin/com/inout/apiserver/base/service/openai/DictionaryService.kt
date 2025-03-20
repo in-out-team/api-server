@@ -9,4 +9,11 @@ interface DictionaryService {
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
     ): List<Definition>
+
+    suspend fun validateWordDefinition(
+        word: String,
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+        definition: Definition,
+    ): Boolean
 }

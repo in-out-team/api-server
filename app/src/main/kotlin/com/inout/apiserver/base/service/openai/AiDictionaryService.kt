@@ -90,4 +90,51 @@ Example response:
             emptyList()
         }
     }
+
+    override suspend fun validateWordDefinition(
+        word: String,
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+        definition: Definition,
+    ): Boolean {
+        val validationPrompt =
+            """
+You are a language expert. Validate if the following definition is correct for the given word, source language, and target language.
+
+Word: $word
+Source language: $fromLanguage
+Target language: $toLanguage
+
+Definition to validate:
+- type: ${definition.type}
+ - lexical category of the word
+- definition: ${definition.definition}
+- preContext: ${definition.preContext}
+ - a brief phrase or context in $toLanguage providing hints about when or how the definition is commonly used
+
+Respond with "true" if the definition is correct and "false" if it is incorrect. No additional text.
+            """.trimIndent()
+
+        val systemDefinition =
+            ChatMessage(
+                role = ChatRole.System,
+                content = validationPrompt,
+            )
+
+        val chatCompletionRequest =
+            ChatCompletionRequest(
+                model = ModelId("gpt-3.5-turbo"),
+                messages = listOf(systemDefinition),
+                responseFormat = ChatResponseFormat.Text,
+                temperature = 0.2,
+            )
+
+        val response = openai.chatCompletion(chatCompletionRequest)
+        val chatMessageContent =
+            response.choices
+                .first()
+                .message.messageContent as TextContent
+
+        return chatMessageContent.content.lowercase() == "true"
+    }
 }
