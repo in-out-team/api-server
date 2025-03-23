@@ -8,9 +8,11 @@ import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.study.StudyRepository
 import com.inout.apiserver.infrastructure.db.study.StudyReviewLog
+import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Component
 class StudyFactory(
@@ -52,8 +54,8 @@ class StudyFactory(
             }
 
     fun createDailyStudySet(
-        userId: UserId,
-        date: LocalDate = LocalDate.now(),
+        user: User,
+        date: LocalDate? = null,
         studies: List<Study> = emptyList(),
     ): DailyStudySet =
         dailyStudySetRepository
@@ -61,8 +63,8 @@ class StudyFactory(
                 DailyStudySet
                     .fromCreateObject(
                         DailyStudySetCreateObject(
-                            userId = userId,
-                            date = date,
+                            userId = user.id!!,
+                            date = date ?: LocalDate.now(ZoneId.of(user.timezone)),
                         ),
                     ).copy(
                         studyIds = studies.map { it.id!! },

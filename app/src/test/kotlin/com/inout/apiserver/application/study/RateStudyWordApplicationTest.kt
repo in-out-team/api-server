@@ -93,7 +93,7 @@ class RateStudyWordApplicationTest(
                 // given
                 val rating = FsrsCardRating.EASY
                 val otherUserDailyStudySet =
-                    studyFactory.createDailyStudySet(userId = otherUser!!.id!!, studies = listOf(study!!))
+                    studyFactory.createDailyStudySet(user = otherUser!!, studies = listOf(study!!))
 
                 // when
                 val exception =
@@ -118,7 +118,7 @@ class RateStudyWordApplicationTest(
             it("should raise NotFoundException") {
                 // given
                 val rating = FsrsCardRating.EASY
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!, studies = listOf(study!!))
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = listOf(study!!))
                 val studyId = 2L
                 studyRepository.findById(studyId) shouldBe Optional.empty()
 
@@ -145,7 +145,7 @@ class RateStudyWordApplicationTest(
             it("should rate study") {
                 // given
                 val rating = FsrsCardRating.EASY
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!)
 
                 // when
                 val result =
@@ -173,7 +173,7 @@ class RateStudyWordApplicationTest(
             it("should add study to dailyStudySet") {
                 // given
                 val rating = FsrsCardRating.EASY
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!)
                 dailyStudySet.studyIds shouldBe emptyList()
 
                 // when

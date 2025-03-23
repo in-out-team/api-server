@@ -285,7 +285,7 @@ class StudyServiceTest(
         describe("getDailyStudySet") {
             it("should return daily study set when it exists") {
                 // given
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!)
 
                 // when
                 val res = studyService.getDailyStudySet(user!!.id!!, LocalDate.now())
@@ -306,7 +306,7 @@ class StudyServiceTest(
         describe("createDailyStudySet") {
             it("should raise error if daily study set already exists") {
                 // given
-                studyFactory.createDailyStudySet(userId = user!!.id!!, date = LocalDate.now())
+                studyFactory.createDailyStudySet(user = user!!)
                 val dailyStudySetCreateObject =
                     DailyStudySetCreateObject(
                         userId = user!!.id!!,
@@ -369,7 +369,7 @@ class StudyServiceTest(
 
             it("should raise error if given user does not own dailyStudySet") {
                 // given
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!)
                 val otherUser = userFactory.createUser(email = "test2@1.com")
 
                 // when
@@ -385,10 +385,12 @@ class StudyServiceTest(
 
             it("should return daily study set studies when date is before today") {
                 // given
+                val userZoneId = ZoneId.of(user!!.timezone)
+                val todayDate = LocalDate.now(userZoneId)
                 val dailyStudySet =
                     studyFactory.createDailyStudySet(
-                        userId = user!!.id!!,
-                        date = LocalDate.now().minusDays(1),
+                        user = user!!,
+                        date = todayDate.minusDays(1),
                         studies = studies!!,
                     )
 
@@ -402,7 +404,7 @@ class StudyServiceTest(
 
             it("should return daily study set studies and past due studies when date is today") {
                 // given
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!, studies = studies!!)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = studies!!)
                 val pastStudiesWord =
                     wordFactory.createWord(
                         name = "booked",
@@ -434,7 +436,7 @@ class StudyServiceTest(
             it("should return amount of studies user has set when date is today") {
                 val studyPerDay = 3
                 user = user!!.copy(studyPerDay = studyPerDay)
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!, studies = studies!!)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = studies!!)
                 val pastDueStudies =
                     listOf(
                         wordFactory
@@ -484,8 +486,8 @@ class StudyServiceTest(
 
             it("should return studies according to user's timezone") {
                 // given
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = user!!.id!!, studies = emptyList())
                 user = user!!.copy(timezone = "Asia/Seoul")
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = emptyList())
                 val userZoneId = ZoneId.of(user!!.timezone)
                 val nowInUserZone = Instant.now().atZone(userZoneId)
                 val endOfDayInUserZone =
@@ -576,10 +578,9 @@ class StudyServiceTest(
         describe("addStudyToDailyStudySet") {
             it("should raise error if study is already in daily study set") {
                 // given
-                val userId = 1L
                 val word = wordFactory.createWord()
                 val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id!!)
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = userId, studies = listOf(study))
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = listOf(study))
 
                 // when
                 val exception =
@@ -594,8 +595,7 @@ class StudyServiceTest(
 
             it("should add study to daily study set") {
                 // given
-                val userId = 1L
-                val dailyStudySet = studyFactory.createDailyStudySet(userId = userId)
+                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!)
                 val word = wordFactory.createWord()
                 val study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = word.definitions.first().id!!)
 
