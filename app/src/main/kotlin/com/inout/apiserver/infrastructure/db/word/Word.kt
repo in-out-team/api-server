@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
@@ -37,7 +38,8 @@ data class Word(
     val fromLanguage: LanguageType,
     @Enumerated(EnumType.STRING)
     val toLanguage: LanguageType,
-    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, mappedBy = "word", orphanRemoval = true)
+    @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
+    @JoinColumn(name = "word_id")
     val definitions: MutableList<WordDefinition> = mutableListOf(),
 ) : TimestampedEntity() {
     companion object {

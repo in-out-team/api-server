@@ -130,10 +130,12 @@ class WordServiceTest(
                 res.toLanguage shouldBe wordCreateObject.toLanguage
                 res.definitions.forEachIndexed { index, wordDefinition ->
                     wordDefinition.id shouldNotBe null
-                    wordDefinition.word shouldBe res
+                    wordDefinition.wordId shouldBe res.id
                     wordDefinition.lexicalCategory shouldBe wordCreateObject.definitions[index].lexicalCategory
                     wordDefinition.meaning shouldBe wordCreateObject.definitions[index].meaning
                     wordDefinition.preContext shouldBe wordCreateObject.definitions[index].preContext
+                    wordDefinition.createdAt shouldNotBe null
+                    wordDefinition.updatedAt shouldNotBe null
                 }
                 res.createdAt shouldNotBe null
                 res.updatedAt shouldNotBe null
