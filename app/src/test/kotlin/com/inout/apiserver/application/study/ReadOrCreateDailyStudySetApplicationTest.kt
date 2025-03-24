@@ -18,6 +18,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.LocalDate
+import java.time.ZoneId
 
 @InOutSpringBootTest
 class ReadOrCreateDailyStudySetApplicationTest(
@@ -122,7 +123,8 @@ class ReadOrCreateDailyStudySetApplicationTest(
 
             it("returned dailyStudySet should have studyIds of target studies") {
                 // given
-                val date = LocalDate.now()
+                val userZoneId = ZoneId.of(user!!.timezone)
+                val date = LocalDate.now(userZoneId)
                 val studies =
                     word!!.definitions.map {
                         studyFactory.createStudy(
@@ -130,7 +132,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                             wordDefinitionId = it.id!!,
                         )
                     }
-                studyFactory.createDailyStudySet(user!!.id!!, date, studies)
+                studyFactory.createDailyStudySet(user!!, date, studies)
 
                 // when
                 val result =
@@ -147,7 +149,8 @@ class ReadOrCreateDailyStudySetApplicationTest(
 
             it("returned studyWords should return target study words") {
                 // given
-                val date = LocalDate.now()
+                val userZoneId = ZoneId.of(user!!.timezone)
+                val date = LocalDate.now(userZoneId)
                 val studies =
                     word!!.definitions.map {
                         studyFactory.createStudy(
@@ -155,7 +158,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                             wordDefinitionId = it.id!!,
                         )
                     }
-                studyFactory.createDailyStudySet(user!!.id!!, date, studies)
+                studyFactory.createDailyStudySet(user!!, date, studies)
 
                 // when
                 val result =
@@ -175,7 +178,8 @@ class ReadOrCreateDailyStudySetApplicationTest(
         describe("if provided date is before today") {
             it("should return past dailyStudySet if it exists") {
                 // given
-                val date = LocalDate.now().minusDays(1)
+                val userZoneId = ZoneId.of(user!!.timezone)
+                val date = LocalDate.now(userZoneId).minusDays(1)
                 val studies =
                     word!!.definitions.map {
                         studyFactory.createStudy(
@@ -183,7 +187,7 @@ class ReadOrCreateDailyStudySetApplicationTest(
                             wordDefinitionId = it.id!!,
                         )
                     }
-                studyFactory.createDailyStudySet(user!!.id!!, date, studies)
+                studyFactory.createDailyStudySet(user!!, date, studies)
 
                 // when
                 val result =

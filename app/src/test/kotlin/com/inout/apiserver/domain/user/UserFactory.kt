@@ -20,6 +20,7 @@ class UserFactory(
                     email = email,
                     password = password,
                     nickname = nickname,
+                    timezone = timezone,
                 ),
             ).let {
                 userRepository.findById(it.id!!).get()
