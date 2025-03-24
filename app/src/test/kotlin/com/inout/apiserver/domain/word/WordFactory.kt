@@ -36,26 +36,26 @@ class WordFactory(
         name: String = "book",
         fromLanguage: LanguageType = LanguageType.ENGLISH,
         toLanguage: LanguageType = LanguageType.KOREAN,
-        wordDefinitions: List<WordDefinition> =
+        wordDefinitions: List<WordDefinitionCreateObject> =
             listOf(
-                WordDefinition(
+                WordDefinitionCreateObject(
                     lexicalCategory = LexicalCategoryType.NOUN,
                     meaning = "책",
                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                 ),
             ),
-    ): Word =
-        wordRepository
-            .save(
+    ): Word {
+        val word =
+            wordRepository.save(
                 Word(
                     name = name,
                     fromLanguage = fromLanguage,
                     toLanguage = toLanguage,
-                    definitions = wordDefinitions,
                 ),
-            ).let {
-                wordRepository.findById(it.id!!).get()
-            }
+            )
+        word.addDefinitions(wordDefinitions.map { WordDefinition.fromCreateObject(it, word) })
+        return wordRepository.save(word).let { wordRepository.findById(it.id!!).get() }
+    }
 
     fun createSentence(
         wordDefinitionId: WordDefinitionId,

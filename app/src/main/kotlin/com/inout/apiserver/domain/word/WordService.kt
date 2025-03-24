@@ -25,6 +25,7 @@ import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedback
 import com.inout.apiserver.infrastructure.db.word.UserSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -58,7 +59,9 @@ class WordService(
             throw ConflictException(message = "Word already exists", code = "WORD_1")
         }
 
-        return wordRepository.save(Word.fromCreateObject(wordCreateObject))
+        val newWord = wordRepository.save(Word.fromCreateObject(wordCreateObject))
+        val definitions = wordCreateObject.definitions.map { WordDefinition.fromCreateObject(it, newWord) }
+        return wordRepository.save(newWord.addDefinitions(definitions))
     }
 
     @Transactional
@@ -76,14 +79,16 @@ class WordService(
     fun getWordByWordDefinitionId(wordDefinitionId: WordDefinitionId): Word =
         wordRepository
             .findByWordDefinitionId(wordDefinitionId)
-            ?.let { word -> word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }) }
+            ?.let { word ->
+                word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }.toMutableList())
+            }
             ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
 
     fun getWordsByWordDefinitionIds(wordDefinitionIds: List<WordDefinitionId>): List<Word> {
         val ids = wordDefinitionIds.toSet()
         return wordRepository
             .findAllByWordDefinitionIds(wordDefinitionIds)
-            .map { word -> word.copy(definitions = word.definitions.filter { it.id in ids }) }
+            .map { word -> word.copy(definitions = word.definitions.filter { it.id in ids }.toMutableList()) }
     }
 
     fun getSentencesByWordDefinitionId(wordDefinitionId: WordDefinitionId): List<Sentence> =
