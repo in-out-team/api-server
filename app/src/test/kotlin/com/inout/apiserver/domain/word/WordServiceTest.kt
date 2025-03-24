@@ -13,7 +13,6 @@ import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Sentence
 import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
 import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeSortedBy
@@ -106,10 +105,21 @@ class WordServiceTest(
             it("should return created Word") {
                 val wordCreateObject =
                     WordCreateObject(
-                        name = "name",
+                        name = "book",
                         fromLanguage = LanguageType.ENGLISH,
                         toLanguage = LanguageType.KOREAN,
-                        definitions = emptyList(),
+                        listOf(
+                            WordDefinitionCreateObject(
+                                lexicalCategory = LexicalCategoryType.NOUN,
+                                meaning = "책",
+                                preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                            ),
+                            WordDefinitionCreateObject(
+                                lexicalCategory = LexicalCategoryType.VERB,
+                                meaning = "예약하다",
+                                preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                            ),
+                        ),
                     )
 
                 val res = wordService.createWord(wordCreateObject)
@@ -118,7 +128,15 @@ class WordServiceTest(
                 res.name shouldBe wordCreateObject.name
                 res.fromLanguage shouldBe wordCreateObject.fromLanguage
                 res.toLanguage shouldBe wordCreateObject.toLanguage
-                res.definitions shouldBe wordCreateObject.definitions
+                res.definitions.forEachIndexed { index, wordDefinition ->
+                    wordDefinition.id shouldNotBe null
+                    wordDefinition.wordId shouldBe res.id
+                    wordDefinition.lexicalCategory shouldBe wordCreateObject.definitions[index].lexicalCategory
+                    wordDefinition.meaning shouldBe wordCreateObject.definitions[index].meaning
+                    wordDefinition.preContext shouldBe wordCreateObject.definitions[index].preContext
+                    wordDefinition.createdAt shouldNotBe null
+                    wordDefinition.updatedAt shouldNotBe null
+                }
                 res.createdAt shouldNotBe null
                 res.updatedAt shouldNotBe null
                 wordRepository.findById(res.id!!) shouldBe Optional.of(res)
@@ -157,7 +175,13 @@ class WordServiceTest(
 
                 val res = wordService.getWordByWordDefinitionId(wordDefinitionId)
 
-                res shouldBe word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId })
+                res shouldBe
+                    word.copy(
+                        definitions =
+                            word.definitions
+                                .filter { it.id == wordDefinitionId }
+                                .toMutableList(),
+                    )
             }
         }
 
@@ -171,12 +195,12 @@ class WordServiceTest(
                             toLanguage = LanguageType.KOREAN,
                             wordDefinitions =
                                 listOf(
-                                    WordDefinition(
+                                    WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "책",
                                         preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                     ),
-                                    WordDefinition(
+                                    WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "예약하다",
                                         preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -189,12 +213,12 @@ class WordServiceTest(
                             toLanguage = LanguageType.KOREAN,
                             wordDefinitions =
                                 listOf(
-                                    WordDefinition(
+                                    WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                         meaning = "예약된",
                                         preContext = "미리 자리를 확보한",
                                     ),
-                                    WordDefinition(
+                                    WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "예약하다",
                                         preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",

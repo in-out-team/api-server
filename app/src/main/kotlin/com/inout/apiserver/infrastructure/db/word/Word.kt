@@ -40,7 +40,7 @@ data class Word(
     val toLanguage: LanguageType,
     @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER)
     @JoinColumn(name = "word_id")
-    val definitions: List<WordDefinition>,
+    val definitions: MutableList<WordDefinition> = mutableListOf(),
 ) : TimestampedEntity() {
     companion object {
         fun fromCreateObject(createObject: WordCreateObject): Word =
@@ -48,8 +48,13 @@ data class Word(
                 name = createObject.name,
                 fromLanguage = createObject.fromLanguage,
                 toLanguage = createObject.toLanguage,
-                definitions = createObject.definitions.map { WordDefinition.fromCreateObject(it) },
             )
+    }
+
+    fun addDefinitions(definitions: List<WordDefinition>): Word {
+        this.definitions.addAll(definitions)
+
+        return this
     }
 
     override fun equals(other: Any?): Boolean {

@@ -4,6 +4,7 @@ import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
@@ -13,7 +14,6 @@ import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
@@ -75,12 +75,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -214,12 +214,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -255,12 +255,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -351,12 +351,12 @@ class StudyServiceTest(
                     wordFactory.createWord(
                         wordDefinitions =
                             listOf(
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
                                 ),
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
@@ -410,7 +410,7 @@ class StudyServiceTest(
                         name = "booked",
                         wordDefinitions =
                             listOf(
-                                WordDefinition(
+                                WordDefinitionCreateObject(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "예약된",
                                     preContext = "미리 자리를 확보한",
@@ -444,7 +444,7 @@ class StudyServiceTest(
                                 name = "booked",
                                 wordDefinitions =
                                     listOf(
-                                        WordDefinition(
+                                        WordDefinitionCreateObject(
                                             lexicalCategory = LexicalCategoryType.NOUN,
                                             meaning = "예약된",
                                             preContext = "미리 자리를 확보한",
@@ -461,7 +461,7 @@ class StudyServiceTest(
                                 name = "bank",
                                 wordDefinitions =
                                     listOf(
-                                        WordDefinition(
+                                        WordDefinitionCreateObject(
                                             lexicalCategory = LexicalCategoryType.NOUN,
                                             meaning = "은행",
                                             preContext = "돈을 보관하거나 대출을 해주는 기관",
@@ -502,7 +502,7 @@ class StudyServiceTest(
                             name = "booked",
                             wordDefinitions =
                                 listOf(
-                                    WordDefinition(
+                                    WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "예약된",
                                         preContext = "미리 자리를 확보한",
@@ -521,7 +521,7 @@ class StudyServiceTest(
                             name = "bank",
                             wordDefinitions =
                                 listOf(
-                                    WordDefinition(
+                                    WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "은행",
                                         preContext = "돈을 보관하거나 대출을 해주는 기관",

@@ -74,7 +74,7 @@ class ReadOrCreateDailyStudySetApplication(
                                                             code = "STUDY_2",
                                                         )
                                                     }
-                                                },
+                                                }.toMutableList(),
                                     )
                                 }
                                 ?: throw NotFoundException(message = "Data Integrity Error", code = "STUDY_2"),
