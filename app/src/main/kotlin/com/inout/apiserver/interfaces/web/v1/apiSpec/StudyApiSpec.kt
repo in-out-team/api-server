@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import java.time.LocalDate
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
@@ -79,6 +80,32 @@ interface StudyApiSpec {
     @Operation(
         summary = "학습 단어 조회",
         description = "요청자의 단어장에 있는 학습 단어를 조회합니다.",
+        parameters = [
+            Parameter(
+                name = "page",
+                description = "페이지 번호 (0부터 시작)",
+                required = false,
+                example = "0",
+            ),
+            Parameter(
+                name = "size",
+                description = "페이지 크기",
+                required = false,
+                example = "20",
+            ),
+            Parameter(
+                name = "sort",
+                description = "정렬 조건 (createdAt, due, lastReview 지원)",
+                required = false,
+                example = "createdAt,desc",
+            ),
+            Parameter(
+                name = "wordNamePrefix",
+                description = "단어 이름 접두어",
+                required = false,
+                example = "apple",
+            ),
+        ],
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -90,6 +117,7 @@ interface StudyApiSpec {
     fun getStudies(
         @Parameter(hidden = true) user: User,
         @Parameter(hidden = true) pageable: Pageable,
+        @RequestParam(required = false) wordNamePrefix: String?,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>>
 
     @GetMapping("/daily")

@@ -78,6 +78,8 @@ data class Study(
                 reviewLogs = emptyList(),
             )
         }
+
+        val validSorts = setOf("createdAt", "due", "lastReview")
     }
 
     fun toFsrsCard() =

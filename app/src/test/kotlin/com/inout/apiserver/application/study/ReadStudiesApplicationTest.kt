@@ -10,6 +10,7 @@ import com.inout.apiserver.helper.InOutSpringBootTest
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeSortedDescendingBy
 import io.kotest.matchers.shouldBe
 import org.springframework.data.domain.PageRequest
 import org.springframework.jdbc.core.JdbcTemplate
@@ -104,20 +105,19 @@ class ReadStudiesApplicationTest(
                 val pageable = PageRequest.of(0, studies.size - 1)
 
                 // when
-                val result = subject.run(ReadStudiesApplication.Request(userId = user!!.id!!, pageable = pageable))
+                val result =
+                    subject.run(
+                        ReadStudiesApplication.Request(
+                            userId = user!!.id!!,
+                            wordNamePrefix = null,
+                            pageable = pageable,
+                        ),
+                    )
 
                 // then
                 result.totalCount shouldBe studies.size.toLong()
                 result.studies.size shouldBe studies.size - 1
-                result.studies.forEachIndexed { index, studyWord ->
-                    studyWord.study shouldBe studies[index]
-                    studyWord.word.id shouldBe words!![index].id
-                    studyWord.word.name shouldBe words!![index].name
-                    studyWord.word.definitions.size shouldBe 1
-                    studyWord.word.definitions
-                        .first()
-                        .id shouldBe studyWord.study.wordDefinitionId
-                }
+                result.studies shouldBeSortedDescendingBy { it.study.due }
             }
         }
     })

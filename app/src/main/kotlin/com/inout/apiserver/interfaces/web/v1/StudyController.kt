@@ -50,10 +50,15 @@ class StudyController(
     override fun getStudies(
         @Parameter(hidden = true) @RequestUser user: User,
         @Parameter(hidden = true) pageable: Pageable,
+        @RequestParam(required = false) wordNamePrefix: String?,
     ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
         val (count, studyWithWords) =
             readStudiesApplication.run(
-                ReadStudiesApplication.Request(userId = user.id!!, pageable = pageable),
+                ReadStudiesApplication.Request(
+                    userId = user.id!!,
+                    wordNamePrefix = wordNamePrefix,
+                    pageable = pageable,
+                ),
             )
         return ResponseEntity(
             ResponsePaginationWrapper(
