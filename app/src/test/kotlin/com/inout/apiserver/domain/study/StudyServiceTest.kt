@@ -14,12 +14,14 @@ import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
 import com.inout.apiserver.infrastructure.db.study.Study
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.db.word.WordDefinition
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.collections.shouldBeSortedBy
+import io.kotest.matchers.collections.shouldBeSortedDescendingBy
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainAnyOf
-import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ranges.shouldBeIn
@@ -27,6 +29,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.jdbc.core.JdbcTemplate
 import java.time.Instant
 import java.time.LocalDate
@@ -58,45 +61,117 @@ class StudyServiceTest(
         }
 
         describe("getAllByUserId") {
+            fun createWords(): List<Word> =
+                listOf(
+                    wordFactory
+                        .createWord(
+                            name = "bank",
+                            wordDefinitions =
+                                listOf(
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.NOUN,
+                                        meaning = "은행",
+                                        preContext = "돈을 보관하거나 대출을 해주는 기관",
+                                    ),
+                                ),
+                        ),
+                    wordFactory
+                        .createWord(
+                            name = "book",
+                            wordDefinitions =
+                                listOf(
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.NOUN,
+                                        meaning = "책",
+                                        preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                    ),
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.VERB,
+                                        meaning = "예약하다",
+                                        preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                    ),
+                                ),
+                        ),
+                    wordFactory
+                        .createWord(
+                            name = "booked",
+                            wordDefinitions =
+                                listOf(
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.NOUN,
+                                        meaning = "예약된",
+                                        preContext = "미리 자리를 확보한",
+                                    ),
+                                ),
+                        ),
+                )
+
+            fun createStudies(
+                user: User,
+                wordDefinitions: List<WordDefinition>,
+            ): List<Study> = wordDefinitions.map { studyFactory.createStudy(userId = user.id!!, wordDefinitionId = it.id!!) }
+
             it("should return empty list when there is no study") {
                 // given
                 val pageable = PageRequest.of(0, 10)
 
                 // when
-                val studies = studyService.getAllByUserId(user!!.id!!, pageable)
+                val studies = studyService.getAllByUserId(user!!.id!!, null, pageable)
 
                 // then
                 studies.isEmpty shouldBe true
             }
 
-            it("should return list of studies") {
+            it("should return list of studies with given/default sort") {
                 // given
-                val word =
-                    wordFactory.createWord(
-                        wordDefinitions =
-                            listOf(
-                                WordDefinitionCreateObject(
-                                    lexicalCategory = LexicalCategoryType.NOUN,
-                                    meaning = "책",
-                                    preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
-                                ),
-                                WordDefinitionCreateObject(
-                                    lexicalCategory = LexicalCategoryType.VERB,
-                                    meaning = "예약하다",
-                                    preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
-                                ),
-                            ),
-                    )
-                val studies =
-                    word.definitions.map { studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = it.id!!) }
+                val words = createWords()
+                createStudies(user!!, words.flatMap { it.definitions })
+
+                // case1: sort by createdAt descending
+                val res1 =
+                    studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10, Sort.by("createdAt").descending()))
+                res1.totalElements shouldBe 4
+                res1.content shouldBeSortedDescendingBy { it.createdAt!! }
+
+                // case 2: sort by createdAt ascending
+                val res2 =
+                    studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10, Sort.by("createdAt").ascending()))
+                res2.totalElements shouldBe 4
+                res2.content shouldBeSortedBy { it.createdAt!! }
+
+                // case 3: sort by default (due descending)
+                val res3 =
+                    studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10))
+                res3.totalElements shouldBe 4
+                res3.content shouldBeSortedDescendingBy { it.due }
+
+                // case 4: sort by invalid sort
+                val res4 =
+                    studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10, Sort.by("invalid").descending()))
+                res4.totalElements shouldBe 4
+                res4.content shouldBeSortedDescendingBy { it.due }
+            }
+
+            it("should return list of studies with matching prefix") {
+                // given
+                val words = createWords()
+                val studyingWordDefinitions = words.map { it.definitions.first() }
+                createStudies(user!!, studyingWordDefinitions)
+                val prefix = "book"
 
                 // when
-                val res = studyService.getAllByUserId(user!!.id!!, PageRequest.of(0, 10))
+                val res = studyService.getAllByUserId(user!!.id!!, prefix, PageRequest.of(0, 2))
 
                 // then
-                res.totalElements shouldBe 2
-                res.content shouldContainExactly studies
-                res.isLast shouldBe true
+                val expectedWords = words.filter { it.name.startsWith(prefix) }
+                res.totalElements shouldBe expectedWords.size
+                val expectedWordDefinitions =
+                    expectedWords
+                        .flatMap { word -> word.definitions }
+                        .map { wordDefinition -> wordDefinition.id!! }
+                        .filter { wordDefinitionId -> wordDefinitionId in studyingWordDefinitions.map { it.id!! } }
+                res.content.map { it.wordDefinitionId } shouldContainAll expectedWordDefinitions
+                res.content shouldBeSortedBy { expectedWords.find { it.definitions.first().wordId == it.id }!!.name }
             }
         }
 

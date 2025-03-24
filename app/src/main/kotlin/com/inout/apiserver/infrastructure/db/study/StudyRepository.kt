@@ -6,6 +6,7 @@ import com.inout.apiserver.base.alias.WordDefinitionId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.time.Instant
 
@@ -37,6 +38,22 @@ interface StudyJpaRepository : JpaRepository<Study, StudyId> {
         userId: UserId,
         wordDefinitionIds: List<WordDefinitionId>,
     ): List<Study>
+
+    @Query(
+        """
+            SELECT s FROM Study s
+            JOIN WordDefinition wd ON s.wordDefinitionId = wd.id
+            JOIN Word w ON wd.wordId = w.id
+            WHERE s.userId = :userId
+              AND LOWER(w.name) LIKE LOWER(CONCAT(:wordNamePrefix, '%'))
+            ORDER BY w.name
+        """,
+    )
+    fun findAllByUserIdAndWordNamePrefix(
+        userId: UserId,
+        wordNamePrefix: String,
+        pageable: Pageable,
+    ): Page<Study>
 }
 
 @Repository

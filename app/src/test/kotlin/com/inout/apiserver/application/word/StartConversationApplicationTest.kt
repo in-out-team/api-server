@@ -60,7 +60,7 @@ class StartConversationApplicationTest(
 
         describe("when user is not studying given wordDefinitionId") {
             beforeEach {
-                studyService.getAllByUserId(user!!.id!!, PageRequest.of(0, 10)).totalElements shouldBe 0
+                studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10)).totalElements shouldBe 0
             }
 
             it("should throw BadRequestException") {

@@ -14,6 +14,7 @@ import com.inout.apiserver.infrastructure.db.user.User
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.LocalDate
@@ -27,17 +28,44 @@ class StudyService(
 ) {
     fun getAllByUserId(
         userId: UserId,
+        wordNamePrefix: String?,
         pageable: Pageable,
-    ): Page<Study> {
-        //  TODO: ignore sort for now
-        val sortIgnoredPageRequest =
-            PageRequest.of(
-                pageable.pageNumber,
-                pageable.pageSize,
-            )
+    ): Page<Study> =
+        when (wordNamePrefix) {
+            null -> {
+                val validSorts = Study.validSorts
+                val sorts = pageable.sort.filter { it.property in validSorts }.toList()
+                val pageRequest =
+                    if (sorts.isNotEmpty()) {
+                        PageRequest.of(
+                            pageable.pageNumber,
+                            pageable.pageSize,
+                            Sort.by(sorts),
+                        )
+                    } else {
+                        PageRequest.of(
+                            pageable.pageNumber,
+                            pageable.pageSize,
+                            Sort.by("due").descending(),
+                        )
+                    }
 
-        return studyRepository.findAllByUserId(userId, sortIgnoredPageRequest)
-    }
+                studyRepository.findAllByUserId(userId, pageRequest)
+            }
+
+            else -> {
+                PageRequest.of(
+                    pageable.pageNumber,
+                    pageable.pageSize,
+                )
+
+                studyRepository.findAllByUserIdAndWordNamePrefix(
+                    userId = userId,
+                    wordNamePrefix = wordNamePrefix,
+                    pageable = pageable,
+                )
+            }
+        }
 
     fun getByUserIdAndWordDefinitionId(
         userId: UserId,
