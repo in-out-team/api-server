@@ -26,6 +26,16 @@
 - JOBRUNR_DB_DATASOURCE: JobRunr Database URL
   - ex) jdbc:postgresql://localhost:5432/in-out-jobrunr-local
 
-## TODO
+## Next Steps
 
-- [ ] Set Timezone to KST in Spring Boot and PostgreSQL
+- change classes mapped to entities from data classes to regular classes
+  - [ref link](https://spoqa.github.io/2022/08/16/kotlin-jpa-entity.html)
+- add logging & monitoring
+  - openai usage (who used, how many(tokens), and when)
+  - Sentry
+  - GCP Cloud Logging
+  - GCP Cloud Monitoring
+- rate limit
+  - openai request rate limit
+- deploy on k8s
+  - add CD (CI already setup with GitHub Actions)
