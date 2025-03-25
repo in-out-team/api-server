@@ -3,6 +3,7 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.util.LocalizedResponseProvider
 import com.inout.apiserver.domain.word.SentenceFeedbackCreateObject
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
 import com.inout.apiserver.domain.word.UserSentenceFeedbackCreateObject
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional
 class GetWritingSentenceFeedbackApplication(
     private val wordService: WordService,
     private val openAIService: OpenAIService,
+    private val localizedResponseProvider: LocalizedResponseProvider,
 ) {
     companion object {
         private const val MAX_ATTEMPTS = 3
@@ -45,13 +47,11 @@ class GetWritingSentenceFeedbackApplication(
                         code = "SENTENCE_3",
                     )
                 }
+        val word = wordService.getWordByWordDefinitionId(sentence.wordDefinitionId)
 
         if (sentence.content == request.submittedContent) {
-            /**
-             * TODO: need to check user's language settings.
-             *  - currently, we only support Korean users learning English, thus hard coded.
-             */
-            return Response(feedback = "정답입니다!")
+            val feedback = localizedResponseProvider.getCorrectAnswerFeedback(studyLanguage = word.fromLanguage)
+            return Response(feedback = feedback)
         }
 
         val userSentence =
