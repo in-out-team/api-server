@@ -101,7 +101,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                         )
 
                     // then
-                    response.feedback shouldBe "정답입니다!"
+                    response.feedback shouldBe "Your answer is correct!"
                 }
             }
 

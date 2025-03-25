@@ -1,8 +1,8 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.alias.WordDefinitionId
-import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.SenderType
+import com.inout.apiserver.base.util.LocalizedResponseProvider
 import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.ConversationCreateObject
@@ -17,6 +17,7 @@ class StartConversationApplication(
     private val wordService: WordService,
     private val studyService: StudyService,
     private val audioAIService: AudioAIService,
+    private val localizedResponseProvider: LocalizedResponseProvider,
 ) {
     companion object {
         private const val MAX_CONVERSATION_COUNT = 3
@@ -54,10 +55,10 @@ class StartConversationApplication(
                     audioAIService.findOrCreateAudio(
                         language = word.fromLanguage,
                         content =
-                            when (word.fromLanguage) { // TODO: create a separate class responsible for generating initial conversation
-                                LanguageType.ENGLISH -> "Let's talk about ${word.name}!"
-                                LanguageType.KOREAN -> "${word.name}에 대해 이야기 해볼까요?"
-                            },
+                            localizedResponseProvider.getInitialConversationPrompt(
+                                studyLanguage = word.fromLanguage,
+                                wordName = word.name,
+                            ),
                     )
 
                 wordService.createConversation(
