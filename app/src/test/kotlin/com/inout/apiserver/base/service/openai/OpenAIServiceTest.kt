@@ -30,22 +30,6 @@ class OpenAIServiceTest(
             jdbcTemplate.cleanUp()
         }
 
-        xdescribe("fetchWordDefinitionSentence") {
-            it("should return OpenAIWordDefinitionSentenceResponse") {
-                // Given
-                val word = "book"
-                val meaning = "예약하다"
-                val fromLanguage = "English"
-                val toLanguage = "Korean"
-
-                // When
-                val response = openAIService.fetchWordDefinitionSentence(word, meaning, fromLanguage, toLanguage)
-
-                // Then
-                response.sentences.size shouldBe 10
-            }
-        }
-
         xdescribe("fetchWritingSentenceFeedback") {
             it("should throw exception when originalContent is the same as submittedContent") {
                 // Given

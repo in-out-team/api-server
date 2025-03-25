@@ -85,4 +85,20 @@ class AiDictionaryServiceTest(
                 response shouldBe false
             }
         }
+
+        xdescribe("fetchWordDefinitionSentences") {
+            it("should return sentences of given word's meaning") {
+                // Given
+                val word = "consider"
+                val meaning = "고려하다"
+                val fromLanguage = LanguageType.ENGLISH
+                val toLanguage = LanguageType.KOREAN
+
+                // When
+                val response = subject.fetchWordDefinitionSentences(word, meaning, fromLanguage, toLanguage)
+
+                // Then
+                response.size shouldBe 10
+            }
+        }
     })

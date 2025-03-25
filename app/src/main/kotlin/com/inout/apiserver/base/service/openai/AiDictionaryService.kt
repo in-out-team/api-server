@@ -124,7 +124,7 @@ Respond with "true" if the definition is correct and "false" if it is incorrect.
                 model = ModelId("gpt-3.5-turbo"),
                 messages = listOf(systemDefinition),
                 responseFormat = ChatResponseFormat.Text,
-                temperature = 0.2,
+                temperature = DETERMINISTIC_TEMPERATURE,
             )
 
         val response = openai.chatCompletion(chatCompletionRequest)
@@ -134,5 +134,89 @@ Respond with "true" if the definition is correct and "false" if it is incorrect.
                 .message.messageContent as TextContent
 
         return chatMessageContent.content.lowercase() == "true"
+    }
+
+    override fun fetchWordDefinitionSentences(
+        word: String,
+        meaning: String,
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+    ): List<DictionaryService.Sentence> {
+        val content =
+            """
+You are an AI-powered dictionary generating example sentences for a given word and its specific meaning.
+
+### Instructions:
+1. Generate exactly 10 example sentences in $toLanguage using the given word with the specified meaning in $fromLanguage. No more, no less.
+2. Ensure all sentences use the word with the given meaning only. 
+ - ❌ Incorrect: If given "book" (책), do NOT include sentences like "I will book a hotel" (예약하다). 
+ - ✅ Correct: Only sentences where "book" means "책".
+3. Each sentence must:
+ - Be unique in context (avoid repetition).
+ - Be grammatically correct and natural.
+ - Contain approximately 10 words.
+ - Include both the example sentence and its translation.
+ - Allow listing of plural forms if applicable.
+
+### Response Format (JSON)
+{
+  "sentences": [
+    {
+      "content": "<example sentence using the given word>",
+      "translation": "<translated sentence>",
+      "lexicalCategories": [
+        {"word": "<word1>","lexicalCategory": "<category>"},
+        {"word": "<word2>","lexicalCategory": "<category>"},
+        ...
+      ]
+    }
+  ]
+}
+
+### Content:
+- example sentence using the given word in $fromLanguage
+
+### Translation:
+- sentence in $toLanguage
+
+### Lexical Categories:
+- lexicalCategories: An array of objects, each representing a word from the "content" sentence.
+ - Each object contains:
+  - "word": The exact word as it appears in the sentence.
+  - "lexicalCategory": One of: noun, verb, adjective, adverb, pronoun, preposition, conjunction, interjection, article.
+ - Important:
+  - The number of objects in "lexicalCategories" **must exactly match** the number of words in "content" (split by spaces).
+  - Do NOT group words together—each word must have its own lexical category object.
+            """.trimIndent()
+        val systemDefinition =
+            ChatMessage(
+                role = ChatRole.System,
+                content = content,
+            )
+        val queryMessage =
+            ChatMessage(
+                role = ChatRole.User,
+                content = "word: $word, meaning: $meaning",
+            )
+
+        val chatCompletionRequest =
+            ChatCompletionRequest(
+                model = chatCompletionModel,
+                messages = listOf(systemDefinition, queryMessage),
+                responseFormat = chatCompletionResponseFormat,
+                temperature = DETERMINISTIC_TEMPERATURE,
+            )
+
+        val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
+        val textContent =
+            response.choices
+                .first()
+                .message.messageContent as TextContent
+
+        return try {
+            DictionaryService.DefinitionSentencesResponse.fromJson(textContent.content).sentences
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 }
