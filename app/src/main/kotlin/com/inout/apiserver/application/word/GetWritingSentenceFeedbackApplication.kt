@@ -2,7 +2,7 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.base.util.LocalizedResponseProvider
 import com.inout.apiserver.domain.word.SentenceFeedbackCreateObject
 import com.inout.apiserver.domain.word.UserSentenceCreateObject
@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class GetWritingSentenceFeedbackApplication(
     private val wordService: WordService,
-    private val openAIService: OpenAIService,
+    private val feedbackService: FeedbackService,
     private val localizedResponseProvider: LocalizedResponseProvider,
 ) {
     companion object {
@@ -77,17 +77,19 @@ class GetWritingSentenceFeedbackApplication(
         val sentenceFeedback =
             wordService.getSentenceFeedbackBy(request.sentenceId, request.submittedContent)
                 ?: run {
-                    val openAIWritingSentenceFeedbackResponse =
-                        openAIService.fetchWritingSentenceFeedback(
+                    val feedback =
+                        feedbackService.fetchWritingSentenceFeedback(
                             originalContent = sentence.content,
-                            userSubmittedContent = request.submittedContent,
+                            submittedContent = request.submittedContent,
+                            fromLanguage = word.fromLanguage,
+                            toLanguage = word.toLanguage,
                         )
 
                     wordService.createSentenceFeedback(
                         SentenceFeedbackCreateObject(
                             sentenceId = sentence.id!!,
                             submittedContent = request.submittedContent,
-                            feedback = openAIWritingSentenceFeedbackResponse.feedback,
+                            feedback = feedback,
                         ),
                     )
                 }

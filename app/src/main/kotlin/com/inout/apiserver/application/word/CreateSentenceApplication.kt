@@ -4,7 +4,7 @@ import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.base.service.openai.DictionaryService
+import com.inout.apiserver.base.service.DictionaryService
 import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException

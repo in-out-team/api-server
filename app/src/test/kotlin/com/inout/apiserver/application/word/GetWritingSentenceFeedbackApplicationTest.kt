@@ -1,8 +1,7 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
+import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
@@ -23,6 +22,7 @@ import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.jdbc.core.JdbcTemplate
 
@@ -31,7 +31,7 @@ class GetWritingSentenceFeedbackApplicationTest(
     private val getWritingSentenceFeedbackApplication: GetWritingSentenceFeedbackApplication,
     // services
     @SpyBean
-    private val openAIService: OpenAIService,
+    private val feedbackService: FeedbackService,
     @SpyBean
     private val wordService: WordService,
     // factories
@@ -107,16 +107,13 @@ class GetWritingSentenceFeedbackApplicationTest(
 
             describe("providing incorrect answer") {
                 fun mockOpenAIRequest() {
-                    doReturn(
-                        OpenAIWritingSentenceFeedbackResponse(
-                            feedback = "feedback",
-                        ),
-                    ).`when`(openAIService)
+                    doReturn("feedback")
+                        .whenever(feedbackService)
                         .fetchWritingSentenceFeedback(any(), any(), any(), any())
                 }
 
                 afterEach {
-                    clearInvocations(openAIService)
+                    clearInvocations(feedbackService)
                 }
 
                 it("should return existing sentence feedback if submitted content was already attempted") {
@@ -135,7 +132,7 @@ class GetWritingSentenceFeedbackApplicationTest(
 
                     // then
                     response.feedback shouldBe existingSentenceFeedback.feedback
-                    verify(openAIService, times(0)).fetchWritingSentenceFeedback(any(), any(), any(), any())
+                    verify(feedbackService, times(0)).fetchWritingSentenceFeedback(any(), any(), any(), any())
                     verify(wordService, times(0)).createSentenceFeedback(any())
                 }
 
@@ -206,7 +203,7 @@ class GetWritingSentenceFeedbackApplicationTest(
 
                     // then
                     wordService.getSentenceFeedbackBy(sentence!!.id!!, "test") shouldNotBe null
-                    verify(openAIService, times(1)).fetchWritingSentenceFeedback(any(), any(), any(), any())
+                    verify(feedbackService, times(1)).fetchWritingSentenceFeedback(any(), any(), any(), any())
                 }
 
                 it("should create userSentenceFeedback even if sentenceFeedback was already attempted") {
@@ -226,7 +223,7 @@ class GetWritingSentenceFeedbackApplicationTest(
 
                     // then
                     wordService.getUserSentenceFeedbacks(userSentence.id!!).size shouldBe 1
-                    verify(openAIService, times(0)).fetchWritingSentenceFeedback(any(), any(), any(), any())
+                    verify(feedbackService, times(0)).fetchWritingSentenceFeedback(any(), any(), any(), any())
                 }
 
                 it("should create userSentenceFeedback and sentenceFeedback if submitted content was not attempted") {
@@ -247,7 +244,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                     // then
                     wordService.getUserSentenceFeedbacks(userSentence.id!!).size shouldBe 1
                     wordService.getSentenceFeedbackBy(sentence!!.id!!, "test") shouldNotBe null
-                    verify(openAIService, times(1)).fetchWritingSentenceFeedback(any(), any(), any(), any())
+                    verify(feedbackService, times(1)).fetchWritingSentenceFeedback(any(), any(), any(), any())
                 }
             }
         }

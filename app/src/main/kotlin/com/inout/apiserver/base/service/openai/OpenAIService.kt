@@ -4,7 +4,6 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
@@ -15,28 +14,6 @@ class OpenAIService(
     private val openAIRequestProvider: OpenAIRequestProvider,
     private val openai: OpenAI,
 ) {
-    // TODO:phil
-    fun fetchWritingSentenceFeedback(
-        originalContent: String,
-        userSubmittedContent: String,
-        fromLanguage: String = "English",
-        toLanguage: String = "Korean",
-    ): OpenAIWritingSentenceFeedbackResponse {
-        val chatCompletionRequest =
-            openAIRequestProvider.genWritingSentenceFeedbackRequest(
-                originalContent,
-                userSubmittedContent,
-                fromLanguage,
-                toLanguage,
-            )
-        val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
-        val chatMessageContent =
-            response.choices
-                .first()
-                .message.messageContent as TextContent
-        return OpenAIWritingSentenceFeedbackResponse.fromJson(chatMessageContent.content)
-    }
-
     // TODO:phil
     fun fetchTextFromSpeech(
         file: MultipartFile,
