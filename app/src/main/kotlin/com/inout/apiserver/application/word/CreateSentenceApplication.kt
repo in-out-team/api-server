@@ -4,9 +4,10 @@ import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.service.openai.DictionaryService
 import com.inout.apiserver.domain.word.SentenceCreateObject
 import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.db.word.Sentence
 import org.jobrunr.scheduling.JobScheduler
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component
 @Component
 class CreateSentenceApplication(
     private val wordService: WordService,
-    private val openAIService: OpenAIService,
+    private val dictionaryService: DictionaryService,
     private val jobScheduler: JobScheduler,
 ) {
     data class Request(
@@ -53,21 +54,21 @@ class CreateSentenceApplication(
                 code = "WORD_4",
             )
 
-        val openAIWordDefinitionSentenceResponse =
-            openAIService.fetchWordDefinitionSentence(
+        val sentences =
+            dictionaryService.fetchWordDefinitionSentences(
                 word = word.name,
                 meaning = wordDefinition.meaning,
-                fromLanguage =
-                    word.fromLanguage.name
-                        .lowercase()
-                        .replaceFirstChar { it.uppercase() },
-                toLanguage =
-                    word.toLanguage.name
-                        .lowercase()
-                        .replaceFirstChar { it.uppercase() },
+                fromLanguage = word.fromLanguage,
+                toLanguage = word.toLanguage,
             )
+        if (sentences.isEmpty()) {
+            throw BadRequestException(
+                message = "Valid sentences not found for wordDefinitionId: $wordDefinitionId",
+                code = "SENTENCE_9",
+            )
+        }
 
-        openAIWordDefinitionSentenceResponse.sentences.forEachIndexed { index, sentence ->
+        sentences.forEachIndexed { index, sentence ->
             val sentenceCreateObject =
                 SentenceCreateObject(
                     wordDefinitionId = wordDefinitionId,

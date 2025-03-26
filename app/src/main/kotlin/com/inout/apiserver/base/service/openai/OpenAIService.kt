@@ -4,7 +4,6 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
 import com.inout.apiserver.base.service.openai.dto.OpenAIWritingSentenceFeedbackResponse
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
@@ -16,22 +15,7 @@ class OpenAIService(
     private val openAIRequestProvider: OpenAIRequestProvider,
     private val openai: OpenAI,
 ) {
-    fun fetchWordDefinitionSentence(
-        word: String,
-        meaning: String,
-        fromLanguage: String = "English",
-        toLanguage: String = "Korean",
-    ): OpenAIWordDefinitionSentenceResponse {
-        val chatCompletionRequest =
-            openAIRequestProvider.genWordDefinitionSentenceInfoRequest(word, meaning, fromLanguage, toLanguage)
-        val response = runBlocking { openai.chatCompletion(chatCompletionRequest) }
-        val chatMessageContent =
-            response.choices
-                .first()
-                .message.messageContent as TextContent
-        return OpenAIWordDefinitionSentenceResponse.fromJson(chatMessageContent.content)
-    }
-
+    // TODO:phil
     fun fetchWritingSentenceFeedback(
         originalContent: String,
         userSubmittedContent: String,
@@ -53,6 +37,7 @@ class OpenAIService(
         return OpenAIWritingSentenceFeedbackResponse.fromJson(chatMessageContent.content)
     }
 
+    // TODO:phil
     fun fetchTextFromSpeech(
         file: MultipartFile,
         language: String = "English",

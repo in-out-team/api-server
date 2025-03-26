@@ -1,8 +1,6 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.base.service.openai.OpenAIService
-import com.inout.apiserver.base.service.openai.dto.OpenAIWordDefinitionSentenceResponse
-import com.inout.apiserver.base.service.openai.dto.Sentence
+import com.inout.apiserver.base.service.openai.DictionaryService
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
@@ -28,7 +26,7 @@ class CreateSentenceApplicationTest(
     private val subject: CreateSentenceApplication,
     // services
     @SpyBean
-    private val openAIService: OpenAIService,
+    private val dictionaryService: DictionaryService,
     // factories
     private val wordFactory: WordFactory,
     // etc
@@ -81,47 +79,47 @@ class CreateSentenceApplicationTest(
                     val wordId = word.id!!
                     val sentences =
                         listOf(
-                            Sentence(
+                            DictionaryService.Sentence(
                                 content = "I read a book",
                                 translation = "나는 책을 읽었다",
                                 lexicalCategories =
                                     listOf(
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "I",
                                             lexicalCategory = "pronoun",
                                         ),
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "read",
                                             lexicalCategory = "verb",
                                         ),
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "a",
                                             lexicalCategory = "article",
                                         ),
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "book",
                                             lexicalCategory = "noun",
                                         ),
                                     ),
                             ),
-                            Sentence(
+                            DictionaryService.Sentence(
                                 content = "I wrote a book",
                                 translation = "나는 책을 썼다",
                                 lexicalCategories =
                                     listOf(
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "I",
                                             lexicalCategory = "pronoun",
                                         ),
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "wrote",
                                             lexicalCategory = "verb",
                                         ),
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "a",
                                             lexicalCategory = "article",
                                         ),
-                                        Sentence.LexicalCategoryMap(
+                                        DictionaryService.LexicalCategory(
                                             word = "book",
                                             lexicalCategory = "noun",
                                         ),
@@ -129,9 +127,9 @@ class CreateSentenceApplicationTest(
                             ),
                         )
 
-                    doReturn(OpenAIWordDefinitionSentenceResponse(sentences = sentences))
-                        .`when`(openAIService)
-                        .fetchWordDefinitionSentence(any(), any(), any(), any())
+                    doReturn(sentences)
+                        .whenever(dictionaryService)
+                        .fetchWordDefinitionSentences(any(), any(), any(), any())
 
                     // when
                     subject.run(

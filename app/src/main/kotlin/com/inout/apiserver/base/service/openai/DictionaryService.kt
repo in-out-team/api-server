@@ -18,6 +18,13 @@ interface DictionaryService {
         definition: Definition,
     ): Boolean
 
+    fun fetchWordDefinitionSentences(
+        word: String,
+        meaning: String,
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+    ): List<Sentence>
+
     @Serializable
     data class DefinitionsResponse(
         val definitions: List<Definition>,
@@ -35,5 +42,30 @@ interface DictionaryService {
         val lexicalCategory: String,
         val definition: String,
         val preContext: String,
+    )
+
+    @Serializable
+    data class DefinitionSentencesResponse(
+        val sentences: List<Sentence>,
+    ) {
+        companion object {
+            fun fromJson(jsonString: String): DefinitionSentencesResponse {
+                val json = Json { ignoreUnknownKeys = true }
+                return json.decodeFromString<DefinitionSentencesResponse>(jsonString)
+            }
+        }
+    }
+
+    @Serializable
+    data class Sentence(
+        val content: String,
+        val translation: String,
+        val lexicalCategories: List<LexicalCategory>,
+    )
+
+    @Serializable
+    data class LexicalCategory(
+        val word: String,
+        val lexicalCategory: String,
     )
 }
