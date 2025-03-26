@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.service.openai.DictionaryService
+import com.inout.apiserver.base.service.DictionaryService
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException

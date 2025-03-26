@@ -8,11 +8,12 @@ import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.api.model.ModelId
 import com.aallam.openai.client.OpenAI
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.service.DictionaryService
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
 
 @Service
-class AiDictionaryService(
+class OpenAIDictionaryService(
     private val openai: OpenAI,
 ) : DictionaryService {
     companion object {

@@ -1,4 +1,4 @@
-package com.inout.apiserver.base.service.openai
+package com.inout.apiserver.base.service
 
 import com.inout.apiserver.base.enums.LanguageType
 import kotlinx.serialization.Serializable

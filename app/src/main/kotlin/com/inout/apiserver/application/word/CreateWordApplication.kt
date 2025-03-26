@@ -2,7 +2,7 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.base.service.openai.DictionaryService
+import com.inout.apiserver.base.service.DictionaryService
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordService
