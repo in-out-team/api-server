@@ -1,6 +1,7 @@
 package com.inout.apiserver.base.service
 
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.enums.SenderType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -10,6 +11,14 @@ interface FeedbackService {
         submittedContent: String,
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
+    ): String
+
+    fun fetchConversationFeedback(
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+        wordName: String,
+        wordMeaning: String,
+        conversations: List<Conversation>,
     ): String
 
     @Serializable
@@ -23,4 +32,9 @@ interface FeedbackService {
             }
         }
     }
+
+    data class Conversation(
+        val sender: SenderType,
+        val message: String,
+    )
 }

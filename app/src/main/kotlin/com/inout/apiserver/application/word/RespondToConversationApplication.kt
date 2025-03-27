@@ -2,7 +2,7 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.alias.ConversationId
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 @Component
 class RespondToConversationApplication(
     private val wordService: WordService,
-    private val openAIService: OpenAIService,
+    private val feedbackService: FeedbackService,
     private val audioAIService: AudioAIService,
 ) {
     companion object {
@@ -55,12 +55,18 @@ class RespondToConversationApplication(
         conversation.addUserMessage(request.responseMessage)
 
         val systemResponse =
-            openAIService.fetchConversation(
-                fromLanguage = word.fromLanguage.toString(),
-                toLanguage = word.toLanguage.toString(),
+            feedbackService.fetchConversationFeedback(
+                fromLanguage = word.fromLanguage,
+                toLanguage = word.toLanguage,
                 wordName = word.name,
                 wordMeaning = wordDefinition.meaning,
-                messages = conversation.messages.map { it.sender to it.content },
+                conversations =
+                    conversation.messages.map {
+                        FeedbackService.Conversation(
+                            sender = it.sender,
+                            message = it.content,
+                        )
+                    },
             )
         val systemAudio =
             audioAIService.findOrCreateAudio(
