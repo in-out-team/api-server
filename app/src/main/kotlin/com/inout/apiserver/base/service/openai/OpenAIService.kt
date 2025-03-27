@@ -2,36 +2,16 @@ package com.inout.apiserver.base.service.openai
 
 import com.aallam.openai.api.chat.TextContent
 import com.aallam.openai.client.OpenAI
-import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.openai.provider.OpenAIRequestProvider
 import kotlinx.coroutines.runBlocking
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 
 @Service
 class OpenAIService(
     private val openAIRequestProvider: OpenAIRequestProvider,
     private val openai: OpenAI,
 ) {
-    // TODO:phil
-    fun fetchTextFromSpeech(
-        file: MultipartFile,
-        language: String = "English",
-    ): String {
-        val transcriptionRequest = openAIRequestProvider.genTranscriptionRequest(file, language)
-        val transcription = runBlocking { openai.transcription(transcriptionRequest) }
-        return transcription.text
-    }
-
-    fun fetchSpeechFromText(
-        text: String,
-        aiVoiceType: AiVoiceType = AiVoiceType.ALLOY,
-    ): ByteArray {
-        val speechRequest = openAIRequestProvider.genSpeechRequest(text, aiVoiceType)
-        return runBlocking { openai.speech(speechRequest) }
-    }
-
     /**
      * @param messages: List<Pair<SenderType, String>>
      *   - SenderType: USER | SYSTEM
