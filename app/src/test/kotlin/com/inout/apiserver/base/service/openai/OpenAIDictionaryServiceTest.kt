@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldBe
 import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
-class AiDictionaryServiceTest(
+class OpenAIDictionaryServiceTest(
     private val subject: OpenAIDictionaryService,
     // etc
     private val jdbcTemplate: JdbcTemplate,

@@ -1,6 +1,7 @@
 package com.inout.apiserver.interfaces.web.v1
 
-import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.service.AudioService
 import com.inout.apiserver.interfaces.web.v1.response.SpeechToTextResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -18,14 +19,14 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/v1/ai")
 class AiController(
-    private val openAIService: OpenAIService,
+    private val audioService: AudioService,
 ) {
     @PostMapping(
         value = ["/speech-to-text"],
         consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
     )
     @Operation(
-        summary = "Speech to Text 기능을 제공합니다.",
+        summary = "Speech to Text 기능을 제공합니다. (영문 지원)",
         description = "mp3 파일을 텍스트로 변환합니다.",
         requestBody =
             RequestBody(
@@ -52,5 +53,6 @@ class AiController(
     )
     fun speechToText(
         @RequestPart("file") file: MultipartFile,
-    ): ResponseEntity<SpeechToTextResponse> = ResponseEntity.ok(SpeechToTextResponse(openAIService.fetchTextFromSpeech(file, "English")))
+    ): ResponseEntity<SpeechToTextResponse> =
+        ResponseEntity.ok(SpeechToTextResponse(audioService.fetchTextFromSpeech(file, LanguageType.ENGLISH)))
 }

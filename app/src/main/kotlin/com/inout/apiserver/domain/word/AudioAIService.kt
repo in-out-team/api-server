@@ -2,7 +2,7 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.base.service.openai.OpenAIService
+import com.inout.apiserver.base.service.AudioService
 import com.inout.apiserver.infrastructure.db.word.AiAudio
 import com.inout.apiserver.infrastructure.db.word.AiAudioRepository
 import com.inout.apiserver.infrastructure.s3.S3Service
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 
 @Service
 class AudioAIService(
-    private val openAIService: OpenAIService,
+    private val audioService: AudioService,
     private val aiAudioRepository: AiAudioRepository,
     private val s3Service: S3Service,
 ) {
@@ -22,7 +22,8 @@ class AudioAIService(
             .findByLanguageAndContent(language = language, content = content)
             ?.let { return it }
 
-        val rawAudio = openAIService.fetchSpeechFromText(content)
+        val requestVoice = AiVoiceType.ALLOY
+        val rawAudio = audioService.fetchSpeechFromText(text = content, requestedVoice = requestVoice)
         val uploadedDirectory =
             s3Service.uploadAudio(
                 inputStream = rawAudio.inputStream(),
@@ -36,7 +37,7 @@ class AudioAIService(
             AiAudio.fromCreateObject(
                 AiAudioCreateObject(
                     language = language,
-                    aiVoiceType = AiVoiceType.ALLOY,
+                    aiVoiceType = requestVoice,
                     content = content,
                     directory = uploadedDirectory,
                 ),
