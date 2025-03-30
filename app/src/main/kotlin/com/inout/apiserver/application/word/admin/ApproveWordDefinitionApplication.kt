@@ -55,7 +55,6 @@ class ApproveWordDefinitionApplication(
         request: Request,
     ): Word {
         word.approveDefinition(request.wordDefinitionId)
-        wordRepository.save(word)
-        return word
+        return wordRepository.save(word)
     }
 }

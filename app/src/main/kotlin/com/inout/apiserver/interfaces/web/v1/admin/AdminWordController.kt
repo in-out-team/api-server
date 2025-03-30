@@ -279,6 +279,8 @@ class AdminWordController(
                 ),
             )
 
+        jobScheduler.enqueue { createSentenceApplication.createSentencesFor(wordId, wordDefinitionId) }
+
         return ResponseEntity.ok(WordWithDefinitionsResponse.of(result.word))
     }
 

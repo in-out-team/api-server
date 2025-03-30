@@ -2,6 +2,7 @@ package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.ConflictException
@@ -42,7 +43,11 @@ class AddWordDefinitionApplication(
                 code = "WORD_4",
             )
         word.definitions.forEach { wordDefinition ->
-            if (wordDefinition.meaning == request.meaning && wordDefinition.lexicalCategory == request.lexicalCategory) {
+            if (
+                wordDefinition.status != StatusType.REMOVED &&
+                wordDefinition.meaning == request.meaning &&
+                wordDefinition.lexicalCategory == request.lexicalCategory
+            ) {
                 throw ConflictException(
                     message = "Word definition already exists",
                     code = "WORD_5",
