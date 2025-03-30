@@ -3,6 +3,7 @@ package com.inout.apiserver.interfaces.web.v1.admin
 import com.inout.apiserver.application.word.CreateSentenceApplication
 import com.inout.apiserver.application.word.CreateWordApplication
 import com.inout.apiserver.application.word.admin.AddWordDefinitionApplication
+import com.inout.apiserver.application.word.admin.ApproveWordDefinitionApplication
 import com.inout.apiserver.application.word.admin.CreateWordManualApplication
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.AddWordDefinitionRequest
@@ -17,6 +18,7 @@ import jakarta.validation.Valid
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -30,6 +32,7 @@ class AdminWordController(
     private val createSentenceApplication: CreateSentenceApplication,
     private val createWordManualApplication: CreateWordManualApplication,
     private val addWordDefinitionApplication: AddWordDefinitionApplication,
+    private val approveWordDefinitionApplication: ApproveWordDefinitionApplication,
     private val jobScheduler: JobScheduler,
 ) {
     @PostMapping
@@ -221,5 +224,57 @@ class AdminWordController(
             WordWithDefinitionsResponse.of(result.word),
             CREATED,
         )
+    }
+
+    @PatchMapping("/{wordId}/definitions/{wordDefinitionId}/approve")
+    @Operation(
+        summary = "사전 단어 정의 승인",
+        description = "사전 단어 정의 승인을 요청합니다.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "사전 단어 정의 승인 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = WordWithDefinitionsResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "사전 단어 정의 승인 실패 (code: WORD_6) - 승인 할 수 없는 상태",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "사전 정의를 찾을 수 없음 (code: WORD_4)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun approveWordDefinition(
+        @PathVariable wordId: Long,
+        @PathVariable wordDefinitionId: Long,
+    ): ResponseEntity<WordWithDefinitionsResponse> {
+        val result =
+            approveWordDefinitionApplication.run(
+                ApproveWordDefinitionApplication.Request(
+                    wordId = wordId,
+                    wordDefinitionId = wordDefinitionId,
+                ),
+            )
+
+        return ResponseEntity.ok(WordWithDefinitionsResponse.of(result.word))
     }
 }

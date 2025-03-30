@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 @Component
 class AddWordDefinitionApplication(
     private val wordService: WordService,
-    // injected wordRepository here to avoid adding update on word on commonly used WordService
+    // injected wordRepository here to avoid adding update on word method on commonly used WordService
     private val wordRepository: WordRepository,
 ) {
     data class Request(

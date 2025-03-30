@@ -1,8 +1,10 @@
 package com.inout.apiserver.infrastructure.db.word
 
 import com.google.common.collect.Iterables
+import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.word.WordCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import jakarta.persistence.CascadeType
@@ -53,6 +55,18 @@ data class Word(
 
     fun addDefinitions(definitions: List<WordDefinition>): Word {
         this.definitions.addAll(definitions)
+
+        return this
+    }
+
+    fun approveDefinition(definitionId: WordDefinitionId): Word {
+        definitions
+            .indexOfFirst { definition -> definition.id == definitionId }
+            .takeIf { it != -1 && definitions[it].status == StatusType.PENDING }
+            ?.let { targetIndex ->
+                val updatedDefinition = definitions[targetIndex].copy(status = StatusType.LIVE)
+                definitions[targetIndex] = updatedDefinition
+            }
 
         return this
     }
