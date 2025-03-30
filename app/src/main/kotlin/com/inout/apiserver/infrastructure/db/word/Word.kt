@@ -71,6 +71,18 @@ data class Word(
         return this
     }
 
+    fun removeDefinition(wordDefinitionId: WordDefinitionId): Word {
+        definitions
+            .indexOfFirst { definition -> definition.id == wordDefinitionId }
+            .takeIf { it != -1 }
+            ?.let { targetIndex ->
+                val removedDefinition = definitions[targetIndex].copy(status = StatusType.REMOVED)
+                definitions[targetIndex] = removedDefinition
+            }
+
+        return this
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

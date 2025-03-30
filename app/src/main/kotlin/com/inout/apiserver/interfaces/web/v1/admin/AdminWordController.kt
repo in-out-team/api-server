@@ -5,6 +5,7 @@ import com.inout.apiserver.application.word.CreateWordApplication
 import com.inout.apiserver.application.word.admin.AddWordDefinitionApplication
 import com.inout.apiserver.application.word.admin.ApproveWordDefinitionApplication
 import com.inout.apiserver.application.word.admin.CreateWordManualApplication
+import com.inout.apiserver.application.word.admin.DeleteWordDefinitionApplication
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.interfaces.web.v1.request.AddWordDefinitionRequest
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
@@ -17,7 +18,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.http.HttpStatus.CREATED
+import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -33,6 +36,7 @@ class AdminWordController(
     private val createWordManualApplication: CreateWordManualApplication,
     private val addWordDefinitionApplication: AddWordDefinitionApplication,
     private val approveWordDefinitionApplication: ApproveWordDefinitionApplication,
+    private val deleteWordDefinitionApplication: DeleteWordDefinitionApplication,
     private val jobScheduler: JobScheduler,
 ) {
     @PostMapping
@@ -276,5 +280,57 @@ class AdminWordController(
             )
 
         return ResponseEntity.ok(WordWithDefinitionsResponse.of(result.word))
+    }
+
+    @DeleteMapping("/{wordId}/definitions/{wordDefinitionId}")
+    @Operation(
+        summary = "사전 단어 정의 삭제",
+        description = "사전 단어 정의 삭제를 요청합니다.",
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "사전 단어 정의 삭제 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = WordWithDefinitionsResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "400",
+                description = "사전 단어 정의 삭제 실패 (code: WORD_7) - 삭제 할 수 없는 상태",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "사전 정의를 찾을 수 없음 (code: WORD_4)",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun deleteWordDefinition(
+        @PathVariable wordId: Long,
+        @PathVariable wordDefinitionId: Long,
+    ): ResponseEntity<WordWithDefinitionsResponse> {
+        val result =
+            deleteWordDefinitionApplication.run(
+                DeleteWordDefinitionApplication.Request(
+                    wordId = wordId,
+                    wordDefinitionId = wordDefinitionId,
+                ),
+            )
+
+        return ResponseEntity(WordWithDefinitionsResponse.of(result.word), OK)
     }
 }
