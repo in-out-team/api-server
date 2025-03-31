@@ -19,7 +19,7 @@ class CustomUserDetailsService(
                     .builder()
                     .username(user.email) // email is used as username in our service
                     .password(user.password)
-                    .roles("USER") // TODO: fix according to actual user role
+                    .roles(*user.roles.map { it.uppercase() }.toTypedArray())
                     .build()
             }
             ?: throw UsernameNotFoundException("User not found")

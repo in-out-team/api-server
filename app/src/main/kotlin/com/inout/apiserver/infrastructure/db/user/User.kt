@@ -4,6 +4,7 @@ import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.user.UserCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
+import io.hypersistence.utils.hibernate.type.json.JsonType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -12,6 +13,7 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
+import org.hibernate.annotations.Type
 
 @Entity
 @Table(name = "users")
@@ -29,6 +31,9 @@ data class User(
     val nativeLanguage: LanguageType = LanguageType.KOREAN,
     val studyPerDay: Int = 5,
     val timezone: String = "Asia/Seoul",
+    @Type(JsonType::class)
+    @Column(columnDefinition = "jsonb")
+    val roles: Set<String> = setOf("USER"),
 ) : TimestampedEntity() {
     companion object {
         fun fromCreateObject(createObject: UserCreateObject): User =
