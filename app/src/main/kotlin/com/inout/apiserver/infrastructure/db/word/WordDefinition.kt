@@ -3,6 +3,7 @@ package com.inout.apiserver.infrastructure.db.word
 import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.infrastructure.db.TimestampedEntity
 import jakarta.persistence.Column
@@ -26,6 +27,8 @@ data class WordDefinition(
     val lexicalCategory: LexicalCategoryType,
     val meaning: String,
     val preContext: String,
+    @Enumerated(EnumType.STRING)
+    val status: StatusType = StatusType.PENDING,
 ) : TimestampedEntity() {
     companion object {
         fun fromCreateObject(
@@ -37,6 +40,7 @@ data class WordDefinition(
                 lexicalCategory = createObject.lexicalCategory,
                 meaning = createObject.meaning,
                 preContext = createObject.preContext,
+                status = StatusType.PENDING,
             )
     }
 }

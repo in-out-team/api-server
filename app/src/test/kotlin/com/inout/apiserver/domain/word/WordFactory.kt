@@ -8,6 +8,7 @@ import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.infrastructure.db.word.Conversation
 import com.inout.apiserver.infrastructure.db.word.ConversationRepository
 import com.inout.apiserver.infrastructure.db.word.Sentence
@@ -53,7 +54,11 @@ class WordFactory(
                     toLanguage = toLanguage,
                 ),
             )
-        word.addDefinitions(wordDefinitions.map { WordDefinition.fromCreateObject(it, word) })
+        word.addDefinitions(
+            wordDefinitions.map {
+                WordDefinition.fromCreateObject(it, word).copy(status = StatusType.LIVE)
+            },
+        )
         return wordRepository.save(word).let { wordRepository.findById(it.id!!).get() }
     }
 

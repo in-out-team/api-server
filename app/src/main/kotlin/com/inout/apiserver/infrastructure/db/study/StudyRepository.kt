@@ -54,6 +54,8 @@ interface StudyJpaRepository : JpaRepository<Study, StudyId> {
         wordNamePrefix: String,
         pageable: Pageable,
     ): Page<Study>
+
+    fun existsByWordDefinitionId(wordDefinitionId: WordDefinitionId): Boolean
 }
 
 @Repository

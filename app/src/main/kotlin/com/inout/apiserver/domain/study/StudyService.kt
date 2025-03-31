@@ -193,4 +193,7 @@ class StudyService(
         userId: UserId,
         wordDefinitionIds: List<WordDefinitionId>,
     ): List<Study> = studyRepository.findAllByUserIdAndWordDefinitionIdIn(userId, wordDefinitionIds)
+
+    fun existsStudyByWordDefinitionId(wordDefinitionId: WordDefinitionId): Boolean =
+        studyRepository.existsByWordDefinitionId(wordDefinitionId)
 }
