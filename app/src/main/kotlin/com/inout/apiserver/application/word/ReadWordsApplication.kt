@@ -32,7 +32,7 @@ class ReadWordsApplication(
 
     fun run(request: Request): Response {
         val wordsPage =
-            wordService.getWordsWithDefinitions(
+            wordService.getWordsWithLiveDefinitions(
                 fromLanguage = request.fromLanguage,
                 toLanguage = request.toLanguage,
                 prefix = request.prefix,

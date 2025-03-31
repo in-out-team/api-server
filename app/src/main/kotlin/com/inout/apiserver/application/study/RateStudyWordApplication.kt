@@ -44,7 +44,7 @@ class RateStudyWordApplication(
 
         studyService.addStudyToDailyStudySet(dailyStudySet, updatedStudy)
 
-        val word = wordService.getWordByWordDefinitionId(updatedStudy.wordDefinitionId)
+        val word = wordService.getWordByLiveWordDefinitionId(updatedStudy.wordDefinitionId)
         return Response(studyWord = StudyWord(study = updatedStudy, word = word))
     }
 }

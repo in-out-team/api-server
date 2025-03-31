@@ -68,28 +68,28 @@ class WordService(
     fun createSentence(sentenceCreateObject: SentenceCreateObject): Sentence =
         sentenceRepository.save(Sentence.fromCreateObject(sentenceCreateObject))
 
-    fun getWordsWithDefinitions(
+    fun getWordsWithLiveDefinitions(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
         lexicalCategory: LexicalCategoryType?,
         pageable: Pageable,
-    ): Page<Word> = wordRepository.findWordsWithDefinitions(fromLanguage, toLanguage, prefix, lexicalCategory, pageable)
+    ): Page<Word> =
+        wordRepository.findAllWithLiveDefinitionsBy(
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            prefix = prefix,
+            lexicalCategory = lexicalCategory,
+            pageable = pageable,
+        )
 
-    fun getWordByWordDefinitionId(wordDefinitionId: WordDefinitionId): Word =
+    fun getWordByLiveWordDefinitionId(wordDefinitionId: WordDefinitionId): Word =
         wordRepository
-            .findByWordDefinitionId(wordDefinitionId)
-            ?.let { word ->
-                word.copy(definitions = word.definitions.filter { it.id == wordDefinitionId }.toMutableList())
-            }
+            .findByLiveDefinitionsId(wordDefinitionId)
             ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
 
-    fun getWordsByWordDefinitionIds(wordDefinitionIds: List<WordDefinitionId>): List<Word> {
-        val ids = wordDefinitionIds.toSet()
-        return wordRepository
-            .findAllByWordDefinitionIds(wordDefinitionIds)
-            .map { word -> word.copy(definitions = word.definitions.filter { it.id in ids }.toMutableList()) }
-    }
+    fun getWordsByLiveWordDefinitionIds(wordDefinitionIds: List<WordDefinitionId>): List<Word> =
+        wordRepository.findAllByLiveDefinitionsIds(wordDefinitionIds)
 
     fun getSentencesByWordDefinitionId(wordDefinitionId: WordDefinitionId): List<Sentence> =
         sentenceRepository.findAllByWordDefinitionId(wordDefinitionId)

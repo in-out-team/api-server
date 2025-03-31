@@ -6,48 +6,59 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaRepository
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 
-interface WordJpaRepository :
-    JpaRepository<Word, WordId>,
-    JpaSpecificationExecutor<Word> {
+@Repository
+interface WordRepository : JpaRepository<Word, WordId> {
     fun findByNameAndFromLanguageAndToLanguage(
         name: String,
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
     ): Word?
 
-    fun findByDefinitionsId(wordDefinitionId: WordDefinitionId): Word?
-
-    fun findAllByDefinitionsIdIn(wordDefinitionIds: List<WordDefinitionId>): List<Word>
-}
-
-@Repository
-class WordRepository(
-    private val wordJpaRepository: WordJpaRepository,
-) : WordJpaRepository by wordJpaRepository {
-    fun findWordsWithDefinitions(
+    /**
+     * TODO:
+     * WARN message when JOIN FETCH is used with pagination for OneToMany:
+     * HHH90003004: firstResult/maxResults specified with collection fetch; applying in memory
+     */
+    @Query(
+        """
+            SELECT DISTINCT w FROM Word w
+            JOIN FETCH w.definitions wd
+            WHERE w.fromLanguage = :fromLanguage
+              AND w.toLanguage = :toLanguage
+              AND LOWER(w.name) LIKE LOWER(CONCAT(:prefix, '%'))
+              AND (:lexicalCategory IS NULL OR wd.lexicalCategory = :lexicalCategory)
+              AND wd.status = 'LIVE'
+        """,
+    )
+    fun findAllWithLiveDefinitionsBy(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
         lexicalCategory: LexicalCategoryType?,
         pageable: Pageable,
-    ): Page<Word> {
-        val spec =
-            Specification
-                .where(WordSpecification.fromLanguage(fromLanguage))
-                .and(WordSpecification.toLanguage(toLanguage))
-                .and(WordSpecification.prefix(prefix))
-                .and(WordSpecification.lexicalCategoryType(lexicalCategory))
+    ): Page<Word>
 
-        return wordJpaRepository.findAll(spec, pageable)
-    }
+    @Query(
+        """
+            SELECT w FROM Word w
+            JOIN FETCH w.definitions wd
+            WHERE wd.id = :wordDefinitionId
+              AND wd.status = 'LIVE'
+        """,
+    )
+    fun findByLiveDefinitionsId(wordDefinitionId: WordDefinitionId): Word?
 
-    fun findByWordDefinitionId(wordDefinitionId: WordDefinitionId): Word? = wordJpaRepository.findByDefinitionsId(wordDefinitionId)
-
-    fun findAllByWordDefinitionIds(wordDefinitionIds: List<WordDefinitionId>): List<Word> =
-        wordJpaRepository.findAllByDefinitionsIdIn(wordDefinitionIds)
+    @Query(
+        """
+            SELECT w FROM Word w
+            JOIN FETCH w.definitions wd
+            WHERE wd.id IN :wordDefinitionIds
+              AND wd.status = 'LIVE'
+        """,
+    )
+    fun findAllByLiveDefinitionsIds(wordDefinitionIds: List<WordDefinitionId>): List<Word>
 }

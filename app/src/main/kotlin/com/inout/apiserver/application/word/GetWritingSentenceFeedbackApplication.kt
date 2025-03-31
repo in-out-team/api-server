@@ -47,7 +47,7 @@ class GetWritingSentenceFeedbackApplication(
                         code = "SENTENCE_3",
                     )
                 }
-        val word = wordService.getWordByWordDefinitionId(sentence.wordDefinitionId)
+        val word = wordService.getWordByLiveWordDefinitionId(sentence.wordDefinitionId)
 
         if (sentence.content == request.submittedContent) {
             val feedback = localizedResponseProvider.getCorrectAnswerFeedback(studyLanguage = word.fromLanguage)

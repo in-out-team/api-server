@@ -47,7 +47,7 @@ class ReadOrCreateDailyStudySetApplication(
 
         val studies = studyService.getStudiesByDailyStudySet(dailyStudySet, request.user)
         val wordDefinitionIds = studies.map { it.wordDefinitionId }
-        val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
+        val words = wordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
         val wordByDefinitionIdMap = mutableMapOf<Long, Word>()
         words.forEach { word ->
             word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id!!] = word }
