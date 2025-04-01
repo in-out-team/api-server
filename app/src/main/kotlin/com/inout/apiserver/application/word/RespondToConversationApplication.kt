@@ -47,7 +47,7 @@ class RespondToConversationApplication(
             throw BadRequestException(message = "System has not responded yet", code = "CONVERSATION_5")
         }
 
-        val word = wordService.getWordByWordDefinitionId(conversation.wordDefinitionId)
+        val word = wordService.getWordByLiveWordDefinitionId(conversation.wordDefinitionId)
         val wordDefinition =
             word.definitions.firstOrNull { it.id == conversation.wordDefinitionId }
                 ?: throw InternalServerErrorException(message = "Data Integrity Error", code = "CONVERSATION_6")

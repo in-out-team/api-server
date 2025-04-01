@@ -3,6 +3,7 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
+import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.error.ConflictException
@@ -20,6 +21,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.jdbc.core.JdbcTemplate
 import java.util.Optional
 
@@ -66,11 +68,53 @@ class WordServiceTest(
 
         describe("GetWordById") {
             it("should return Word if found") {
-                val word = wordFactory.createWord()
+                val word =
+                    wordFactory
+                        .createWord(
+                            name = "board",
+                            wordDefinitions =
+                                listOf(
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.NOUN,
+                                        meaning = "판자",
+                                        preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
+                                    ),
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.VERB,
+                                        meaning = "탑승하다",
+                                        preContext = "특정한 교통 수단에 몸을 올리다",
+                                    ),
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                                        meaning = "공공의",
+                                        preContext = "공공의 기관이나 단체에 속한",
+                                    ),
+                                ),
+                        ).also { word ->
+                            word.removeDefinition(word.definitions.first().id!!)
+                            word.definitions[2] = word.definitions[2].copy(status = StatusType.PENDING)
+                            wordRepository.save(word)
+                        }
 
                 val res = wordService.getWordById(word.id!!)
 
-                res shouldBe word
+                res shouldNotBe null
+                res!!.id shouldBe word.id
+                res.name shouldBe word.name
+                res.fromLanguage shouldBe word.fromLanguage
+                res.toLanguage shouldBe word.toLanguage
+                res.definitions.size shouldBe 3
+                res.definitions.forEach { wordDefinition ->
+                    val sameDefinition = word.definitions.first { it.id == wordDefinition.id }
+                    wordDefinition.id shouldBe sameDefinition.id
+                    wordDefinition.wordId shouldBe sameDefinition.wordId
+                    wordDefinition.lexicalCategory shouldBe sameDefinition.lexicalCategory
+                    wordDefinition.meaning shouldBe sameDefinition.meaning
+                    wordDefinition.preContext shouldBe sameDefinition.preContext
+                    wordDefinition.createdAt shouldNotBe null
+                    wordDefinition.updatedAt shouldNotBe null
+                    wordDefinition.status shouldBe sameDefinition.status
+                }
             }
 
             it("should return null if not found") {
@@ -143,56 +187,30 @@ class WordServiceTest(
             }
         }
 
-        describe("getWordsWithDefinitions") {
+        describe("getWordsWithLiveDefinitions") {
             it("should return Page of Words") {
                 val words = listOf(wordFactory.createWord())
                 val pageable = PageRequest.of(0, 1)
 
                 val res =
-                    wordService.getWordsWithDefinitions(LanguageType.ENGLISH, LanguageType.KOREAN, "book", null, pageable)
+                    wordService.getWordsWithLiveDefinitions(
+                        LanguageType.ENGLISH,
+                        LanguageType.KOREAN,
+                        "book",
+                        null,
+                        pageable,
+                    )
 
                 res.content shouldBe words
                 res.totalElements shouldBe words.size.toLong()
             }
-        }
 
-        describe("getWordByWordDefinitionId") {
-            it("should raise NotFoundException if not word with given wordDefinitionId does not exist") {
-                val wordDefinitionId = 1L
-
-                val res =
-                    assertThrows<NotFoundException> {
-                        wordService.getWordByWordDefinitionId(wordDefinitionId)
-                    }
-
-                res.message shouldBe "Word Definition not found"
-                res.code shouldBe "WORD_2"
-            }
-
-            it("should return Word") {
-                val word = wordFactory.createWord()
-                val wordDefinitionId = word.definitions.first().id!!
-
-                val res = wordService.getWordByWordDefinitionId(wordDefinitionId)
-
-                res shouldBe
-                    word.copy(
-                        definitions =
-                            word.definitions
-                                .filter { it.id == wordDefinitionId }
-                                .toMutableList(),
-                    )
-            }
-        }
-
-        describe("getWordsByWordDefinitionIds") {
-            it("should return list of words") {
+            it("should not return non-live definitions") {
                 val words =
                     listOf(
+                        // all live
                         wordFactory.createWord(
                             name = "book",
-                            fromLanguage = LanguageType.ENGLISH,
-                            toLanguage = LanguageType.KOREAN,
                             wordDefinitions =
                                 listOf(
                                     WordDefinitionCreateObject(
@@ -207,40 +225,214 @@ class WordServiceTest(
                                     ),
                                 ),
                         ),
+                        // some live
+                        wordFactory
+                            .createWord(
+                                name = "board",
+                                wordDefinitions =
+                                    listOf(
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.NOUN,
+                                            meaning = "판자",
+                                            preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
+                                        ),
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.VERB,
+                                            meaning = "탑승하다",
+                                            preContext = "특정한 교통 수단에 몸을 올리다",
+                                        ),
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                                            meaning = "공공의",
+                                            preContext = "공공의 기관이나 단체에 속한",
+                                        ),
+                                    ),
+                            ).let { word ->
+                                word.removeDefinition(word.definitions.first().id!!)
+                                word.definitions[2] = word.definitions[2].copy(status = StatusType.PENDING)
+                                wordRepository.save(word)
+                            },
+                        // no definitions
                         wordFactory.createWord(
-                            name = "booked",
-                            fromLanguage = LanguageType.ENGLISH,
-                            toLanguage = LanguageType.KOREAN,
+                            name = "boast",
+                            wordDefinitions = emptyList(),
+                        ),
+                        // no live definitions
+                        wordFactory
+                            .createWord(
+                                name = "booked",
+                                wordDefinitions =
+                                    listOf(
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                                            meaning = "예약된",
+                                            preContext = "미리 자리를 확보한",
+                                        ),
+                                    ),
+                            ).let { word ->
+                                wordRepository.save(word.removeDefinition(word.definitions.first().id!!))
+                            },
+                    )
+
+                val res =
+                    wordService.getWordsWithLiveDefinitions(
+                        fromLanguage = LanguageType.ENGLISH,
+                        toLanguage = LanguageType.KOREAN,
+                        prefix = "b",
+                        lexicalCategory = null,
+                        pageable = PageRequest.of(0, 5, Sort.by("name").descending()),
+                    )
+
+                // only "book" and "board" should be returned
+                res.totalElements shouldBe 2
+                res.content.size shouldBe 2
+                res.content.map { it.id } shouldBe
+                    words
+                        .filter { it.definitions.any { definition -> definition.status == StatusType.LIVE } }
+                        .map { it.id }
+                res.content.forEach { word ->
+                    word.definitions.all { it.status == StatusType.LIVE } shouldBe true
+                }
+            }
+        }
+
+        describe("getWordByLiveWordDefinitionId") {
+            it("should raise NotFoundException if not word with given wordDefinitionId does not exist") {
+                val wordDefinitionId = 1L
+
+                val res =
+                    assertThrows<NotFoundException> {
+                        wordService.getWordByLiveWordDefinitionId(wordDefinitionId)
+                    }
+
+                res.message shouldBe "Word Definition not found"
+                res.code shouldBe "WORD_2"
+            }
+
+            it("should return Word") {
+                // given
+                val word =
+                    wordFactory
+                        .createWord(
+                            name = "board",
                             wordDefinitions =
                                 listOf(
                                     WordDefinitionCreateObject(
-                                        lexicalCategory = LexicalCategoryType.ADJECTIVE,
-                                        meaning = "예약된",
-                                        preContext = "미리 자리를 확보한",
+                                        lexicalCategory = LexicalCategoryType.NOUN,
+                                        meaning = "판자",
+                                        preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
                                     ),
                                     WordDefinitionCreateObject(
                                         lexicalCategory = LexicalCategoryType.VERB,
-                                        meaning = "예약하다",
-                                        preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                        meaning = "탑승하다",
+                                        preContext = "특정한 교통 수단에 몸을 올리다",
+                                    ),
+                                    WordDefinitionCreateObject(
+                                        lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                                        meaning = "공공의",
+                                        preContext = "공공의 기관이나 단체에 속한",
                                     ),
                                 ),
-                        ),
+                        ).also { word ->
+                            word.removeDefinition(word.definitions.first().id!!)
+                            word.definitions[2] = word.definitions[2].copy(status = StatusType.PENDING)
+                            wordRepository.save(word)
+                        }
+
+                // when
+                val res = wordRepository.findByLiveDefinitionsId(wordDefinitionId = word.definitions[1].id!!)
+
+                // then
+                res!!.id shouldBe word.id
+                res.name shouldBe word.name
+                res.fromLanguage shouldBe word.fromLanguage
+                res.toLanguage shouldBe word.toLanguage
+                res.definitions.size shouldBe 1
+                res.definitions[0].id shouldBe word.definitions[1].id
+                res.definitions[0].wordId shouldBe word.definitions[1].wordId
+                res.definitions[0].lexicalCategory shouldBe word.definitions[1].lexicalCategory
+                res.definitions[0].meaning shouldBe word.definitions[1].meaning
+                res.definitions[0].preContext shouldBe word.definitions[1].preContext
+                res.definitions[0].createdAt shouldNotBe null
+                res.definitions[0].updatedAt shouldNotBe null
+                res.definitions[0].status shouldBe StatusType.LIVE
+            }
+        }
+
+        describe("getWordsByLiveWordDefinitionIds") {
+            it("should return list of words") {
+                // given
+                val words =
+                    listOf(
+                        wordFactory
+                            .createWord(
+                                name = "book",
+                                fromLanguage = LanguageType.ENGLISH,
+                                toLanguage = LanguageType.KOREAN,
+                                wordDefinitions =
+                                    listOf(
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.NOUN,
+                                            meaning = "책",
+                                            preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                        ),
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.VERB,
+                                            meaning = "예약하다",
+                                            preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                        ),
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.VERB,
+                                            meaning = "remove",
+                                            preContext = "remove",
+                                        ),
+                                    ),
+                            ).let { word ->
+                                word.removeDefinition(word.definitions.first { it.meaning == "remove" }.id!!)
+                                wordRepository.save(word)
+                            },
+                        wordFactory
+                            .createWord(
+                                name = "booked",
+                                fromLanguage = LanguageType.ENGLISH,
+                                toLanguage = LanguageType.KOREAN,
+                                wordDefinitions =
+                                    listOf(
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.ADJECTIVE,
+                                            meaning = "예약된",
+                                            preContext = "미리 자리를 확보한",
+                                        ),
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.VERB,
+                                            meaning = "예약하다",
+                                            preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                        ),
+                                        WordDefinitionCreateObject(
+                                            lexicalCategory = LexicalCategoryType.VERB,
+                                            meaning = "pending",
+                                            preContext = "pending",
+                                        ),
+                                    ),
+                            ).let { word ->
+                                val index = word.definitions.indexOfFirst { it.meaning == "pending" }
+                                word.definitions[index] = word.definitions[index].copy(status = StatusType.PENDING)
+                                wordRepository.save(word)
+                            },
                     )
-                val wordDefinitionIds = words.flatMap { it.definitions }.map { it.id!! }.dropLast(1)
+                val wordDefinitionIds = words.flatMap { it.definitions }.map { it.id!! }
 
-                val res = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
+                // when
+                val res = wordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
 
+                // then
                 res.size shouldBe 2
                 val firstWord = res.first()
-                firstWord.definitions.map { it.id } shouldBe words.first().definitions.map { it.id }
+                firstWord.definitions.size shouldBe 2
+                firstWord.definitions.all { it.status == StatusType.LIVE } shouldBe true
                 val lastWord = res.last()
-                lastWord.definitions.size shouldBe 1
-                lastWord.definitions.first().id shouldBe
-                    words
-                        .last()
-                        .definitions
-                        .first()
-                        .id
+                lastWord.definitions.size shouldBe 2
+                lastWord.definitions.all { it.status == StatusType.LIVE } shouldBe true
             }
         }
 

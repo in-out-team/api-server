@@ -22,7 +22,7 @@ class CreateStudyApplication(
     )
 
     fun run(request: Request): StudyWord {
-        val word = wordService.getWordByWordDefinitionId(request.wordDefinitionId)
+        val word = wordService.getWordByLiveWordDefinitionId(request.wordDefinitionId)
         val createdStudy =
             studyService.createStudy(
                 userId = request.user.id!!,

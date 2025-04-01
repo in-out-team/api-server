@@ -29,7 +29,7 @@ class ReadStudiesApplication(
     fun run(request: Request): Response {
         val studies = studyService.getAllByUserId(request.userId, request.wordNamePrefix, request.pageable)
         val wordDefinitionIds = studies.content.map { it.wordDefinitionId }
-        val words = wordService.getWordsByWordDefinitionIds(wordDefinitionIds)
+        val words = wordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
         val wordByDefinitionIdMap = mutableMapOf<WordDefinitionId, Word>()
         words.forEach { word ->
             word.definitions.forEach { definition -> wordByDefinitionIdMap[definition.id!!] = word }

@@ -50,7 +50,7 @@ class StartConversationApplication(
                     )
                 }
 
-                val word = wordService.getWordByWordDefinitionId(request.wordDefinitionId)
+                val word = wordService.getWordByLiveWordDefinitionId(request.wordDefinitionId)
                 val audio =
                     audioAIService.findOrCreateAudio(
                         language = word.fromLanguage,
