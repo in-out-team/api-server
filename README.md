@@ -23,7 +23,7 @@
   - ex) AKIAAAAAAAAAAAAAAAAA
 - AWS_S3_SECRET_KEY: AWS S3 Secret Key
   - ex) aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-- JOBRUNR_DB_DATASOURCE: JobRunr Database URL
+- JOBRUNR_DB_DATASOURCE_URL: JobRunr Database URL
   - ex) jdbc:postgresql://localhost:5432/in-out-jobrunr-local
 
 ## Next Steps

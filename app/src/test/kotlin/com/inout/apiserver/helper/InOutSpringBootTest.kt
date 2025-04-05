@@ -22,7 +22,7 @@ class TestDbInitializer : ApplicationContextInitializer<ConfigurableApplicationC
                 "spring.datasource.url=${postgresSQLContainer.jdbcUrl}",
                 "spring.datasource.username=${postgresSQLContainer.username}",
                 "spring.datasource.password=${postgresSQLContainer.password}",
-                "JOBRUNR_DB_DATASOURCE=${postgresSQLContainer.jdbcUrl}",
+                "JOBRUNR_DB_DATASOURCE_URL=${postgresSQLContainer.jdbcUrl}",
                 "JOBRUNR_DB_USERNAME=${postgresSQLContainer.username}",
                 "JOBRUNR_DB_PASSWORD=${postgresSQLContainer.password}",
             )

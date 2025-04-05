@@ -23,7 +23,7 @@ org:
   # Jobrunr Configuration
   jobrunr:
     database:
-      datasource: ${JOBRUNR_DB_DATASOURCE}
+      datasource: ${JOBRUNR_DB_DATASOURCE_URL}
     background-job-server:
       enabled: true # use background job server due to limited resources on cloud
     dashboard:
