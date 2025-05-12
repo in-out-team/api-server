@@ -9,22 +9,29 @@ import org.springframework.test.context.TestConstructor
 import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener
 import org.springframework.test.context.support.DirtiesContextTestExecutionListener
+import org.testcontainers.containers.MongoDBContainer
 import org.testcontainers.containers.PostgreSQLContainer
 
 class TestDbInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
     override fun initialize(applicationContext: ConfigurableApplicationContext) {
         val postgresSQLContainer = PostgreSQLContainer<Nothing>("postgres:14")
+        val mongoDBContainer = MongoDBContainer("mongo:8.0.9")
 
         postgresSQLContainer.start()
+        mongoDBContainer.start()
 
         val addedProperties =
             listOf(
+                // PostgreSQL
                 "spring.datasource.url=${postgresSQLContainer.jdbcUrl}",
                 "spring.datasource.username=${postgresSQLContainer.username}",
                 "spring.datasource.password=${postgresSQLContainer.password}",
+                // JobRunr
                 "JOBRUNR_DB_DATASOURCE_URL=${postgresSQLContainer.jdbcUrl}",
                 "JOBRUNR_DB_USERNAME=${postgresSQLContainer.username}",
                 "JOBRUNR_DB_PASSWORD=${postgresSQLContainer.password}",
+                // MongoDB
+                "spring.data.mongodb.uri=${mongoDBContainer.replicaSetUrl}",
             )
 
         TestPropertyValues.of(addedProperties).applyTo(applicationContext.environment)

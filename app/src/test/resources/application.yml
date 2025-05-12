@@ -61,5 +61,6 @@ org:
 
 app:
   jobrunr:
+    data-source-url: ${JOBRUNR_DB_DATASOURCE_URL}
     data-source-username: ${JOBRUNR_DB_USERNAME}
     data-source-password: ${JOBRUNR_DB_PASSWORD}

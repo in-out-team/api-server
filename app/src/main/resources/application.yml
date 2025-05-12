@@ -18,6 +18,10 @@ spring:
       max-request-size: 5MB
   flyway:
     enabled: true
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE}
 
 # jwt token configuration
 jwt:
