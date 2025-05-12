@@ -14,7 +14,7 @@ import java.time.LocalDate
 @CompoundIndexes(
     CompoundIndex(
         name = "unique_user_id_date",
-        def = "{'user_id': 1, 'date': 1}",
+        def = "{'userId': 1, 'date': 1}",
         unique = true,
     ),
 )
