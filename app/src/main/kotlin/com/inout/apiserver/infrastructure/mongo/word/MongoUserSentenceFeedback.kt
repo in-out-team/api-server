@@ -1,4 +1,4 @@
-package com.inout.apiserver.infrastructure.mongo.study
+package com.inout.apiserver.infrastructure.mongo.word
 
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate
@@ -8,37 +8,35 @@ import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.index.CompoundIndexes
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
-import java.time.LocalDate
 
-@Document(collection = "daily_study_sets")
+/**
+ * stores user's feedback on writing sentence practice.
+ */
+@Document(collection = "user_sentence_feedbacks")
 @CompoundIndexes(
     CompoundIndex(
-        name = "unique_userId_date",
-        def = "{'userId': 1, 'date': 1}",
-        unique = true,
+        name = "idx_userSentenceId",
+        def = "{'userSentenceId': 1}",
     ),
 )
-data class MongoDailyStudySet(
+data class MongoUserSentenceFeedback(
     @Id
     val id: ObjectId? = null,
-    val userId: ObjectId,
-    val date: LocalDate,
-    val studyIds: List<ObjectId> = emptyList(),
+    val userSentenceId: ObjectId,
+    val sentenceFeedbackId: ObjectId,
     @CreatedDate
     val createdAt: Instant? = null,
     @LastModifiedDate
     val updatedAt: Instant? = null,
 ) {
     companion object {
-        // FIXME: temporary
         fun fromCreateObject(
-            userId: ObjectId,
-            date: LocalDate,
-        ): MongoDailyStudySet =
-            MongoDailyStudySet(
-                userId = userId,
-                date = date,
-                studyIds = emptyList(),
+            userSentenceId: ObjectId,
+            sentenceFeedbackId: ObjectId,
+        ): MongoUserSentenceFeedback =
+            MongoUserSentenceFeedback(
+                userSentenceId = userSentenceId,
+                sentenceFeedbackId = sentenceFeedbackId,
             )
     }
 }
