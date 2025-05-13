@@ -1,9 +1,9 @@
 package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.domain.auth.GoogleApiClientService
-import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.user.MongoUserService
 import com.inout.apiserver.error.GoogleIdTokenVerificationException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
@@ -15,21 +15,23 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class GoogleLoginApplicationTest(
     private val subject: GoogleLoginApplication,
     // services
-    private val userService: UserService,
+    private val userService: MongoUserService,
     @SpyBean
-    private val tokenService: TokenService,
+    private val tokenService: MongoTokenService,
     @SpyBean
     private val googleApiClientService: GoogleApiClientService,
     // factories
-    private val userFactory: UserFactory,
+    private val userFactory: MongoUserFactory,
     // etc
     private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         val email = "test@1.com"
         var idToken = ""
@@ -46,6 +48,7 @@ class GoogleLoginApplicationTest(
 
         afterEach {
             jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when provided with an invalid idToken") {

@@ -7,19 +7,20 @@ import com.inout.apiserver.helper.InOutSpringBootTest
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.assertThrows
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class UserServiceTest(
-    private val subject: UserService,
+    private val subject: MongoUserService,
     // factories
-    private val userFactory: UserFactory,
+    private val userFactory: MongoUserFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("createUser") {
@@ -132,7 +133,7 @@ class UserServiceTest(
 
             it("should return null when user does not exist") {
                 // Given
-                val id = 1L
+                val id = ObjectId()
 
                 // When
                 val result = subject.getUserById(id)

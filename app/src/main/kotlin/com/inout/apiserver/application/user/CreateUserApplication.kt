@@ -1,14 +1,14 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.domain.user.UserService
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.domain.user.MongoUserService
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Transactional
 class CreateUserApplication(
-    private val userService: UserService,
+    private val userService: MongoUserService,
 ) {
     data class Request(
         val email: String,
@@ -17,7 +17,7 @@ class CreateUserApplication(
     )
 
     data class Response(
-        val newUser: User,
+        val newUser: MongoUser,
     )
 
     fun run(request: Request): Response {

@@ -1,21 +1,21 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.base.alias.UserId
-import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.domain.user.MongoUserService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class ReadUserApplication(
-    private val userService: UserService,
+    private val userService: MongoUserService,
 ) {
     data class Request(
-        val id: UserId,
+        val id: ObjectId,
     )
 
     data class Response(
-        val user: User,
+        val user: MongoUser,
     )
 
     fun run(request: Request): Response =

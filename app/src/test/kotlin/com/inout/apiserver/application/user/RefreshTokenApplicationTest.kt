@@ -1,41 +1,42 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.RefreshToken
-import com.inout.apiserver.infrastructure.db.user.RefreshTokenRepository
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshToken
+import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshTokenRepository
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.jdbc.core.JdbcTemplate
+import org.bson.types.ObjectId
+import org.springframework.data.mongodb.core.MongoTemplate
 import java.util.Date
 
 @InOutSpringBootTest
 class RefreshTokenApplicationTest(
     private val subject: RefreshTokenApplication,
     // services
-    private val tokenService: TokenService,
+    private val tokenService: MongoTokenService,
     // repositories
-    private val refreshTokenRepository: RefreshTokenRepository,
+    private val refreshTokenRepository: MongoRefreshTokenRepository,
     // factories
-    private val userFactory: UserFactory,
+    private val userFactory: MongoUserFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
-        var refreshToken: RefreshToken? = null
+        var user: MongoUser? = null
+        var refreshToken: MongoRefreshToken?
 
         beforeEach {
             user = userFactory.createUser()
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when given token does not exist") {
@@ -59,8 +60,8 @@ class RefreshTokenApplicationTest(
             it("should throw NotFoundException") {
                 // given
                 val nonExistingUser =
-                    User(
-                        id = Long.MAX_VALUE,
+                    MongoUser(
+                        id = ObjectId(),
                         email = "nonexistingemail@1.com",
                         password = "password",
                         nickname = "nickname",
@@ -74,7 +75,7 @@ class RefreshTokenApplicationTest(
                     )
                 refreshToken =
                     refreshTokenRepository.save(
-                        RefreshToken(
+                        MongoRefreshToken(
                             userId = nonExistingUser.id!!,
                             token = nonExistingUserToken,
                             expiresAt = expirationDate.toInstant(),
@@ -106,7 +107,7 @@ class RefreshTokenApplicationTest(
                     )
                 refreshToken =
                     refreshTokenRepository.save(
-                        RefreshToken(
+                        MongoRefreshToken(
                             userId = user!!.id!!,
                             token = invalidToken,
                             expiresAt = expirationDate.toInstant(),
@@ -138,7 +139,7 @@ class RefreshTokenApplicationTest(
                     )
                 refreshToken =
                     refreshTokenRepository.save(
-                        RefreshToken(
+                        MongoRefreshToken(
                             userId = user!!.id!!,
                             token = validToken,
                             expiresAt = expirationDate.toInstant(),
