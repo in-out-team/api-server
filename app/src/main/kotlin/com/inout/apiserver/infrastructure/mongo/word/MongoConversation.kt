@@ -1,4 +1,4 @@
-package com.inout.apiserver.infrastructure.mongo.study
+package com.inout.apiserver.infrastructure.mongo.word
 
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate
@@ -8,22 +8,19 @@ import org.springframework.data.mongodb.core.index.CompoundIndex
 import org.springframework.data.mongodb.core.index.CompoundIndexes
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
-import java.time.LocalDate
 
-@Document(collection = "daily_study_sets")
+@Document(collection = "conversations")
 @CompoundIndexes(
     CompoundIndex(
-        name = "unique_userId_date",
-        def = "{'userId': 1, 'date': 1}",
-        unique = true,
+        name = "idx_userId_wordDefinitionId",
+        def = "{'userId': 1, 'wordDefinitionId': 1}",
     ),
 )
-data class MongoDailyStudySet(
+data class MongoConversation(
     @Id
     val id: ObjectId? = null,
     val userId: ObjectId,
-    val date: LocalDate,
-    val studyIds: List<ObjectId> = emptyList(),
+    val wordDefinitionId: ObjectId,
     @CreatedDate
     val createdAt: Instant? = null,
     @LastModifiedDate
@@ -33,12 +30,11 @@ data class MongoDailyStudySet(
         // FIXME: temporary
         fun fromCreateObject(
             userId: ObjectId,
-            date: LocalDate,
-        ): MongoDailyStudySet =
-            MongoDailyStudySet(
+            wordDefinitionId: ObjectId,
+        ): MongoConversation =
+            MongoConversation(
                 userId = userId,
-                date = date,
-                studyIds = emptyList(),
+                wordDefinitionId = wordDefinitionId,
             )
     }
 }

@@ -53,12 +53,14 @@ data class Word(
             )
     }
 
+    // FIXME: should be replaced with right MongoDB approach
     fun addDefinitions(definitions: List<WordDefinition>): Word {
         this.definitions.addAll(definitions)
 
         return this
     }
 
+    // FIXME: should be replaced with right MongoDB approach
     fun approveDefinition(definitionId: WordDefinitionId): Word {
         definitions
             .indexOfFirst { definition -> definition.id == definitionId }
@@ -71,6 +73,7 @@ data class Word(
         return this
     }
 
+    // FIXME: should be replaced with right MongoDB approach
     fun removeDefinition(wordDefinitionId: WordDefinitionId): Word {
         definitions
             .indexOfFirst { definition -> definition.id == wordDefinitionId }

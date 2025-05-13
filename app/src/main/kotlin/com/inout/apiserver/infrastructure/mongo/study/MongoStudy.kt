@@ -61,7 +61,7 @@ data class MongoStudyReviewLog(
 @Document(collection = "studies")
 @CompoundIndexes(
     CompoundIndex(
-        name = "unique_user_id_word_definition_id",
+        name = "unique_userId_wordDefinitionId",
         def = "{'userId': 1, 'wordDefinitionId': 1}",
         unique = true,
     ),
