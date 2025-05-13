@@ -1,19 +1,19 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.base.alias.UserId
-import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.user.MongoUserService
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.user.RefreshToken
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshToken
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 class RefreshTokenApplication(
-    private val userService: UserService,
-    private val tokenService: TokenService,
+    private val userService: MongoUserService,
+    private val tokenService: MongoTokenService,
 ) {
     data class Request(
         val token: String,
@@ -38,11 +38,11 @@ class RefreshTokenApplication(
         tokenService.getByToken(token)
             ?: throw NotFoundException(code = "AUTH_2", message = "Refresh token not found")
 
-    private fun findUserOrThrow(userId: UserId) =
+    private fun findUserOrThrow(userId: ObjectId) =
         userService.getUserById(userId) ?: throw NotFoundException(code = "AUTH_3", message = "User not found")
 
     private fun validateTokenOrThrow(
-        refreshToken: RefreshToken,
+        refreshToken: MongoRefreshToken,
         email: String,
     ) {
         if (!tokenService.isValid(refreshToken.token, email)) {
@@ -51,7 +51,7 @@ class RefreshTokenApplication(
         }
     }
 
-    private fun generateTokens(user: User) =
+    private fun generateTokens(user: MongoUser) =
         Response(
             accessToken = tokenService.generateAccessToken(user),
             refreshToken = tokenService.generateRefreshToken(user),

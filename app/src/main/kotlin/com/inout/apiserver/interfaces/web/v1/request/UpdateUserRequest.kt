@@ -11,10 +11,6 @@ import jakarta.validation.constraints.Size
 import java.time.ZoneId
 
 data class UpdateUserRequest(
-    @field:Min(value = 1, message = "아이디는 1 이상의 숫자로 입력해주세요.")
-    @field:NotNull(message = "아이디는 필수입니다.")
-    @Schema(description = "사용자 아이디", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
-    val id: Long,
     @field:NotEmpty
     @field:NotNull(message = "닉네임은 필수입니다.")
     @field:Size(min = 2, max = 20, message = "닉네임은 2자 이상 20자 이하로 입력해주세요.")

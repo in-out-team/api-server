@@ -1,11 +1,11 @@
 package com.inout.apiserver.domain.auth
 
-import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.RefreshToken
-import com.inout.apiserver.infrastructure.db.user.RefreshTokenRepository
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshToken
+import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshTokenRepository
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -16,29 +16,29 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 import java.time.Instant
 import java.util.Date
 
 @InOutSpringBootTest
 class TokenServiceTest(
     @SpyBean
-    private val subject: TokenService,
+    private val subject: MongoTokenService,
     // repositories
-    private val refreshTokenRepository: RefreshTokenRepository,
+    private val refreshTokenRepository: MongoRefreshTokenRepository,
     // factories
-    private val userFactory: UserFactory,
+    private val userFactory: MongoUserFactory,
     // ect
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
+        var user: MongoUser? = null
 
         beforeEach {
             user = userFactory.createUser()
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
             clearInvocations(subject)
         }
 
@@ -119,7 +119,7 @@ class TokenServiceTest(
                 val refreshToken =
                     refreshTokenRepository
                         .save(
-                            RefreshToken(
+                            MongoRefreshToken(
                                 userId = user!!.id!!,
                                 token = "token",
                                 expiresAt = Instant.now(),
@@ -141,7 +141,7 @@ class TokenServiceTest(
                 // given
                 val refreshToken =
                     refreshTokenRepository.save(
-                        RefreshToken(
+                        MongoRefreshToken(
                             userId = user!!.id!!,
                             token = "token",
                             expiresAt = Instant.now(),
