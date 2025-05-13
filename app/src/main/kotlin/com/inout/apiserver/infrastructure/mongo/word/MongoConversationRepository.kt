@@ -31,4 +31,6 @@ class MongoConversationRepository(
     fun findById(id: ObjectId): ConversationWithMessages? {
         TODO()
     }
+
+    fun saveConversation(conversation: MongoConversation): MongoConversation = conversationRepository.save(conversation)
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MongoAiAudioRepository : MongoRepository<MongoAiAudio, ObjectId> {
     fun findByLanguageAndVoiceTypeAndContent(
-        languageType: LanguageType,
+        language: LanguageType,
         voiceType: AiVoiceType,
         content: String,
     ): MongoAiAudio?
