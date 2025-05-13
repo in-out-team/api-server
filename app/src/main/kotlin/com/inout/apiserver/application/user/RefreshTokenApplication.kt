@@ -1,11 +1,11 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.auth.TokenService
 import com.inout.apiserver.domain.user.MongoUserService
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshToken
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.RefreshToken
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 class RefreshTokenApplication(
     private val userService: MongoUserService,
-    private val tokenService: MongoTokenService,
+    private val tokenService: TokenService,
 ) {
     data class Request(
         val token: String,
@@ -42,7 +42,7 @@ class RefreshTokenApplication(
         userService.getUserById(userId) ?: throw NotFoundException(code = "AUTH_3", message = "User not found")
 
     private fun validateTokenOrThrow(
-        refreshToken: MongoRefreshToken,
+        refreshToken: RefreshToken,
         email: String,
     ) {
         if (!tokenService.isValid(refreshToken.token, email)) {
