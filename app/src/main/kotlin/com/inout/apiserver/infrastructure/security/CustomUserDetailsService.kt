@@ -1,6 +1,6 @@
 package com.inout.apiserver.infrastructure.security
 
-import com.inout.apiserver.infrastructure.db.user.UserRepository
+import com.inout.apiserver.infrastructure.mongo.user.MongoUserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
@@ -9,7 +9,7 @@ import org.springframework.security.core.userdetails.User as SecurityUser
 
 @Service
 class CustomUserDetailsService(
-    private val userRepository: UserRepository,
+    private val userRepository: MongoUserRepository,
 ) : UserDetailsService {
     override fun loadUserByUsername(username: String): UserDetails =
         userRepository

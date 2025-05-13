@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.auth
 
-import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.user.MongoUserService
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class EmailPasswordLoginApplication(
-    private val tokenService: TokenService,
+    private val tokenService: MongoTokenService,
     private val authManager: AuthenticationManager,
-    private val userService: UserService,
+    private val userService: MongoUserService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -34,8 +34,8 @@ class EmailPasswordLoginApplication(
         val user =
             userService.getUserByEmail(request.email)
                 ?: throw NotFoundException(message = "User not found", code = "USER_2")
-        val accessToken = tokenService.generateAccessToken(user, mapOf("userId" to user.id!!))
-        val refreshToken = tokenService.generateRefreshToken(user, mapOf("userId" to user.id!!))
+        val accessToken = tokenService.generateAccessToken(user, mapOf("userId" to user.id!!.toString()))
+        val refreshToken = tokenService.generateRefreshToken(user, mapOf("userId" to user.id.toString()))
 
         return Response(accessToken = accessToken, refreshToken = refreshToken)
     }
