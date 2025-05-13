@@ -13,4 +13,9 @@ interface MongoSentenceRepository : MongoRepository<MongoSentence, ObjectId> {
         wordDefinitionId: ObjectId,
         type: SentenceType,
     ): List<MongoSentence>
+
+    fun findByIdAndType(
+        id: ObjectId,
+        type: SentenceType,
+    ): MongoSentence?
 }

@@ -55,6 +55,16 @@ class MongoWordRepository(
         return WordWithDefinitions.of(word, definitions)
     }
 
+    fun findById(id: ObjectId): WordWithDefinitions? {
+        val word = wordRepository.findById(id).orElse(null) ?: return null
+        val definitions = wordDefinitionRepository.findAllByWordId(word.id!!)
+        return WordWithDefinitions.of(word, definitions)
+    }
+
+    fun saveWord(word: MongoWord): MongoWord = wordRepository.save(word)
+
+    fun saveWordDefinition(wordDefinition: MongoWordDefinition): MongoWordDefinition = wordDefinitionRepository.save(wordDefinition)
+
     fun findAllWithLiveDefinitionsBy(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
