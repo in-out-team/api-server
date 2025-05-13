@@ -8,6 +8,7 @@ import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.apiSpec.UserApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
+import com.inout.apiserver.interfaces.web.v1.response.MongoUserResponse
 import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus.CREATED
@@ -28,9 +29,9 @@ class UserController(
     // TODO: should only be allowed in non-production environments
     override fun createUser(
         @RequestBody @Valid request: CreateUserRequest,
-    ): ResponseEntity<UserResponse> =
+    ): ResponseEntity<MongoUserResponse> =
         ResponseEntity(
-            UserResponse.of(
+            MongoUserResponse.of(
                 user =
                     createUserApplication
                         .run(

@@ -4,6 +4,7 @@ import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
+import com.inout.apiserver.interfaces.web.v1.response.MongoUserResponse
 import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -60,7 +61,7 @@ interface UserApiSpec {
     )
     fun createUser(
         @RequestBody request: CreateUserRequest,
-    ): ResponseEntity<UserResponse>
+    ): ResponseEntity<MongoUserResponse>
 
     @PutMapping
     @Operation(
