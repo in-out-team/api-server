@@ -12,7 +12,7 @@ data class WordWithDefinitions(
     val name: String,
     val fromLanguage: LanguageType,
     val toLanguage: LanguageType,
-    val definitions: List<WordDefinition>,
+    val definitions: List<WordDefinition> = emptyList(),
 ) {
     data class WordDefinition(
         val id: ObjectId? = null,

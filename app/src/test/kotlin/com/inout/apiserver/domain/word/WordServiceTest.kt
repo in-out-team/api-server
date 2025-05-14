@@ -4,99 +4,94 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordRepository
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeSortedBy
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.jdbc.core.JdbcTemplate
-import java.util.Optional
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class WordServiceTest(
-    private val wordRepository: WordRepository,
-    private val userSentenceRepository: UserSentenceRepository,
     // factories
-    private val wordFactory: WordFactory,
-    private val userFactory: UserFactory,
-    private val studyFactory: StudyFactory,
+    private val mongoWordFactory: MongoWordFactory,
+    private val mongoUserFactory: MongoUserFactory,
     // services
-    private val wordService: WordService,
+    private val mongoWordService: MongoWordService,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
-        describe("getWordByNameAndFromLanguageAndToLanguage") {
+        describe("getWordWithDefinitionsBy - name, fromLanguage, toLanguage") {
             it("should return Word if found") {
-                val word = wordFactory.createWord()
+                val word = mongoWordFactory.createWord()
 
                 val res =
-                    wordService.getWordByNameAndFromLanguageAndToLanguage(word.name, word.fromLanguage, word.toLanguage)
+                    mongoWordService.getWordWithDefinitionsBy(
+                        name = word.name,
+                        fromLanguage = word.fromLanguage,
+                        toLanguage = word.toLanguage,
+                    )
 
                 res shouldBe word
             }
 
             it("should return null if not found") {
-                wordRepository.findByNameAndFromLanguageAndToLanguage(
-                    "name",
-                    LanguageType.ENGLISH,
-                    LanguageType.KOREAN,
-                ) shouldBe null
-
                 val res =
-                    wordService.getWordByNameAndFromLanguageAndToLanguage("name", LanguageType.ENGLISH, LanguageType.KOREAN)
+                    mongoWordService.getWordWithDefinitionsBy(
+                        name = "name",
+                        fromLanguage = LanguageType.ENGLISH,
+                        toLanguage = LanguageType.KOREAN,
+                    )
 
                 res shouldBe null
             }
         }
 
-        describe("GetWordById") {
+        describe("getWordWithDefinitionsBy - id") {
             it("should return Word if found") {
                 val word =
-                    wordFactory
+                    mongoWordFactory
                         .createWord(
                             name = "board",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "판자",
                                         preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
+                                        status = StatusType.REMOVED,
                                     ),
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "탑승하다",
                                         preContext = "특정한 교통 수단에 몸을 올리다",
+                                        status = StatusType.LIVE,
                                     ),
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                         meaning = "공공의",
                                         preContext = "공공의 기관이나 단체에 속한",
+                                        status = StatusType.PENDING,
                                     ),
                                 ),
-                        ).also { word ->
-                            word.removeDefinition(word.definitions.first().id!!)
-                            word.definitions[2] = word.definitions[2].copy(status = StatusType.PENDING)
-                            wordRepository.save(word)
-                        }
+                        )
 
-                val res = wordService.getWordById(word.id!!)
+                val res = mongoWordService.getWordWithDefinitionsBy(id = word.id!!)
 
                 res shouldNotBe null
                 res!!.id shouldBe word.id
@@ -107,32 +102,27 @@ class WordServiceTest(
                 res.definitions.forEach { wordDefinition ->
                     val sameDefinition = word.definitions.first { it.id == wordDefinition.id }
                     wordDefinition.id shouldBe sameDefinition.id
-                    wordDefinition.wordId shouldBe sameDefinition.wordId
                     wordDefinition.lexicalCategory shouldBe sameDefinition.lexicalCategory
                     wordDefinition.meaning shouldBe sameDefinition.meaning
                     wordDefinition.preContext shouldBe sameDefinition.preContext
-                    wordDefinition.createdAt shouldNotBe null
-                    wordDefinition.updatedAt shouldNotBe null
                     wordDefinition.status shouldBe sameDefinition.status
                 }
             }
 
             it("should return null if not found") {
-                wordRepository.findById(1L) shouldBe Optional.empty()
-
-                val res = wordService.getWordById(1L)
+                val res = mongoWordService.getWordWithDefinitionsBy(id = ObjectId())
 
                 res shouldBe null
             }
         }
 
-        describe("createWord") {
+        describe("MongoWordService - createWord") {
             it("should raise ConflictException if word already exists") {
-                val word = wordFactory.createWord()
+                val word = mongoWordFactory.createWord()
 
                 val res =
                     assertThrows<ConflictException> {
-                        wordService.createWord(
+                        mongoWordService.createWord(
                             WordCreateObject(
                                 name = word.name,
                                 fromLanguage = word.fromLanguage,
@@ -166,7 +156,7 @@ class WordServiceTest(
                         ),
                     )
 
-                val res = wordService.createWord(wordCreateObject)
+                val res = mongoWordService.createWord(wordCreateObject)
 
                 res.id shouldNotBe null
                 res.name shouldBe wordCreateObject.name
@@ -174,26 +164,20 @@ class WordServiceTest(
                 res.toLanguage shouldBe wordCreateObject.toLanguage
                 res.definitions.forEachIndexed { index, wordDefinition ->
                     wordDefinition.id shouldNotBe null
-                    wordDefinition.wordId shouldBe res.id
                     wordDefinition.lexicalCategory shouldBe wordCreateObject.definitions[index].lexicalCategory
                     wordDefinition.meaning shouldBe wordCreateObject.definitions[index].meaning
                     wordDefinition.preContext shouldBe wordCreateObject.definitions[index].preContext
-                    wordDefinition.createdAt shouldNotBe null
-                    wordDefinition.updatedAt shouldNotBe null
                 }
-                res.createdAt shouldNotBe null
-                res.updatedAt shouldNotBe null
-                wordRepository.findById(res.id!!) shouldBe Optional.of(res)
             }
         }
 
-        describe("getWordsWithLiveDefinitions") {
+        describe("MongoWordService - getWordsWithLiveDefinitions") {
             it("should return Page of Words") {
-                val words = listOf(wordFactory.createWord())
+                val words = listOf(mongoWordFactory.createWord())
                 val pageable = PageRequest.of(0, 1)
 
                 val res =
-                    wordService.getWordsWithLiveDefinitions(
+                    mongoWordService.getWordsWithLiveDefinitions(
                         LanguageType.ENGLISH,
                         LanguageType.KOREAN,
                         "book",
@@ -209,73 +193,73 @@ class WordServiceTest(
                 val words =
                     listOf(
                         // all live
-                        wordFactory.createWord(
+                        mongoWordFactory.createWord(
                             name = "book",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "책",
                                         preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                        status = StatusType.LIVE,
                                     ),
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "예약하다",
                                         preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                        status = StatusType.LIVE,
                                     ),
                                 ),
                         ),
                         // some live
-                        wordFactory
+                        mongoWordFactory
                             .createWord(
                                 name = "board",
-                                wordDefinitions =
+                                definitions =
                                     listOf(
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.NOUN,
                                             meaning = "판자",
                                             preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
+                                            status = StatusType.REMOVED,
                                         ),
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.VERB,
                                             meaning = "탑승하다",
                                             preContext = "특정한 교통 수단에 몸을 올리다",
+                                            status = StatusType.LIVE,
                                         ),
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                             meaning = "공공의",
                                             preContext = "공공의 기관이나 단체에 속한",
+                                            status = StatusType.PENDING,
                                         ),
                                     ),
-                            ).let { word ->
-                                word.removeDefinition(word.definitions.first().id!!)
-                                word.definitions[2] = word.definitions[2].copy(status = StatusType.PENDING)
-                                wordRepository.save(word)
-                            },
+                            ),
                         // no definitions
-                        wordFactory.createWord(
+                        mongoWordFactory.createWord(
                             name = "boast",
-                            wordDefinitions = emptyList(),
+                            definitions = emptyList(),
                         ),
                         // no live definitions
-                        wordFactory
+                        mongoWordFactory
                             .createWord(
                                 name = "booked",
-                                wordDefinitions =
+                                definitions =
                                     listOf(
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                             meaning = "예약된",
                                             preContext = "미리 자리를 확보한",
+                                            status = StatusType.REMOVED,
                                         ),
                                     ),
-                            ).let { word ->
-                                wordRepository.save(word.removeDefinition(word.definitions.first().id!!))
-                            },
+                            ),
                     )
 
                 val res =
-                    wordService.getWordsWithLiveDefinitions(
+                    mongoWordService.getWordsWithLiveDefinitions(
                         fromLanguage = LanguageType.ENGLISH,
                         toLanguage = LanguageType.KOREAN,
                         prefix = "b",
@@ -286,7 +270,7 @@ class WordServiceTest(
                 // only "book" and "board" should be returned
                 res.totalElements shouldBe 2
                 res.content.size shouldBe 2
-                res.content.map { it.id } shouldBe
+                res.content.map { it.id } shouldContainAll
                     words
                         .filter { it.definitions.any { definition -> definition.status == StatusType.LIVE } }
                         .map { it.id }
@@ -296,13 +280,13 @@ class WordServiceTest(
             }
         }
 
-        describe("getWordByLiveWordDefinitionId") {
+        describe("MongoWordService - getWordByLiveWordDefinitionId") {
             it("should raise NotFoundException if not word with given wordDefinitionId does not exist") {
-                val wordDefinitionId = 1L
+                val wordDefinitionId = ObjectId()
 
                 val res =
                     assertThrows<NotFoundException> {
-                        wordService.getWordByLiveWordDefinitionId(wordDefinitionId)
+                        mongoWordService.getWordByLiveWordDefinitionId(wordDefinitionId)
                     }
 
                 res.message shouldBe "Word Definition not found"
@@ -312,118 +296,116 @@ class WordServiceTest(
             it("should return Word") {
                 // given
                 val word =
-                    wordFactory
+                    mongoWordFactory
                         .createWord(
                             name = "board",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "판자",
                                         preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
+                                        status = StatusType.REMOVED,
                                     ),
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "탑승하다",
                                         preContext = "특정한 교통 수단에 몸을 올리다",
+                                        status = StatusType.LIVE,
                                     ),
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                         meaning = "공공의",
                                         preContext = "공공의 기관이나 단체에 속한",
+                                        status = StatusType.PENDING,
                                     ),
                                 ),
-                        ).also { word ->
-                            word.removeDefinition(word.definitions.first().id!!)
-                            word.definitions[2] = word.definitions[2].copy(status = StatusType.PENDING)
-                            wordRepository.save(word)
-                        }
+                        )
 
                 // when
-                val res = wordRepository.findByLiveDefinitionsId(wordDefinitionId = word.definitions[1].id!!)
+                val res =
+                    mongoWordService.getWordByLiveWordDefinitionId(word.definitions[1].id!!)
 
                 // then
-                res!!.id shouldBe word.id
+                res.id shouldBe word.id
                 res.name shouldBe word.name
                 res.fromLanguage shouldBe word.fromLanguage
                 res.toLanguage shouldBe word.toLanguage
                 res.definitions.size shouldBe 1
                 res.definitions[0].id shouldBe word.definitions[1].id
-                res.definitions[0].wordId shouldBe word.definitions[1].wordId
                 res.definitions[0].lexicalCategory shouldBe word.definitions[1].lexicalCategory
                 res.definitions[0].meaning shouldBe word.definitions[1].meaning
                 res.definitions[0].preContext shouldBe word.definitions[1].preContext
-                res.definitions[0].createdAt shouldNotBe null
-                res.definitions[0].updatedAt shouldNotBe null
                 res.definitions[0].status shouldBe StatusType.LIVE
             }
         }
 
-        describe("getWordsByLiveWordDefinitionIds") {
+        describe("MongoWordService - getWordsByLiveWordDefinitionIds") {
             it("should return list of words") {
                 // given
                 val words =
                     listOf(
-                        wordFactory
+                        mongoWordFactory
                             .createWord(
                                 name = "book",
                                 fromLanguage = LanguageType.ENGLISH,
                                 toLanguage = LanguageType.KOREAN,
-                                wordDefinitions =
+                                definitions =
                                     listOf(
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.NOUN,
                                             meaning = "책",
                                             preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                            status = StatusType.LIVE,
                                         ),
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.VERB,
                                             meaning = "예약하다",
                                             preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                            status = StatusType.LIVE,
                                         ),
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.VERB,
                                             meaning = "remove",
                                             preContext = "remove",
+                                            status = StatusType.REMOVED,
                                         ),
                                     ),
-                            ).let { word ->
-                                word.removeDefinition(word.definitions.first { it.meaning == "remove" }.id!!)
-                                wordRepository.save(word)
-                            },
-                        wordFactory
+                            ),
+                        mongoWordFactory
                             .createWord(
                                 name = "booked",
                                 fromLanguage = LanguageType.ENGLISH,
                                 toLanguage = LanguageType.KOREAN,
-                                wordDefinitions =
+                                definitions =
                                     listOf(
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                             meaning = "예약된",
                                             preContext = "미리 자리를 확보한",
+                                            status = StatusType.LIVE,
                                         ),
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.VERB,
                                             meaning = "예약하다",
                                             preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                            status = StatusType.LIVE,
                                         ),
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.VERB,
                                             meaning = "pending",
                                             preContext = "pending",
+                                            status = StatusType.PENDING,
                                         ),
                                     ),
-                            ).let { word ->
-                                val index = word.definitions.indexOfFirst { it.meaning == "pending" }
-                                word.definitions[index] = word.definitions[index].copy(status = StatusType.PENDING)
-                                wordRepository.save(word)
-                            },
+                            ),
                     )
-                val wordDefinitionIds = words.flatMap { it.definitions }.map { it.id!! }
+                val wordDefinitionIds =
+                    words.flatMap { it.definitions }.map { it.id!! }
 
                 // when
-                val res = wordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
+                val res =
+                    mongoWordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
 
                 // then
                 res.size shouldBe 2
@@ -436,94 +418,101 @@ class WordServiceTest(
             }
         }
 
-        describe("createUserSentence") {
-            var user: User? = null
-            var word: Word?
-            var wordDefinitionId = 0L
-            var sentence: Sentence? = null
+        describe("MongoService - createUserSentence") {
+            var user: MongoUser? = null
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
+            var sentence: MongoSentence? = null
 
             beforeEach {
-                user = userFactory.createUser()
-                word = wordFactory.createWord()
+                user = mongoUserFactory.createUser()
+                word = mongoWordFactory.createWord()
                 wordDefinitionId = word!!.definitions.first().id!!
-                sentence =
-                    wordFactory.createSentence(
-                        wordDefinitionId = wordDefinitionId,
-                    )
+                sentence = mongoWordFactory.createSentence(wordDefinitionId)
             }
 
             it("should raise ConflictException if userSentence already exists") {
-                // Given
-                val userSentenceCreateObject =
-                    UserSentenceCreateObject(
-                        userId = user!!.id!!,
-                        wordDefinitionId = wordDefinitionId,
-                        type = SentenceType.READING,
-                        sentenceId = sentence!!.id!!,
-                    )
-                wordService.createUserSentence(userSentenceCreateObject)
+                // given
+                mongoWordService.createUserSentence(
+                    userId = user!!.id!!,
+                    wordDefinitionId = wordDefinitionId,
+                    type = SentenceType.READING,
+                    sentenceId = sentence!!.id!!,
+                )
 
-                // When, Then
-                val result =
+                // when & then
+                val res =
                     assertThrows<ConflictException> {
-                        wordService.createUserSentence(userSentenceCreateObject)
+                        mongoWordService.createUserSentence(
+                            userId = user!!.id!!,
+                            wordDefinitionId = wordDefinitionId,
+                            type = SentenceType.READING,
+                            sentenceId = sentence!!.id!!,
+                        )
                     }
 
-                result.message shouldBe "User Sentence already exists"
-                result.code shouldBe "SENTENCE_2"
+                res.message shouldBe "User Sentence already exists"
+                res.code shouldBe "SENTENCE_2"
             }
 
             it("should save and return UserSentence") {
-                // Given
-                val userSentenceCreateObject =
-                    UserSentenceCreateObject(
+                // when
+                val res =
+                    mongoWordService.createUserSentence(
                         userId = user!!.id!!,
                         wordDefinitionId = wordDefinitionId,
                         type = SentenceType.READING,
                         sentenceId = sentence!!.id!!,
                     )
 
-                // When
-                val result = wordService.createUserSentence(userSentenceCreateObject)
-
-                // Then
-                result.userId shouldBe userSentenceCreateObject.userId
-                result.wordDefinitionId shouldBe userSentenceCreateObject.wordDefinitionId
-                result.type shouldBe userSentenceCreateObject.type
-                result.sentenceId shouldBe userSentenceCreateObject.sentenceId
-                userSentenceRepository.findByUserIdAndSentenceId(
-                    userId = userSentenceCreateObject.userId,
-                    sentenceId = userSentenceCreateObject.sentenceId,
-                ) shouldBe result
+                // then
+                res.id shouldNotBe null
+                res.userId shouldBe user!!.id
+                res.wordDefinitionId shouldBe wordDefinitionId
+                res.type shouldBe SentenceType.READING
+                res.sentenceId shouldBe sentence!!.id
             }
         }
 
-        describe("getConversationsBy") {
-            var user: User? = null
-            var word: Word?
-            var wordDefinitionId = 0L
+        describe("MongoService - getConversationsBy") {
+            var user: MongoUser? = null
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
 
             beforeEach {
-                user = userFactory.createUser()
-                word = wordFactory.createWord()
+                user = mongoUserFactory.createUser()
+                word = mongoWordFactory.createWord()
                 wordDefinitionId = word!!.definitions.first().id!!
-                studyFactory.createStudy(user!!.id!!, wordDefinitionId)
             }
 
             it("should return empty list if no conversations found") {
-                wordService.getConversationsBy(user!!, wordDefinitionId) shouldBe emptyList()
+                // when
+                val res =
+                    mongoWordService.getConversationsBy(
+                        user = user!!,
+                        wordDefinitionId = wordDefinitionId,
+                    )
+
+                // then
+                res.size shouldBe 0
             }
 
             it("should return list of conversations sorted by createdAt") {
-                val conversations =
-                    (1..3)
-                        .map {
-                            wordFactory.createConversation(user!!.id!!, wordDefinitionId)
-                        }
+                // given
+                repeat(2) {
+                    mongoWordFactory.createConversation(user!!, wordDefinitionId)
+                }
 
-                val result = wordService.getConversationsBy(user!!, wordDefinitionId)
-                result shouldBe conversations
-                result shouldBeSortedBy { it.createdAt!! }
+                // when
+                val res =
+                    mongoWordService.getConversationsBy(
+                        user = user!!,
+                        wordDefinitionId = wordDefinitionId,
+                    )
+
+                // then
+                res.size shouldBe 2
+                res shouldBeSortedBy { it.createdAt }
             }
         }
     })

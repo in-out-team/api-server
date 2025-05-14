@@ -5,6 +5,7 @@ import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.word.MongoAiAudio
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
@@ -22,6 +23,7 @@ import com.inout.apiserver.infrastructure.mongo.word.MongoWordDefinition
 import com.inout.apiserver.infrastructure.mongo.word.MongoWordRepository
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -118,13 +120,12 @@ class MongoWordService(
             ),
         )
 
-    // Using TODO()
     fun getWordsWithLiveDefinitions(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
         lexicalCategory: String?,
-        pageable: org.springframework.data.domain.Pageable,
+        pageable: Pageable,
     ): Page<WordWithDefinitions> =
         mongoWordRepository.findAllWithLiveDefinitionsBy(
             fromLanguage = fromLanguage,
@@ -137,7 +138,7 @@ class MongoWordService(
     fun getWordByLiveWordDefinitionId(wordDefinitionId: ObjectId): WordWithDefinitions =
         mongoWordRepository
             .findByLiveDefinitionsId(wordDefinitionId)
-            ?: throw ConflictException(message = "Word Definition not found", code = "WORD_2")
+            ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
 
     fun getWordsByLiveWordDefinitionIds(wordDefinitionIds: List<ObjectId>): List<WordWithDefinitions> =
         mongoWordRepository.findAllByLiveDefinitionsIds(wordDefinitionIds)
@@ -288,10 +289,8 @@ class MongoWordService(
     fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<ObjectId>): List<MongoSentenceFeedback> =
         mongoSentenceFeedbackRepository.findAllByIdIn(sentenceFeedbackIds)
 
-    // Using TODO()
     fun getConversationById(conversationId: ObjectId): ConversationWithMessages? = mongoConversationRepository.findById(conversationId)
 
-    // Using TODO()
     fun getConversationsBy(
         user: MongoUser,
         wordDefinitionId: ObjectId,
