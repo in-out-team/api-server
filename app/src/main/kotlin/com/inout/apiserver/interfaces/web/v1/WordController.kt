@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/v1/words")
 class WordController(
-    private val readWordsApplication: ReadWordsApplication, // TODO:phil
+    private val readWordsApplication: ReadWordsApplication,
 ) {
     @GetMapping("/definitions")
     @PageableAsQueryParam

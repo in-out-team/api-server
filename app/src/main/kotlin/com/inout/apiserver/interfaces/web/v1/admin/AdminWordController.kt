@@ -11,8 +11,6 @@ import com.inout.apiserver.interfaces.web.v1.request.AddWordDefinitionRequest
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.MongoWordResponse
 import com.inout.apiserver.interfaces.web.v1.response.MongoWordWithDefinitionsResponse
-import com.inout.apiserver.interfaces.web.v1.response.WordResponse
-import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -131,7 +129,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = WordResponse::class),
+                        schema = Schema(implementation = MongoWordResponse::class),
                     ),
                 ],
             ),
@@ -187,7 +185,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = WordWithDefinitionsResponse::class),
+                        schema = Schema(implementation = MongoWordWithDefinitionsResponse::class),
                     ),
                 ],
             ),
