@@ -1,30 +1,30 @@
 package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class CreateWordManualApplicationTest(
     private val subject: CreateWordManualApplication,
     // factories
-    private val wordFactory: WordFactory,
+    private val wordFactory: MongoWordFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when word already exists") {
-            var word: Word? = null
+            var word: WordWithDefinitions? = null
 
             beforeEach {
                 word = wordFactory.createWord()

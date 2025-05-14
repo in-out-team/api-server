@@ -1,40 +1,36 @@
 package com.inout.apiserver.application.word.admin
 
-import com.inout.apiserver.base.alias.WordDefinitionId
-import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.study.MongoStudyService
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordRepository
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class DeleteWordDefinitionApplication(
-    private val wordService: WordService,
-    private val studyService: StudyService,
-    // injected wordRepository here to avoid adding update on word method on commonly used WordService
-    private val wordRepository: WordRepository,
+    private val wordService: MongoWordService,
+    private val studyService: MongoStudyService,
 ) {
     data class Request(
-        val wordId: WordId,
-        val wordDefinitionId: WordDefinitionId,
+        val wordId: ObjectId,
+        val wordDefinitionId: ObjectId,
     )
 
     data class Response(
-        val word: Word,
+        val word: WordWithDefinitions,
     )
 
     fun run(request: Request): Response {
         val word = findAndValidateWordDefinition(request)
-        val updatedWord = deleteWordDefinition(word, request)
+        val updatedWord = deleteWordDefinition(word, request.wordDefinitionId)
         return Response(word = updatedWord)
     }
 
-    private fun findAndValidateWordDefinition(request: Request): Word {
-        val word = wordService.getWordById(request.wordId)
+    private fun findAndValidateWordDefinition(request: Request): WordWithDefinitions {
+        val word = wordService.getWordWithDefinitionsBy(request.wordId)
         val wordDefinition =
             word?.let {
                 it.definitions.find { definition -> definition.id == request.wordDefinitionId }
@@ -64,11 +60,11 @@ class DeleteWordDefinitionApplication(
     }
 
     private fun deleteWordDefinition(
-        word: Word,
-        request: Request,
-    ): Word {
-        word.removeDefinition(request.wordDefinitionId)
-        wordRepository.save(word)
-        return word
-    }
+        word: WordWithDefinitions,
+        wordDefinitionId: ObjectId,
+    ): WordWithDefinitions =
+        wordService.removeWordDefinition(
+            word = word,
+            wordDefinitionId = wordDefinitionId,
+        )
 }

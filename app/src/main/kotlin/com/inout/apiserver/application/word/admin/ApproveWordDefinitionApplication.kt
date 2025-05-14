@@ -1,39 +1,35 @@
 package com.inout.apiserver.application.word.admin
 
-import com.inout.apiserver.base.alias.WordDefinitionId
-import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordRepository
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class ApproveWordDefinitionApplication(
-    private val wordService: WordService,
-    // injected wordRepository here to avoid adding update on word method on commonly used WordService
-    private val wordRepository: WordRepository,
+    private val wordService: MongoWordService,
 ) {
     data class Request(
-        val wordId: WordId,
-        val wordDefinitionId: WordDefinitionId,
+        val wordId: ObjectId,
+        val wordDefinitionId: ObjectId,
     )
 
     data class Response(
-        val word: Word,
+        val word: WordWithDefinitions,
     )
 
     fun run(request: Request): Response {
         val word = findAndValidateWord(request)
-        val updatedWord = approveWordDefinition(word, request)
+        val updatedWord = approveWordDefinition(word = word, wordDefinitionId = request.wordDefinitionId)
 
         return Response(word = updatedWord)
     }
 
-    private fun findAndValidateWord(request: Request): Word {
-        val word = wordService.getWordById(request.wordId)
+    private fun findAndValidateWord(request: Request): WordWithDefinitions {
+        val word = wordService.getWordWithDefinitionsBy(request.wordId)
         val wordDefinition =
             word?.definitions?.find { it.id == request.wordDefinitionId }
                 ?: throw NotFoundException(
@@ -51,10 +47,7 @@ class ApproveWordDefinitionApplication(
     }
 
     private fun approveWordDefinition(
-        word: Word,
-        request: Request,
-    ): Word {
-        word.approveDefinition(request.wordDefinitionId)
-        return wordRepository.save(word)
-    }
+        word: WordWithDefinitions,
+        wordDefinitionId: ObjectId,
+    ): WordWithDefinitions = wordService.approveWordDefinition(word = word, wordDefinitionId = wordDefinitionId)
 }

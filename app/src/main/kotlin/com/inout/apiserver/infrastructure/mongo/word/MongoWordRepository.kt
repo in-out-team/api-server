@@ -1,6 +1,7 @@
 package com.inout.apiserver.infrastructure.mongo.word
 
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import org.bson.Document
@@ -81,7 +82,7 @@ class MongoWordRepository(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
-        lexicalCategory: String?,
+        lexicalCategory: LexicalCategoryType?,
         pageable: Pageable,
     ): Page<WordWithDefinitions> {
         val matchStage =
@@ -194,5 +195,20 @@ class MongoWordRepository(
             val definitions = wordDefinitions.filter { it.wordId == word.id }
             WordWithDefinitions.of(word, definitions)
         }
+    }
+
+    fun updateWordDefinitionStatus(
+        wordDefinitionId: ObjectId,
+        status: StatusType,
+    ) {
+        val wordDefinition =
+            wordDefinitionRepository.findById(wordDefinitionId).orElse(null)
+                ?: throw IllegalArgumentException("Word definition not found")
+
+        wordDefinitionRepository.save(
+            wordDefinition.copy(
+                status = status,
+            ),
+        )
     }
 }
