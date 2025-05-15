@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -104,22 +105,60 @@ class StudyController(
             CREATED,
         )
 
-    override fun getStudies(
-        @Parameter(hidden = true) @RequestUser user: User,
+    @GetMapping
+    @Operation(
+        summary = "학습 단어 조회",
+        description = "요청자의 단어장에 있는 학습 단어를 조회합니다.",
+        parameters = [
+            Parameter(
+                name = "page",
+                description = "페이지 번호 (0부터 시작)",
+                required = false,
+                example = "0",
+            ),
+            Parameter(
+                name = "size",
+                description = "페이지 크기",
+                required = false,
+                example = "20",
+            ),
+            Parameter(
+                name = "sort",
+                description = "정렬 조건 (createdAt, due, lastReview 지원)",
+                required = false,
+                example = "createdAt,desc",
+            ),
+            Parameter(
+                name = "wordNamePrefix",
+                description = "단어 이름 접두어",
+                required = false,
+                example = "apple",
+            ),
+        ],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "학습 단어 조회 성공",
+                useReturnTypeSchema = true,
+            ),
+        ],
+    )
+    fun getStudies(
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
         @Parameter(hidden = true) pageable: Pageable,
         @RequestParam(required = false) wordNamePrefix: String?,
-    ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
+    ): ResponseEntity<ResponsePaginationWrapper<MongoStudyWordResponse>> {
         val (count, studyWithWords) =
             readStudiesApplication.run(
                 ReadStudiesApplication.Request(
-                    userId = user.id!!,
+                    user = user,
                     wordNamePrefix = wordNamePrefix,
                     pageable = pageable,
                 ),
             )
         return ResponseEntity(
             ResponsePaginationWrapper(
-                data = studyWithWords.map { StudyWordResponse.of(it.study, it.word) },
+                data = studyWithWords.map { MongoStudyWordResponse.of(it.study, it.word) },
                 hasMore = pageable.next().offset < count,
                 count = count,
             ),
