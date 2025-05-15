@@ -1,31 +1,29 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.base.alias.WordDefinitionId
-import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.DictionaryService
-import com.inout.apiserver.domain.word.SentenceCreateObject
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.word.Sentence
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import org.bson.types.ObjectId
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.stereotype.Component
 
 @Component
 class CreateSentenceApplication(
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
     private val dictionaryService: DictionaryService,
     private val jobScheduler: JobScheduler,
 ) {
     data class Request(
-        val wordId: WordId,
+        val wordId: ObjectId,
     )
 
     fun run(request: Request) {
         val word =
-            wordService.getWordById(request.wordId) ?: throw NotFoundException(
+            wordService.getWordWithDefinitionsBy(request.wordId) ?: throw NotFoundException(
                 message = "Word not found",
                 code = "WORD_4",
             )
@@ -36,15 +34,15 @@ class CreateSentenceApplication(
     }
 
     fun createSentencesFor(
-        wordId: WordId,
-        wordDefinitionId: WordDefinitionId,
+        wordId: ObjectId,
+        wordDefinitionId: ObjectId,
     ) {
         wordService.getSentencesByWordDefinitionId(wordDefinitionId).let {
             if (it.isNotEmpty()) return
         }
 
         val word =
-            wordService.getWordById(wordId) ?: throw NotFoundException(
+            wordService.getWordWithDefinitionsBy(wordId) ?: throw NotFoundException(
                 message = "Word not found",
                 code = "WORD_4",
             )
@@ -69,21 +67,19 @@ class CreateSentenceApplication(
         }
 
         sentences.forEachIndexed { index, sentence ->
-            val sentenceCreateObject =
-                SentenceCreateObject(
-                    wordDefinitionId = wordDefinitionId,
-                    type = if (index % 2 == 0) SentenceType.READING else SentenceType.WRITING,
-                    content = sentence.content,
-                    translation = sentence.translation,
-                    lexicalCategories =
-                        sentence.lexicalCategories.map { lexicalCategoryMap ->
-                            Sentence.LexicalCategoryInfo(
-                                word = lexicalCategoryMap.word,
-                                lexicalCategory = LexicalCategoryType.of(lexicalCategoryMap.lexicalCategory),
-                            )
-                        },
-                )
-            wordService.createSentence(sentenceCreateObject)
+            wordService.createSentence(
+                wordDefinitionId = wordDefinitionId,
+                type = if (index % 2 == 0) SentenceType.READING else SentenceType.WRITING,
+                sentence = sentence.content,
+                translation = sentence.translation,
+                lexicalCategories =
+                    sentence.lexicalCategories.map { lexicalCategoryMap ->
+                        MongoSentence.LexicalCategoryInfo(
+                            word = lexicalCategoryMap.word,
+                            lexicalCategory = LexicalCategoryType.of(lexicalCategoryMap.lexicalCategory),
+                        )
+                    },
+            )
         }
     }
 }

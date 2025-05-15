@@ -1,32 +1,27 @@
 package com.inout.apiserver.application.word.admin
 
-import com.inout.apiserver.base.alias.WordId
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.word.WordDefinitionCreateObject
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
-import com.inout.apiserver.infrastructure.db.word.WordRepository
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class AddWordDefinitionApplication(
-    private val wordService: WordService,
-    // injected wordRepository here to avoid adding update on word method on commonly used WordService
-    private val wordRepository: WordRepository,
+    private val wordService: MongoWordService,
 ) {
     data class Request(
-        val wordId: WordId,
+        val wordId: ObjectId,
         val lexicalCategory: LexicalCategoryType,
         val meaning: String,
         val preContext: String,
     )
 
     data class Response(
-        val word: Word,
+        val word: WordWithDefinitions,
     )
 
     fun run(request: Request): Response {
@@ -36,9 +31,9 @@ class AddWordDefinitionApplication(
         return Response(word = updatedWord)
     }
 
-    private fun findAndValidateWord(request: Request): Word {
+    private fun findAndValidateWord(request: Request): WordWithDefinitions {
         val word =
-            wordService.getWordById(request.wordId) ?: throw NotFoundException(
+            wordService.getWordWithDefinitionsBy(request.wordId) ?: throw NotFoundException(
                 message = "Word not found",
                 code = "WORD_4",
             )
@@ -58,24 +53,12 @@ class AddWordDefinitionApplication(
     }
 
     private fun updateWord(
-        word: Word,
+        word: WordWithDefinitions,
         request: Request,
-    ): Word {
-        word.addDefinitions(
-            listOf(
-                WordDefinition.fromCreateObject(
-                    createObject =
-                        WordDefinitionCreateObject(
-                            lexicalCategory = request.lexicalCategory,
-                            meaning = request.meaning,
-                            preContext = request.preContext,
-                        ),
-                    word = word,
-                ),
-            ),
-        )
-
-        val updatedWord = wordRepository.save(word)
-        return updatedWord
-    }
+    ) = wordService.addWordDefinition(
+        word = word,
+        lexicalCategory = request.lexicalCategory,
+        meaning = request.meaning,
+        preContext = request.preContext,
+    )
 }

@@ -2,7 +2,7 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.service.DictionaryService
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.extension.cleanUp
@@ -16,7 +16,7 @@ import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class CreateWordApplicationTest(
@@ -25,12 +25,12 @@ class CreateWordApplicationTest(
     @SpyBean
     private val dictionaryService: DictionaryService,
     // factories
-    private val wordFactory: WordFactory,
+    private val wordFactory: MongoWordFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when given word already exists") {

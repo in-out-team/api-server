@@ -14,22 +14,108 @@ interface MongoConversationRepositoryInternal : MongoRepository<MongoConversatio
 
 interface MongoConversationMessageRepositoryInternal : MongoRepository<MongoConversationMessage, ObjectId> {
     fun findAllByConversationId(conversationId: ObjectId): List<MongoConversationMessage>
+
+    fun findAllByConversationIdIn(conversationIds: List<ObjectId>): List<MongoConversationMessage>
 }
 
 @Repository
 class MongoConversationRepository(
     private val conversationRepository: MongoConversationRepositoryInternal,
     private val conversationMessageRepository: MongoConversationMessageRepositoryInternal,
+    private val aiAudioRepository: MongoAiAudioRepository,
 ) {
     fun findAllByUserIdAndWordDefinitionId(
         userId: ObjectId,
         wordDefinitionId: ObjectId,
     ): List<ConversationWithMessages> {
-        TODO()
+        val conversations =
+            conversationRepository.findAllByUserIdAndWordDefinitionId(
+                userId = userId,
+                wordDefinitionId = wordDefinitionId,
+            )
+        val conversationIds = conversations.map { it.id!! }
+
+        val messagesByConversationId =
+            conversationMessageRepository
+                .findAllByConversationIdIn(conversationIds)
+                .groupBy { it.conversationId }
+
+        val aiAudios =
+            aiAudioRepository.findAllById(
+                messagesByConversationId.values.flatten().mapNotNull { it.audio?.id },
+            )
+
+        return conversations.map { conversation ->
+            val messages =
+                messagesByConversationId[conversation.id]?.sortedBy { it.createdAt }
+                    ?: emptyList()
+            val conversationMessages =
+                messages.map { message ->
+                    val audio =
+                        message.audio?.let { aiAudio ->
+                            aiAudios.find { it.id == aiAudio.id }
+                        }
+                    ConversationWithMessages.ConversationMessage(
+                        id = message.id,
+                        sender = message.sender,
+                        content = message.content,
+                        audio =
+                            audio?.let {
+                                ConversationWithMessages.AiAudio(
+                                    id = it.id,
+                                    language = it.language,
+                                    voiceType = it.voiceType,
+                                    content = it.content,
+                                    directory = it.directory,
+                                )
+                            },
+                    )
+                }
+            ConversationWithMessages(
+                id = conversation.id,
+                userId = conversation.userId,
+                wordDefinitionId = conversation.wordDefinitionId,
+                messages = conversationMessages,
+                createdAt = conversation.createdAt!!,
+            )
+        }
     }
 
     fun findById(id: ObjectId): ConversationWithMessages? {
-        TODO()
+        val conversation = conversationRepository.findById(id).orElse(null) ?: return null
+        val messages = conversationMessageRepository.findAllByConversationId(id)
+        val aiAudios = aiAudioRepository.findAllById(messages.mapNotNull { it.audio?.id })
+
+        val conversationMessages =
+            messages.map { message ->
+                val audio =
+                    message.audio?.let { aiAudio ->
+                        aiAudios.find { it.id == aiAudio.id }
+                    }
+                ConversationWithMessages.ConversationMessage(
+                    id = message.id,
+                    sender = message.sender,
+                    content = message.content,
+                    audio =
+                        audio?.let {
+                            ConversationWithMessages.AiAudio(
+                                id = it.id,
+                                language = it.language,
+                                voiceType = it.voiceType,
+                                content = it.content,
+                                directory = it.directory,
+                            )
+                        },
+                )
+            }
+
+        return ConversationWithMessages(
+            id = conversation.id,
+            userId = conversation.userId,
+            wordDefinitionId = conversation.wordDefinitionId,
+            messages = conversationMessages,
+            createdAt = conversation.createdAt!!,
+        )
     }
 
     fun saveConversation(conversation: MongoConversation): MongoConversation = conversationRepository.save(conversation)

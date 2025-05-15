@@ -2,32 +2,32 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordDefinitionCreateObject
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.base.enums.StatusType
+import com.inout.apiserver.domain.study.MongoStudyFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
 import org.springframework.data.domain.PageRequest
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class ReadWordsApplicationTest(
     private val subject: ReadWordsApplication,
     // factories
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
-    private val studyFactory: StudyFactory,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val studyFactory: MongoStudyFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when matching word does not exist") {
@@ -60,8 +60,8 @@ class ReadWordsApplicationTest(
         }
 
         describe("when matching word exists") {
-            var user: User? = null
-            var words: MutableList<Word>? = null
+            var user: MongoUser? = null
+            var words: MutableList<WordWithDefinitions>? = null
 
             beforeEach {
                 user = userFactory.createUser()
@@ -69,22 +69,25 @@ class ReadWordsApplicationTest(
                 val word1 =
                     wordFactory.createWord(
                         name = "board",
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "판자",
                                     preContext = "무엇을 올리거나 붙이기 위해 사용되는 넓고 평평한 나무 조각",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "탑승하다",
                                     preContext = "특정한 교통 수단에 몸을 올리다",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.ADJECTIVE,
                                     meaning = "공공의",
                                     preContext = "공공의 기관이나 단체에 속한",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )
@@ -92,17 +95,19 @@ class ReadWordsApplicationTest(
                 val word2 =
                     wordFactory.createWord(
                         name = "boast",
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "자랑하다",
                                     preContext = "자신의 능력이나 성과를 자랑스럽게 말하다",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "자랑",
                                     preContext = "자신의 능력이나 성과를 자랑스럽게 말함",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )
@@ -110,17 +115,19 @@ class ReadWordsApplicationTest(
                 val word3 =
                     wordFactory.createWord(
                         name = "book",
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )

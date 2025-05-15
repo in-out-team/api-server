@@ -1,14 +1,14 @@
 package com.inout.apiserver.application.user
 
-import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.auth.TokenService
 import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshToken
-import com.inout.apiserver.infrastructure.mongo.user.MongoRefreshTokenRepository
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.RefreshToken
+import com.inout.apiserver.infrastructure.mongo.user.RefreshTokenRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -20,16 +20,16 @@ import java.util.Date
 class RefreshTokenApplicationTest(
     private val subject: RefreshTokenApplication,
     // services
-    private val tokenService: MongoTokenService,
+    private val tokenService: TokenService,
     // repositories
-    private val refreshTokenRepository: MongoRefreshTokenRepository,
+    private val refreshTokenRepository: RefreshTokenRepository,
     // factories
     private val userFactory: MongoUserFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         var user: MongoUser? = null
-        var refreshToken: MongoRefreshToken?
+        var refreshToken: RefreshToken?
 
         beforeEach {
             user = userFactory.createUser()
@@ -75,7 +75,7 @@ class RefreshTokenApplicationTest(
                     )
                 refreshToken =
                     refreshTokenRepository.save(
-                        MongoRefreshToken(
+                        RefreshToken(
                             userId = nonExistingUser.id!!,
                             token = nonExistingUserToken,
                             expiresAt = expirationDate.toInstant(),
@@ -107,7 +107,7 @@ class RefreshTokenApplicationTest(
                     )
                 refreshToken =
                     refreshTokenRepository.save(
-                        MongoRefreshToken(
+                        RefreshToken(
                             userId = user!!.id!!,
                             token = invalidToken,
                             expiresAt = expirationDate.toInstant(),
@@ -139,7 +139,7 @@ class RefreshTokenApplicationTest(
                     )
                 refreshToken =
                     refreshTokenRepository.save(
-                        MongoRefreshToken(
+                        RefreshToken(
                             userId = user!!.id!!,
                             token = validToken,
                             expiresAt = expirationDate.toInstant(),

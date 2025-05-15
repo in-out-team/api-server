@@ -1,10 +1,12 @@
 package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
+import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.word.MongoAiAudio
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
@@ -22,6 +24,7 @@ import com.inout.apiserver.infrastructure.mongo.word.MongoWordDefinition
 import com.inout.apiserver.infrastructure.mongo.word.MongoWordRepository
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -118,15 +121,29 @@ class MongoWordService(
             ),
         )
 
-    // Using TODO()
     fun getWordsWithLiveDefinitions(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
-        lexicalCategory: String?,
-        pageable: org.springframework.data.domain.Pageable,
+        lexicalCategory: LexicalCategoryType?,
+        pageable: Pageable,
     ): Page<WordWithDefinitions> =
         mongoWordRepository.findAllWithLiveDefinitionsBy(
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            prefix = prefix,
+            lexicalCategory = lexicalCategory,
+            pageable = pageable,
+        )
+
+    fun getWordsWithDefinitions(
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+        prefix: String,
+        lexicalCategory: LexicalCategoryType?,
+        pageable: Pageable,
+    ): Page<WordWithDefinitions> =
+        mongoWordRepository.findAllWithDefinitionsBy(
             fromLanguage = fromLanguage,
             toLanguage = toLanguage,
             prefix = prefix,
@@ -137,7 +154,7 @@ class MongoWordService(
     fun getWordByLiveWordDefinitionId(wordDefinitionId: ObjectId): WordWithDefinitions =
         mongoWordRepository
             .findByLiveDefinitionsId(wordDefinitionId)
-            ?: throw ConflictException(message = "Word Definition not found", code = "WORD_2")
+            ?: throw NotFoundException(message = "Word Definition not found", code = "WORD_2")
 
     fun getWordsByLiveWordDefinitionIds(wordDefinitionIds: List<ObjectId>): List<WordWithDefinitions> =
         mongoWordRepository.findAllByLiveDefinitionsIds(wordDefinitionIds)
@@ -288,10 +305,8 @@ class MongoWordService(
     fun getSentenceFeedbacksByIds(sentenceFeedbackIds: List<ObjectId>): List<MongoSentenceFeedback> =
         mongoSentenceFeedbackRepository.findAllByIdIn(sentenceFeedbackIds)
 
-    // Using TODO()
     fun getConversationById(conversationId: ObjectId): ConversationWithMessages? = mongoConversationRepository.findById(conversationId)
 
-    // Using TODO()
     fun getConversationsBy(
         user: MongoUser,
         wordDefinitionId: ObjectId,
@@ -321,5 +336,69 @@ class MongoWordService(
 
     fun updateConversation(conversation: MongoConversation) {
         TODO("need to add conversation message")
+    }
+
+    fun approveWordDefinition(
+        word: WordWithDefinitions,
+        wordDefinitionId: ObjectId,
+    ): WordWithDefinitions {
+        val targetWordDefinition =
+            word.definitions.find { it.id == wordDefinitionId }
+                ?: throw NotFoundException(
+                    message = "Word definition not found",
+                    code = "WORD_4",
+                )
+        if (targetWordDefinition.status != StatusType.PENDING) {
+            throw BadRequestException(
+                message = "Cannot approve word definition that is not pending",
+                code = "WORD_6",
+            )
+        }
+
+        mongoWordRepository.updateWordDefinitionStatus(
+            wordDefinitionId = wordDefinitionId,
+            status = StatusType.LIVE,
+        )
+
+        return getWordWithDefinitionsBy(id = word.id!!)!!
+    }
+
+    fun removeWordDefinition(
+        word: WordWithDefinitions,
+        wordDefinitionId: ObjectId,
+    ): WordWithDefinitions {
+        word.definitions.find { it.id == wordDefinitionId }
+            ?: throw NotFoundException(
+                message = "Word definition not found",
+                code = "WORD_4",
+            )
+
+        mongoWordRepository.updateWordDefinitionStatus(
+            wordDefinitionId = wordDefinitionId,
+            status = StatusType.REMOVED,
+        )
+
+        return getWordWithDefinitionsBy(id = word.id!!)!!
+    }
+
+    fun addWordDefinition(
+        word: WordWithDefinitions,
+        lexicalCategory: LexicalCategoryType,
+        meaning: String,
+        preContext: String,
+    ): WordWithDefinitions {
+        val newWordDefinition =
+            MongoWordDefinition.fromCreateObject(
+                WordDefinitionCreateObject(
+                    lexicalCategory = lexicalCategory,
+                    meaning = meaning,
+                    preContext = preContext,
+                ),
+                wordId = word.id!!,
+            )
+
+        mongoWordRepository.saveWordDefinition(newWordDefinition)
+
+        return getWordWithDefinitionsBy(id = word.id)!!
     }
 }

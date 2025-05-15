@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.domain.auth.GoogleApiClientService
-import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.auth.TokenService
 import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.domain.user.MongoUserService
 import com.inout.apiserver.error.GoogleIdTokenVerificationException
@@ -16,7 +16,6 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.data.mongodb.core.MongoTemplate
-import org.springframework.jdbc.core.JdbcTemplate
 
 @InOutSpringBootTest
 class GoogleLoginApplicationTest(
@@ -24,13 +23,12 @@ class GoogleLoginApplicationTest(
     // services
     private val userService: MongoUserService,
     @SpyBean
-    private val tokenService: MongoTokenService,
+    private val tokenService: TokenService,
     @SpyBean
     private val googleApiClientService: GoogleApiClientService,
     // factories
     private val userFactory: MongoUserFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         val email = "test@1.com"
@@ -47,7 +45,6 @@ class GoogleLoginApplicationTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
             mongoTemplate.cleanUp()
         }
 

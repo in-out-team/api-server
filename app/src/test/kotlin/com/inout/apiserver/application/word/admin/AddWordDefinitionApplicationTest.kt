@@ -2,30 +2,31 @@ package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.jdbc.core.JdbcTemplate
+import org.bson.types.ObjectId
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class AddWordDefinitionApplicationTest(
     private val subject: AddWordDefinitionApplication,
     // factories
-    private val wordFactory: WordFactory,
-    // repositories
-    private val wordRepository: WordRepository,
+    private val wordFactory: MongoWordFactory,
+    // services
+    private val wordService: MongoWordService,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when word does not exist") {
@@ -33,7 +34,7 @@ class AddWordDefinitionApplicationTest(
                 // given
                 val request =
                     AddWordDefinitionApplication.Request(
-                        wordId = 1L,
+                        wordId = ObjectId(),
                         lexicalCategory = LexicalCategoryType.NOUN,
                         meaning = "책",
                         preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
@@ -49,7 +50,7 @@ class AddWordDefinitionApplicationTest(
         }
 
         describe("when word exists") {
-            var word: Word? = null
+            var word: WordWithDefinitions? = null
 
             beforeEach {
                 word = wordFactory.createWord()
@@ -96,8 +97,7 @@ class AddWordDefinitionApplicationTest(
 
             it("should add definition to word if conflict definition is removed") {
                 // given
-                word!!.removeDefinition(wordDefinitionId = word!!.definitions.first().id!!)
-                word = wordRepository.save(word!!)
+                word = wordService.removeWordDefinition(word = word!!, wordDefinitionId = word!!.definitions.first().id!!)
                 val request =
                     AddWordDefinitionApplication.Request(
                         wordId = word!!.id!!,

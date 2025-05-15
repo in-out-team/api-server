@@ -1,15 +1,15 @@
 package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.domain.word.WordCreateObject
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.infrastructure.db.word.Word
 import org.springframework.stereotype.Component
 
 @Component
 class CreateWordManualApplication(
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
 ) {
     data class Request(
         val name: String,
@@ -18,7 +18,7 @@ class CreateWordManualApplication(
     )
 
     data class Response(
-        val word: Word,
+        val word: WordWithDefinitions,
     )
 
     fun run(request: Request): Response {
@@ -37,7 +37,7 @@ class CreateWordManualApplication(
         toLanguage: LanguageType,
     ) {
         wordService
-            .getWordByNameAndFromLanguageAndToLanguage(
+            .getWordWithDefinitionsBy(
                 name = name,
                 fromLanguage = fromLanguage,
                 toLanguage = toLanguage,
@@ -46,7 +46,7 @@ class CreateWordManualApplication(
             }
     }
 
-    private fun createWord(request: Request): Word {
+    private fun createWord(request: Request): WordWithDefinitions {
         val createdWord =
             wordService.createWord(
                 WordCreateObject(

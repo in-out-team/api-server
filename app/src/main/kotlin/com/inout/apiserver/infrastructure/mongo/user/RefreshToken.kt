@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
 @Document(collection = "refresh_tokens")
-data class MongoRefreshToken(
+data class RefreshToken(
     @Id
     val id: ObjectId? = null,
     val userId: ObjectId,

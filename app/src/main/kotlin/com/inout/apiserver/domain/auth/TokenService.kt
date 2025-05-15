@@ -1,9 +1,9 @@
 package com.inout.apiserver.domain.auth
 
 import com.inout.apiserver.config.jwt.JwtProperties
-import com.inout.apiserver.infrastructure.db.user.RefreshToken
-import com.inout.apiserver.infrastructure.db.user.RefreshTokenRepository
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.RefreshToken
+import com.inout.apiserver.infrastructure.mongo.user.RefreshTokenRepository
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.ExpiredJwtException
 import io.jsonwebtoken.Jwts
@@ -19,7 +19,7 @@ class TokenService(
     private val key = Keys.hmacShaKeyFor(jwtProperties.key.toByteArray())
 
     fun generate(
-        user: User,
+        user: MongoUser,
         expirationDate: Date = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration),
         extraClaims: Map<String, Any> = emptyMap(),
     ): String =
@@ -35,7 +35,7 @@ class TokenService(
             .compact()
 
     fun generateAccessToken(
-        user: User,
+        user: MongoUser,
         extraClaims: Map<String, Any> = emptyMap(),
     ): String {
         val expirationDate = Date(System.currentTimeMillis() + jwtProperties.accessTokenExpiration)
@@ -43,7 +43,7 @@ class TokenService(
     }
 
     fun generateRefreshToken(
-        user: User,
+        user: MongoUser,
         extraClaims: Map<String, Any> = emptyMap(),
     ): String {
         val expirationDate = Date(System.currentTimeMillis() + jwtProperties.refreshTokenExpiration)

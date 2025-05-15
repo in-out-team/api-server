@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.service.DictionaryService
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
@@ -9,6 +9,7 @@ import com.zaxxer.hikari.HikariDataSource
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import org.bson.types.ObjectId
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.mockito.kotlin.any
@@ -18,8 +19,9 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 import java.util.UUID
+import javax.sql.DataSource
 
 @InOutSpringBootTest
 class CreateSentenceApplicationTest(
@@ -28,12 +30,12 @@ class CreateSentenceApplicationTest(
     @SpyBean
     private val dictionaryService: DictionaryService,
     // factories
-    private val wordFactory: WordFactory,
+    private val wordFactory: MongoWordFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
     @SpyBean
     private val jobScheduler: JobScheduler,
-    private val jobrunrDataSource: javax.sql.DataSource,
+    private val jobrunrDataSource: DataSource,
 ) : DescribeSpec({
         beforeEach {
             doReturn(JobId(UUID.randomUUID()))
@@ -42,7 +44,7 @@ class CreateSentenceApplicationTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
             clearInvocations(jobScheduler)
         }
 
@@ -54,7 +56,7 @@ class CreateSentenceApplicationTest(
             context("when word is not found") {
                 it("should raise error") {
                     // given
-                    val wordId = 0L
+                    val wordId = ObjectId()
 
                     // when
                     val exception =

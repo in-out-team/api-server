@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.domain.auth.GoogleApiClientService
-import com.inout.apiserver.domain.auth.MongoTokenService
+import com.inout.apiserver.domain.auth.TokenService
 import com.inout.apiserver.domain.user.MongoUserService
 import org.apache.commons.codec.digest.Md5Crypt
 import org.springframework.stereotype.Component
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 class GoogleLoginApplication(
     private val userService: MongoUserService,
     private val googleApiClientService: GoogleApiClientService,
-    private val tokenService: MongoTokenService,
+    private val tokenService: TokenService,
 ) {
     data class Request(
         val idToken: String,
