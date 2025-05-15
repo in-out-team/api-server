@@ -1,48 +1,44 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.study.MongoStudyFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordRepository
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.jdbc.core.JdbcTemplate
-import java.util.Optional
+import org.bson.types.ObjectId
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class CreateStudyApplicationTest(
     private val subject: CreateStudyApplication,
     // factories
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
-    private val studyFactory: StudyFactory,
-    // repositories
-    private val wordRepository: WordRepository,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val studyFactory: MongoStudyFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
+        var user: MongoUser? = null
 
         beforeEach {
             user = userFactory.createUser()
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when word definition does not exists") {
             it("should raise error") {
                 // given
-                val wordDefinitionId = 1L
-                wordRepository.findById(wordDefinitionId) shouldBe Optional.empty()
+                val wordDefinitionId = ObjectId()
 
                 // when
                 val result =
@@ -62,8 +58,8 @@ class CreateStudyApplicationTest(
         }
 
         describe("when word definition exists") {
-            var word: Word? = null
-            var wordDefinitionId = 0L
+            var word: WordWithDefinitions? = null
+            var wordDefinitionId = ObjectId()
 
             beforeEach {
                 word = wordFactory.createWord()
@@ -101,9 +97,9 @@ class CreateStudyApplicationTest(
                     )
 
                 // then
-                result.study.userId shouldBe user!!.id!!
-                result.study.wordDefinitionId shouldBe wordDefinitionId
-                result.word shouldBe word!!
+                result.studyWord.study.userId shouldBe user!!.id!!
+                result.studyWord.study.wordDefinitionId shouldBe wordDefinitionId
+                result.studyWord.word shouldBe word!!
             }
         }
     })

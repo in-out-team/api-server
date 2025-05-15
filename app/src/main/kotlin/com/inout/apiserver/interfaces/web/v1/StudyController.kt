@@ -4,20 +4,29 @@ import com.inout.apiserver.application.study.CreateStudyApplication
 import com.inout.apiserver.application.study.RateStudyWordApplication
 import com.inout.apiserver.application.study.ReadOrCreateDailyStudySetApplication
 import com.inout.apiserver.application.study.ReadStudiesApplication
+import com.inout.apiserver.config.web.RequestMongoUser
 import com.inout.apiserver.config.web.RequestUser
+import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.apiSpec.StudyApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.DailyStudySetResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoStudyWordResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
 import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -32,10 +41,58 @@ class StudyController(
     private val readOrCreateDailyStudySetApplication: ReadOrCreateDailyStudySetApplication,
     private val rateStudyWordApplication: RateStudyWordApplication,
 ) : StudyApiSpec {
-    override fun createStudy(
+    @PostMapping
+    @Operation(
+        summary = "단어장에 단어 추가",
+        description = "단어장에 학습할 단어를 추가합니다.",
+        requestBody =
+            io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "학습 단어 추가 요청값",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = CreateStudyRequest::class),
+                    ),
+                ],
+            ),
+        responses = [
+            ApiResponse(
+                responseCode = "201",
+                description = "학습 단어 추가 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = MongoStudyWordResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description = "학습 단어 추가 실패 (code: WORD_2) - 존재하지 않는 단어",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "409",
+                description = "학습 단어 추가 실패 (code: STUDY_1) - 이미 단어장에 추가된 단어",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<StudyWordResponse> =
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoStudyWordResponse> =
         ResponseEntity(
             createStudyApplication
                 .run(
@@ -43,7 +100,7 @@ class StudyController(
                         user = user,
                         wordDefinitionId = request.wordDefinitionId,
                     ),
-                ).let { StudyWordResponse.of(it.study, it.word) },
+                ).let { MongoStudyWordResponse.of(study = it.studyWord.study, word = it.studyWord.word) },
             CREATED,
         )
 

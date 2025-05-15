@@ -1,33 +1,40 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.base.alias.WordDefinitionId
-import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.study.StudyWord
-import com.inout.apiserver.domain.word.WordService
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.domain.study.MongoStudyService
+import com.inout.apiserver.domain.study.MongoStudyWord
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class CreateStudyApplication(
-    private val studyService: StudyService,
-    private val wordService: WordService,
+    private val studyService: MongoStudyService,
+    private val wordService: MongoWordService,
 ) {
     data class Request(
-        val user: User,
-        val wordDefinitionId: WordDefinitionId,
+        val user: MongoUser,
+        val wordDefinitionId: ObjectId,
     )
 
     data class Response(
-        val studyWord: StudyWord,
+        val studyWord: MongoStudyWord,
     )
 
-    fun run(request: Request): StudyWord {
+    fun run(request: Request): Response {
         val word = wordService.getWordByLiveWordDefinitionId(request.wordDefinitionId)
         val createdStudy =
             studyService.createStudy(
                 userId = request.user.id!!,
                 wordDefinitionId = request.wordDefinitionId,
             )
-        return StudyWord(study = createdStudy, word = word)
+
+        return Response(
+            studyWord =
+                MongoStudyWord(
+                    word = word,
+                    study = createdStudy,
+                ),
+        )
     }
 }
