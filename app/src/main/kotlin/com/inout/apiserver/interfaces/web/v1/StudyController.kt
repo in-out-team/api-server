@@ -5,17 +5,13 @@ import com.inout.apiserver.application.study.RateStudyWordApplication
 import com.inout.apiserver.application.study.ReadOrCreateDailyStudySetApplication
 import com.inout.apiserver.application.study.ReadStudiesApplication
 import com.inout.apiserver.config.web.RequestMongoUser
-import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.interfaces.web.v1.apiSpec.StudyApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
 import com.inout.apiserver.interfaces.web.v1.response.MongoDailyStudySetResponse
 import com.inout.apiserver.interfaces.web.v1.response.MongoStudyWordResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
-import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -41,7 +37,7 @@ class StudyController(
     private val readStudiesApplication: ReadStudiesApplication,
     private val readOrCreateDailyStudySetApplication: ReadOrCreateDailyStudySetApplication,
     private val rateStudyWordApplication: RateStudyWordApplication,
-) : StudyApiSpec {
+) {
     @PostMapping
     @Operation(
         summary = "단어장에 단어 추가",
@@ -205,10 +201,60 @@ class StudyController(
         )
     }
 
-    override fun rateStudyWord(
-        @Parameter(hidden = true) @RequestUser user: User,
+    @PostMapping("/rate")
+    @Operation(
+        summary = "학습 단어 평가",
+        description = "학습 단어를 평가합니다.",
+        requestBody =
+            io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "학습 단어 평가 요청값",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = RateStudyWordRequest::class),
+                    ),
+                ],
+            ),
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "학습 단어 평가 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = MongoStudyWordResponse::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "404",
+                description =
+                    "학습 단어 평가 실패 (code: STUDY_2) - 존재하지 않는 학습 단어<br/>" +
+                        "학습 단어 평가 실패 (code: STUDY_4) - 존재하지 않는 학습셋",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
+                responseCode = "409",
+                description = "학습 단어 평가 실패 (code: STUDY_7) - 이미 평가된 학습 단어",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun rateStudyWord(
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
         @RequestBody @Valid request: RateStudyWordRequest,
-    ): ResponseEntity<StudyWordResponse> {
+    ): ResponseEntity<MongoStudyWordResponse> {
         val rateStudyResult =
             rateStudyWordApplication.run(
                 RateStudyWordApplication.Request(
@@ -219,7 +265,7 @@ class StudyController(
                 ),
             )
         return ResponseEntity(
-            StudyWordResponse.of(rateStudyResult.studyWord.study, rateStudyResult.studyWord.word),
+            MongoStudyWordResponse.of(rateStudyResult.studyWord.study, rateStudyResult.studyWord.word),
             OK,
         )
     }
