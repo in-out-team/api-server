@@ -3,7 +3,6 @@ package com.inout.apiserver.interfaces.web.v1.apiSpec
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
-import com.inout.apiserver.interfaces.web.v1.response.DailyStudySetResponse
 import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -12,43 +11,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import java.time.LocalDate
 import io.swagger.v3.oas.annotations.parameters.RequestBody as SwaggerRequestBody
 
 interface StudyApiSpec {
-    @GetMapping("/daily")
-    @Operation(
-        summary = "일일 학습셋 조회",
-        description = "요청자의 일일 학습셋을 조회합니다.",
-        parameters = [
-            Parameter(
-                name = "date",
-                description = "조회할 일자",
-                required = true,
-                example = "2024-09-29",
-            ),
-        ],
-        responses = [
-            ApiResponse(
-                responseCode = "200",
-                description = "일일 학습 진행 상황 조회 성공",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = DailyStudySetResponse::class),
-                    ),
-                ],
-            ),
-        ],
-    )
-    fun getDailyStudySet(
-        @Parameter(hidden = true) user: User,
-        @Parameter(name = "date", required = true) date: LocalDate,
-    ): ResponseEntity<DailyStudySetResponse>
-
     @PostMapping("/rate")
     @Operation(
         summary = "학습 단어 평가",

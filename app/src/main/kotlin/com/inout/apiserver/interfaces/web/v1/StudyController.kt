@@ -12,7 +12,7 @@ import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.apiSpec.StudyApiSpec
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
-import com.inout.apiserver.interfaces.web.v1.response.DailyStudySetResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoDailyStudySetResponse
 import com.inout.apiserver.interfaces.web.v1.response.MongoStudyWordResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
 import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
@@ -166,16 +166,41 @@ class StudyController(
         )
     }
 
-    override fun getDailyStudySet(
-        @Parameter(hidden = true) @RequestUser user: User,
+    @GetMapping("/daily")
+    @Operation(
+        summary = "일일 학습셋 조회",
+        description = "요청자의 일일 학습셋을 조회합니다.",
+        parameters = [
+            Parameter(
+                name = "date",
+                description = "조회할 일자",
+                required = true,
+                example = "2024-09-29",
+            ),
+        ],
+        responses = [
+            ApiResponse(
+                responseCode = "200",
+                description = "일일 학습 진행 상황 조회 성공",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = MongoDailyStudySetResponse::class),
+                    ),
+                ],
+            ),
+        ],
+    )
+    fun getDailyStudySet(
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
         @RequestParam(name = "date", required = true) date: LocalDate,
-    ): ResponseEntity<DailyStudySetResponse> {
+    ): ResponseEntity<MongoDailyStudySetResponse> {
         val dailyStudySetResult =
             readOrCreateDailyStudySetApplication.run(
                 ReadOrCreateDailyStudySetApplication.Request(user = user, date = date),
             )
         return ResponseEntity(
-            DailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
+            MongoDailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
             OK,
         )
     }
