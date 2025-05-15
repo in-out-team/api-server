@@ -83,21 +83,19 @@ class CreateWordApplication(
                 ?: return emptyList()
 
         return runBlocking {
-            val allValid =
-                definitions
-                    .map { definition ->
-                        async {
-                            dictionaryService.validateWordDefinition(
-                                word = request.name,
-                                fromLanguage = fromLanguage,
-                                toLanguage = toLanguage,
-                                definition = definition,
-                            )
-                        }
-                    }.awaitAll()
-                    .all { it }
-
-            definitions.takeIf { allValid } ?: emptyList()
+            definitions
+                .map { definition ->
+                    async {
+                        dictionaryService.validateWordDefinition(
+                            word = request.name,
+                            fromLanguage = fromLanguage,
+                            toLanguage = toLanguage,
+                            definition = definition,
+                        ) to definition
+                    }
+                }.awaitAll()
+                .filter { it.first }
+                .map { it.second }
         }
     }
 

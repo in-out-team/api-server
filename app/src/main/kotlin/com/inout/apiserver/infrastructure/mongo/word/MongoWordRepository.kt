@@ -78,6 +78,7 @@ class MongoWordRepository(
 
     fun saveWordDefinition(wordDefinition: MongoWordDefinition): MongoWordDefinition = wordDefinitionRepository.save(wordDefinition)
 
+    // TODO: refactor with findAllWithDefinitionsBy
     fun findAllWithLiveDefinitionsBy(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
@@ -152,7 +153,66 @@ class MongoWordRepository(
             )
 
         val countResult = mongoTemplate.aggregate(countAggregation, "words", Document::class.java).uniqueMappedResult
-        val total = countResult?.get("total") as? Long ?: 0L
+        val total = (countResult?.get("total") as? Int)?.toLong() ?: 0L
+        val results =
+            mongoTemplate
+                .aggregate(
+                    aggregation,
+                    "words",
+                    WordWithDefinitions::class.java,
+                ).mappedResults
+
+        return PageImpl(
+            results,
+            pageable,
+            total,
+        )
+    }
+
+    // TODO: refactor with findAllWithLiveDefinitionsBy
+    fun findAllWithDefinitionsBy(
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+        prefix: String,
+        lexicalCategory: LexicalCategoryType?,
+        pageable: Pageable,
+    ): Page<WordWithDefinitions> {
+        val matchStage =
+            match(
+                Criteria
+                    .where("fromLanguage")
+                    .`is`(fromLanguage)
+                    .and("toLanguage")
+                    .`is`(toLanguage)
+                    .and("name")
+                    .regex("^$prefix.*", "i"),
+            )
+        val lookupStage = lookup("word_definitions", "_id", "wordId", "definitions")
+        val addFieldsStage =
+            addFields()
+                .addField("definitions")
+                .withValue("\$definitions")
+                .build()
+
+        val countAggregation =
+            newAggregation(
+                matchStage,
+                lookupStage,
+                addFieldsStage,
+                count().`as`("total"),
+            )
+        val aggregation =
+            newAggregation(
+                matchStage,
+                lookupStage,
+                addFieldsStage,
+                sort(Sort.by(Sort.Order.asc("name"))),
+                skip(pageable.offset),
+                limit(pageable.pageSize.toLong()),
+            )
+
+        val countResult = mongoTemplate.aggregate(countAggregation, "words", Document::class.java).uniqueMappedResult
+        val total = (countResult?.get("total") as? Int)?.toLong() ?: 0L
         val results =
             mongoTemplate
                 .aggregate(

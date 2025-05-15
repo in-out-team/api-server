@@ -136,6 +136,21 @@ class MongoWordService(
             pageable = pageable,
         )
 
+    fun getWordsWithDefinitions(
+        fromLanguage: LanguageType,
+        toLanguage: LanguageType,
+        prefix: String,
+        lexicalCategory: LexicalCategoryType?,
+        pageable: Pageable,
+    ): Page<WordWithDefinitions> =
+        mongoWordRepository.findAllWithDefinitionsBy(
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            prefix = prefix,
+            lexicalCategory = lexicalCategory,
+            pageable = pageable,
+        )
+
     fun getWordByLiveWordDefinitionId(wordDefinitionId: ObjectId): WordWithDefinitions =
         mongoWordRepository
             .findByLiveDefinitionsId(wordDefinitionId)
