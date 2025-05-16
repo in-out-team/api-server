@@ -1,19 +1,19 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class UnselectReadingSentenceApplication(
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
 ) {
     data class Request(
-        val sentenceId: SentenceId,
-        val user: User,
+        val sentenceId: ObjectId,
+        val user: MongoUser,
     )
 
     fun run(request: Request) {

@@ -168,16 +168,17 @@ class SentenceController(
         CREATED,
     )
 
-    @DeleteMapping("/reading/{id}/unselect")
+    @DeleteMapping("/reading/{sentenceId}/unselect")
     @Operation(
         summary = "사용자 예문 문장 선택 해제",
         description = "선택한 예문 문장을 해제합니다.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -198,12 +199,12 @@ class SentenceController(
         ],
     )
     fun unselectReadingSentence(
-        @PathVariable id: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @PathVariable sentenceId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ): ResponseEntity<Void> {
         unselectReadingSentenceApplication.run(
             UnselectReadingSentenceApplication.Request(
-                sentenceId = id,
+                sentenceId = sentenceId,
                 user = user,
             ),
         )
