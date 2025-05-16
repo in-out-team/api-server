@@ -1,23 +1,20 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.base.alias.SentenceId
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.base.util.LocalizedResponseProvider
-import com.inout.apiserver.domain.word.SentenceFeedbackCreateObject
-import com.inout.apiserver.domain.word.UserSentenceCreateObject
-import com.inout.apiserver.domain.word.UserSentenceFeedbackCreateObject
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Transactional
 class GetWritingSentenceFeedbackApplication(
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
     private val feedbackService: FeedbackService,
     private val localizedResponseProvider: LocalizedResponseProvider,
 ) {
@@ -26,8 +23,8 @@ class GetWritingSentenceFeedbackApplication(
     }
 
     data class Request(
-        val user: User,
-        val sentenceId: SentenceId,
+        val user: MongoUser,
+        val sentenceId: ObjectId,
         /**
          * user's submitted answer for given writing practice sentence
          */
@@ -58,12 +55,10 @@ class GetWritingSentenceFeedbackApplication(
             wordService.getUserSentenceBy(request.user.id!!, request.sentenceId)
                 ?: run {
                     wordService.createUserSentence(
-                        UserSentenceCreateObject(
-                            userId = request.user.id!!,
-                            wordDefinitionId = sentence.wordDefinitionId,
-                            type = SentenceType.WRITING,
-                            sentenceId = sentence.id!!,
-                        ),
+                        userId = request.user.id,
+                        wordDefinitionId = sentence.wordDefinitionId,
+                        type = SentenceType.WRITING,
+                        sentenceId = sentence.id!!,
                     )
                 }
         val userSentenceFeedbacks = wordService.getUserSentenceFeedbacks(userSentence.id!!)
@@ -86,19 +81,15 @@ class GetWritingSentenceFeedbackApplication(
                         )
 
                     wordService.createSentenceFeedback(
-                        SentenceFeedbackCreateObject(
-                            sentenceId = sentence.id!!,
-                            submittedContent = request.submittedContent,
-                            feedback = feedback,
-                        ),
+                        sentenceId = sentence.id!!,
+                        submittedContent = request.submittedContent,
+                        feedback = feedback,
                     )
                 }
 
         wordService.createUserSentenceFeedback(
-            UserSentenceFeedbackCreateObject(
-                userSentenceId = userSentence.id,
-                sentenceFeedbackId = sentenceFeedback.id!!,
-            ),
+            userSentenceId = userSentence.id,
+            sentenceFeedbackId = sentenceFeedback.id!!,
         )
 
         return Response(feedback = sentenceFeedback.feedback)

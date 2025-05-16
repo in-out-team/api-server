@@ -273,16 +273,17 @@ class SentenceController(
             OK,
         )
 
-    @PostMapping("/writing/{id}/feedback")
+    @PostMapping("/writing/{sentenceId}/feedback")
     @Operation(
         summary = "작문 문장 피드백",
         description = "제출한 작문 문장에 대한 AI 피드백을 제공합니다. 외부 API 요청을 하므로 시간이 소요될 수 있으니 spinner 같은 UI를 제공해주세요.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         requestBody =
@@ -330,16 +331,16 @@ class SentenceController(
         ],
     )
     fun getWritingSentenceFeedback(
-        @PathVariable id: Long,
+        @PathVariable sentenceId: ObjectId,
         @RequestBody @Valid request: GetWritingSentenceFeedbackRequest,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ) = ResponseEntity(
         WritingSentenceFeedbackResponse(
             getWritingSentenceFeedbackApplication
                 .run(
                     GetWritingSentenceFeedbackApplication.Request(
                         user = user,
-                        sentenceId = id,
+                        sentenceId = sentenceId,
                         submittedContent = request.submittedContent,
                     ),
                 ).feedback,
