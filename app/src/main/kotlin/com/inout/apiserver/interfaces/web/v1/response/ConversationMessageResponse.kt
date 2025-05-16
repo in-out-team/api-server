@@ -18,7 +18,7 @@ data class ConversationMessageResponse(
     companion object {
         fun of(conversationMessage: ConversationWithMessages.ConversationMessage): ConversationMessageResponse =
             ConversationMessageResponse(
-                id = conversationMessage.id ?: ObjectId.get(),
+                id = conversationMessage.id!!,
                 senderType = conversationMessage.sender,
                 content = conversationMessage.content,
                 audioUrl = conversationMessage.audio?.directory,

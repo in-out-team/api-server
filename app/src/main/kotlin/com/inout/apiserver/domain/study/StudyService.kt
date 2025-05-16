@@ -20,7 +20,7 @@ import java.time.ZoneId
 
 @Service
 class StudyService(
-    private val mongoStudyRepository: StudyRepository,
+    private val studyRepository: StudyRepository,
     private val dailyStudySetRepository: DailyStudySetRepository,
 ) {
     fun getAllByUserId(
@@ -47,11 +47,11 @@ class StudyService(
                         )
                     }
 
-                mongoStudyRepository.findAllByUserId(userId = userId, pageable = pageRequest)
+                studyRepository.findAllByUserId(userId = userId, pageable = pageRequest)
             }
 
             else -> {
-                mongoStudyRepository.findAllByUserIdAndWordNamePrefix(
+                studyRepository.findAllByUserIdAndWordNamePrefix(
                     userId = userId,
                     wordNamePrefix = wordNamePrefix,
                     pageable =
@@ -67,12 +67,12 @@ class StudyService(
         userId: ObjectId,
         wordDefinitionId: ObjectId,
     ): Study? =
-        mongoStudyRepository.findByUserIdAndWordDefinitionId(
+        studyRepository.findByUserIdAndWordDefinitionId(
             userId = userId,
             wordDefinitionId = wordDefinitionId,
         )
 
-    fun getById(id: ObjectId): Study? = mongoStudyRepository.findById(id).orElse(null)
+    fun getById(id: ObjectId): Study? = studyRepository.findById(id).orElse(null)
 
     fun getStudiesPastDue(
         userId: ObjectId,
@@ -86,7 +86,7 @@ class StudyService(
 
         val pageRequest = PageRequest.of(0, count, Sort.by("due").ascending())
 
-        return mongoStudyRepository
+        return studyRepository
             .findAllPastDueStudiesBy(
                 userId = userId,
                 due = due,
@@ -95,7 +95,7 @@ class StudyService(
             ).content
     }
 
-    fun getStudiesByIds(ids: List<ObjectId>): List<Study> = mongoStudyRepository.findAllById(ids)
+    fun getStudiesByIds(ids: List<ObjectId>): List<Study> = studyRepository.findAllById(ids)
 
     fun createStudy(
         userId: ObjectId,
@@ -108,7 +108,7 @@ class StudyService(
             throw ConflictException(message = "Study already exists", code = "STUDY_1")
         }
 
-        return mongoStudyRepository.save(
+        return studyRepository.save(
             Study.fromCreateObject(
                 userId = userId,
                 wordDefinitionId = wordDefinitionId,
@@ -117,7 +117,7 @@ class StudyService(
     }
 
     // FIXME: add rate & save logic here
-    fun updateStudy(study: Study): Study = mongoStudyRepository.save(study)
+    fun updateStudy(study: Study): Study = studyRepository.save(study)
 
     fun getDailyStudySet(
         userId: ObjectId,
@@ -157,7 +157,7 @@ class StudyService(
 
         val userZoneId = ZoneId.of(user.timezone)
         val todayDate = LocalDate.now(userZoneId)
-        val dailyStudySetStudies = mongoStudyRepository.findAllById(dailyStudySet.studyIds)
+        val dailyStudySetStudies = studyRepository.findAllById(dailyStudySet.studyIds)
         if (dailyStudySet.date.isBefore(todayDate)) {
             return dailyStudySetStudies
         }
@@ -196,10 +196,10 @@ class StudyService(
         userId: ObjectId,
         wordDefinitionIds: List<ObjectId>,
     ): List<Study> =
-        mongoStudyRepository.findAllByUserIdAndWordDefinitionIdIn(
+        studyRepository.findAllByUserIdAndWordDefinitionIdIn(
             userId = userId,
             wordDefinitionIds = wordDefinitionIds,
         )
 
-    fun existsStudyByWordDefinitionId(wordDefinitionId: ObjectId): Boolean = mongoStudyRepository.existsByWordDefinitionId(wordDefinitionId)
+    fun existsStudyByWordDefinitionId(wordDefinitionId: ObjectId): Boolean = studyRepository.existsByWordDefinitionId(wordDefinitionId)
 }
