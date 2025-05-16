@@ -1,22 +1,22 @@
 package com.inout.apiserver.application.study
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordDefinitionCreateObject
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.base.enums.StatusType
+import com.inout.apiserver.domain.study.MongoStudyFactory
+import com.inout.apiserver.domain.study.MongoStudyService
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -24,39 +24,41 @@ import java.time.ZoneId
 class ReadOrCreateDailyStudySetApplicationTest(
     private val subject: ReadOrCreateDailyStudySetApplication,
     // services
-    private val studyService: StudyService,
+    private val studyService: MongoStudyService,
     // factories
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
-    private val studyFactory: StudyFactory,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val studyFactory: MongoStudyFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
-        var word: Word? = null
+        var user: MongoUser? = null
+        var word: WordWithDefinitions? = null
 
         beforeEach {
             user = userFactory.createUser()
             word =
                 wordFactory.createWord(
-                    wordDefinitions =
+                    definitions =
                         listOf(
-                            WordDefinitionCreateObject(
+                            WordWithDefinitions.WordDefinition(
                                 lexicalCategory = LexicalCategoryType.NOUN,
                                 meaning = "책",
                                 preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                status = StatusType.LIVE,
                             ),
-                            WordDefinitionCreateObject(
+                            WordWithDefinitions.WordDefinition(
                                 lexicalCategory = LexicalCategoryType.VERB,
                                 meaning = "예약하다",
                                 preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                status = StatusType.LIVE,
                             ),
                         ),
                 )
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("if provided date is after today") {

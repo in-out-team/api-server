@@ -2,24 +2,25 @@ package com.inout.apiserver.application.study
 
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.study.MongoStudyFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.Study
-import com.inout.apiserver.infrastructure.db.study.StudyRepository
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.study.MongoDailyStudySetRepository
+import com.inout.apiserver.infrastructure.mongo.study.MongoStudy
+import com.inout.apiserver.infrastructure.mongo.study.MongoStudyRepository
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.assertThrows
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 import java.time.Instant
 import java.util.Optional
 
@@ -27,18 +28,18 @@ import java.util.Optional
 class RateStudyWordApplicationTest(
     private val subject: RateStudyWordApplication,
     // repositories
-    private val dailyStudySetRepository: DailyStudySetRepository,
-    private val studyRepository: StudyRepository,
+    private val dailyStudySetRepository: MongoDailyStudySetRepository,
+    private val studyRepository: MongoStudyRepository,
     // factories
-    private val studyFactory: StudyFactory,
-    private val wordFactory: WordFactory,
-    private val userFactory: UserFactory,
+    private val studyFactory: MongoStudyFactory,
+    private val wordFactory: MongoWordFactory,
+    private val userFactory: MongoUserFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
-        var word: Word? = null
-        var study: Study? = null
+        var user: MongoUser? = null
+        var word: WordWithDefinitions? = null
+        var study: MongoStudy? = null
 
         beforeEach {
             user = userFactory.createUser()
@@ -47,13 +48,13 @@ class RateStudyWordApplicationTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when dailyStudySet does not exist") {
             it("should raise NotFoundException") {
                 // given
-                val dailyStudySetId = 1L
+                val dailyStudySetId = ObjectId()
                 val rating = FsrsCardRating.EASY
                 dailyStudySetRepository.findById(dailyStudySetId) shouldBe Optional.empty()
 
@@ -77,8 +78,8 @@ class RateStudyWordApplicationTest(
         }
 
         describe("when userId does not match dailyStudySet userId") {
-            var otherUser: User? = null
-            var otherUserStudy: Study? = null
+            var otherUser: MongoUser? = null
+            var otherUserStudy: MongoStudy? = null
 
             beforeEach {
                 otherUser = userFactory.createUser(email = "test2@1.com")
@@ -119,7 +120,7 @@ class RateStudyWordApplicationTest(
                 // given
                 val rating = FsrsCardRating.EASY
                 val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = listOf(study!!))
-                val studyId = 2L
+                val studyId = ObjectId()
                 studyRepository.findById(studyId) shouldBe Optional.empty()
 
                 // when

@@ -1,31 +1,30 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.base.alias.DailyStudySetId
-import com.inout.apiserver.base.alias.StudyId
 import com.inout.apiserver.base.enums.FsrsCardRating
-import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.study.StudyWord
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.study.MongoStudyService
+import com.inout.apiserver.domain.study.MongoStudyWord
+import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Transactional
 class RateStudyWordApplication(
-    private val studyService: StudyService,
-    private val wordService: WordService,
+    private val studyService: MongoStudyService,
+    private val wordService: MongoWordService,
 ) {
     data class Request(
-        val user: User,
-        val dailyStudySetId: DailyStudySetId,
-        val studyId: StudyId,
+        val user: MongoUser,
+        val dailyStudySetId: ObjectId,
+        val studyId: ObjectId,
         val rating: FsrsCardRating,
     )
 
     data class Response(
-        val studyWord: StudyWord,
+        val studyWord: MongoStudyWord,
     )
 
     fun run(request: Request): Response {
@@ -45,6 +44,6 @@ class RateStudyWordApplication(
         studyService.addStudyToDailyStudySet(dailyStudySet, updatedStudy)
 
         val word = wordService.getWordByLiveWordDefinitionId(updatedStudy.wordDefinitionId)
-        return Response(studyWord = StudyWord(study = updatedStudy, word = word))
+        return Response(studyWord = MongoStudyWord(study = updatedStudy, word = word))
     }
 }

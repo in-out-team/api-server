@@ -21,4 +21,12 @@ data class MongoWordWithDefinitionsResponse(
                 definitions = word.definitions.map { MongoWordDefinitionResponse.of(it) },
             )
     }
+
+    fun filterDefinitionsBy(wordDefinitionId: ObjectId): MongoWordWithDefinitionsResponse =
+        copy(
+            definitions =
+                definitions.filter {
+                    it.id == wordDefinitionId
+                },
+        )
 }
