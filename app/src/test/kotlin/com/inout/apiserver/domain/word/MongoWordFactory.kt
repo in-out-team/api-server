@@ -155,5 +155,7 @@ class MongoWordFactory(
                     submittedContent = submittedContent,
                     feedback = feedback,
                 ),
-            )
+            ).let {
+                mongoSentenceFeedbackRepository.findById(it.id!!).get()
+            }
 }

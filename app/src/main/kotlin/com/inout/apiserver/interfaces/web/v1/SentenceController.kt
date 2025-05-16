@@ -7,9 +7,7 @@ import com.inout.apiserver.application.word.GetWritingSentenceFeedbacksApplicati
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
 import com.inout.apiserver.config.web.RequestMongoUser
-import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
 import com.inout.apiserver.interfaces.web.v1.response.MongoSentenceResponse
@@ -348,16 +346,17 @@ class SentenceController(
         OK,
     )
 
-    @GetMapping("/writing/{id}/feedbacks")
+    @GetMapping("/writing/{sentenceId}/feedbacks")
     @Operation(
         summary = "작문 문장 피드백 조회",
         description = "제출한 작문 문장에 대해 제공받았던 AI 피드백을 조회합니다.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -384,14 +383,14 @@ class SentenceController(
         ],
     )
     fun getWritingSentenceFeedbacks(
-        @PathVariable id: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @PathVariable sentenceId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ) = ResponseEntity(
         WritingSentenceFeedbacksResponse.of(
             getWritingSentenceFeedbacksApplication
                 .run(
                     GetWritingSentenceFeedbacksApplication.Request(
-                        sentenceId = id,
+                        sentenceId = sentenceId,
                         user = user,
                     ),
                 ).feedbacks,
