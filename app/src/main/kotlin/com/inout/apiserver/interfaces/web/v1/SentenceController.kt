@@ -6,12 +6,14 @@ import com.inout.apiserver.application.word.GetWritingSentenceFeedbackApplicatio
 import com.inout.apiserver.application.word.GetWritingSentenceFeedbacksApplication
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
+import com.inout.apiserver.config.web.RequestMongoUser
 import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
+import com.inout.apiserver.interfaces.web.v1.response.MongoSentencesResponse
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
-import com.inout.apiserver.interfaces.web.v1.response.SentencesResponse
 import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbackResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbacksResponse
@@ -21,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
@@ -53,7 +56,7 @@ class SentenceController(
                 name = "wordDefinitionId",
                 description = "단어 정의 ID",
                 required = true,
-                schema = Schema(implementation = Long::class),
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -63,7 +66,7 @@ class SentenceController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = SentenceResponse::class),
+                        schema = Schema(implementation = MongoSentencesResponse::class),
                     ),
                 ],
             ),
@@ -80,9 +83,9 @@ class SentenceController(
         ],
     )
     fun getReadingSentences(
-        @RequestParam(required = true) wordDefinitionId: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<SentencesResponse> {
+        @RequestParam(required = true) wordDefinitionId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoSentencesResponse> {
         val (selectedSentences, notSelectedSentences) =
             getReadingSentencesApplication.run(
                 GetReadingSentencesApplication.Request(
@@ -92,7 +95,7 @@ class SentenceController(
             )
 
         return ResponseEntity(
-            SentencesResponse.of(
+            MongoSentencesResponse.of(
                 selectedSentences = selectedSentences,
                 unselectedSentences = notSelectedSentences,
             ),

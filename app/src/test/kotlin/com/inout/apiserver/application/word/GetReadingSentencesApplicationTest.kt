@@ -1,38 +1,37 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.UserSentenceCreateObject
-import com.inout.apiserver.domain.word.WordFactory
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.UserSentenceRepository
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceRepository
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.assertThrows
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class GetReadingSentencesApplicationTest(
     private val getReadingSentencesApplication: GetReadingSentencesApplication,
     // repositories
-    private val userSentenceRepository: UserSentenceRepository,
+    private val userSentenceRepository: MongoUserSentenceRepository,
     // services
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
     // factories
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
-        var word: Word? = null
+        var user: MongoUser? = null
+        var word: WordWithDefinitions? = null
 
         beforeEach {
             user = userFactory.createUser()
@@ -40,7 +39,7 @@ class GetReadingSentencesApplicationTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when sentences not found") {
@@ -66,7 +65,7 @@ class GetReadingSentencesApplicationTest(
         }
 
         describe("when sentences found") {
-            var sentences: List<Sentence>? = null
+            var sentences: List<MongoSentence>? = null
 
             beforeEach {
                 val wordDefinition = word!!.definitions.first()
@@ -105,12 +104,10 @@ class GetReadingSentencesApplicationTest(
                 val wordDefinitionId = word!!.definitions.first().id!!
                 val selectedSentence = sentences!!.first()
                 wordService.createUserSentence(
-                    UserSentenceCreateObject(
-                        userId = user!!.id!!,
-                        wordDefinitionId = wordDefinitionId,
-                        type = SentenceType.READING,
-                        sentenceId = selectedSentence.id!!,
-                    ),
+                    userId = user!!.id!!,
+                    wordDefinitionId = wordDefinitionId,
+                    type = SentenceType.READING,
+                    sentenceId = selectedSentence.id!!,
                 )
 
                 // when
