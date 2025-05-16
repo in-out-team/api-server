@@ -3,17 +3,17 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.DictionaryService
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import com.inout.apiserver.infrastructure.mongo.word.Sentence
 import org.bson.types.ObjectId
 import org.jobrunr.scheduling.JobScheduler
 import org.springframework.stereotype.Component
 
 @Component
 class CreateSentenceApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     private val dictionaryService: DictionaryService,
     private val jobScheduler: JobScheduler,
 ) {
@@ -74,7 +74,7 @@ class CreateSentenceApplication(
                 translation = sentence.translation,
                 lexicalCategories =
                     sentence.lexicalCategories.map { lexicalCategoryMap ->
-                        MongoSentence.LexicalCategoryInfo(
+                        Sentence.LexicalCategoryInfo(
                             word = lexicalCategoryMap.word,
                             lexicalCategory = LexicalCategoryType.of(lexicalCategoryMap.lexicalCategory),
                         )

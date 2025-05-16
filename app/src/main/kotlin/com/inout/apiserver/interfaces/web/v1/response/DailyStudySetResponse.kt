@@ -2,15 +2,24 @@ package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.domain.study.StudyWord
-import com.inout.apiserver.infrastructure.db.study.DailyStudySet
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySet
+import org.bson.types.ObjectId
 import java.time.LocalDate
 
 data class DailyStudySetResponse(
-    val id: Long,
+    val id: ObjectId,
     val date: LocalDate,
     val studies: List<StudyWordResponse>,
     val extraData: ExtraData,
 ) {
+    data class ExtraData(
+        val easyCount: Int = 0,
+        val goodCount: Int = 0,
+        val hardCount: Int = 0,
+        val againCount: Int = 0,
+        val newCount: Int = 0,
+    )
+
     companion object {
         fun of(
             dailyStudySet: DailyStudySet,
@@ -36,12 +45,4 @@ data class DailyStudySetResponse(
             )
         }
     }
-
-    data class ExtraData(
-        val easyCount: Int = 0,
-        val goodCount: Int = 0,
-        val hardCount: Int = 0,
-        val againCount: Int = 0,
-        val newCount: Int = 0,
-    )
 }

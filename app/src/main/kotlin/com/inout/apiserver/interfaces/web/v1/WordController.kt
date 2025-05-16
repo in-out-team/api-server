@@ -3,9 +3,9 @@ package com.inout.apiserver.interfaces.web.v1
 import com.inout.apiserver.application.word.ReadWordsApplication
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.config.web.RequestMongoUser
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.interfaces.web.v1.response.MongoDictionaryWordWithDefinitionsResponse
+import com.inout.apiserver.config.web.RequestUser
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.interfaces.web.v1.response.DictionaryWordWithDefinitionsResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -83,8 +83,8 @@ class WordController(
         prefix: String,
         @RequestParam(required = false)
         lexicalCategory: LexicalCategoryType?,
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<ResponsePaginationWrapper<MongoDictionaryWordWithDefinitionsResponse>> {
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ResponsePaginationWrapper<DictionaryWordWithDefinitionsResponse>> {
         val (count, words, studyingWordDefinitionIds) =
             readWordsApplication.run(
                 ReadWordsApplication.Request(
@@ -101,7 +101,7 @@ class WordController(
             ResponsePaginationWrapper(
                 data =
                     words.map {
-                        MongoDictionaryWordWithDefinitionsResponse.of(
+                        DictionaryWordWithDefinitionsResponse.of(
                             word = it,
                             lexicalCategory = lexicalCategory,
                             studyingWordDefinitionIds = studyingWordDefinitionIds.toSet(),

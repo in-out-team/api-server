@@ -2,10 +2,11 @@ package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.domain.word.WordWithDefinitions
+import org.bson.types.ObjectId
 
 data class DictionaryWordWithDefinitionsResponse(
-    val id: Long,
+    val id: ObjectId,
     val name: String,
     val fromLanguage: LanguageType,
     val toLanguage: LanguageType,
@@ -13,9 +14,9 @@ data class DictionaryWordWithDefinitionsResponse(
 ) {
     companion object {
         fun of(
-            word: Word,
-            lexicalCategoryType: LexicalCategoryType?,
-            studyingWordDefinitionIds: Set<Long>,
+            word: WordWithDefinitions,
+            lexicalCategory: LexicalCategoryType?,
+            studyingWordDefinitionIds: Set<ObjectId>,
         ): DictionaryWordWithDefinitionsResponse =
             DictionaryWordWithDefinitionsResponse(
                 id = word.id!!,
@@ -25,7 +26,7 @@ data class DictionaryWordWithDefinitionsResponse(
                 definitions =
                     word.definitions
                         .filter {
-                            lexicalCategoryType == null || it.lexicalCategory == lexicalCategoryType
+                            lexicalCategory == null || it.lexicalCategory == lexicalCategory
                         }.map {
                             WordDefinitionWithStudyingResponse.of(it, it.id in studyingWordDefinitionIds)
                         },

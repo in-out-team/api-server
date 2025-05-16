@@ -13,9 +13,9 @@ import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class UserServiceTest(
-    private val subject: MongoUserService,
+    private val subject: UserService,
     // factories
-    private val userFactory: MongoUserFactory,
+    private val userFactory: UserFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({

@@ -2,14 +2,14 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
 class AdminReadWordsApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
 ) {
     data class Request(
         val fromLanguage: LanguageType,

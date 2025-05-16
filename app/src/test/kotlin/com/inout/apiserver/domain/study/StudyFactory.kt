@@ -1,18 +1,16 @@
 package com.inout.apiserver.domain.study
 
-import com.inout.apiserver.base.alias.UserId
-import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.FsrsCardState
-import com.inout.apiserver.infrastructure.db.study.DailyStudySet
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.Study
-import com.inout.apiserver.infrastructure.db.study.StudyRepository
-import com.inout.apiserver.infrastructure.db.study.StudyReviewLog
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySet
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySetRepository
+import com.inout.apiserver.infrastructure.mongo.study.Study
+import com.inout.apiserver.infrastructure.mongo.study.StudyRepository
+import com.inout.apiserver.infrastructure.mongo.study.StudyReviewLog
+import com.inout.apiserver.infrastructure.mongo.user.User
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 
 @Component
 class StudyFactory(
@@ -20,8 +18,8 @@ class StudyFactory(
     private val dailyStudySetRepository: DailyStudySetRepository,
 ) {
     fun createStudy(
-        userId: UserId = 1L,
-        wordDefinitionId: WordDefinitionId = 1L,
+        userId: ObjectId,
+        wordDefinitionId: ObjectId,
         state: FsrsCardState = FsrsCardState.NEW,
         due: Instant = Instant.now(),
         stability: Double = 0.0,
@@ -60,15 +58,11 @@ class StudyFactory(
     ): DailyStudySet =
         dailyStudySetRepository
             .save(
-                DailyStudySet
-                    .fromCreateObject(
-                        DailyStudySetCreateObject(
-                            userId = user.id!!,
-                            date = date ?: LocalDate.now(ZoneId.of(user.timezone)),
-                        ),
-                    ).copy(
-                        studyIds = studies.map { it.id!! },
-                    ),
+                DailyStudySet(
+                    userId = user.id!!,
+                    date = date ?: LocalDate.now(),
+                    studyIds = studies.map { it.id!! },
+                ),
             ).let {
                 dailyStudySetRepository.findById(it.id!!).get()
             }

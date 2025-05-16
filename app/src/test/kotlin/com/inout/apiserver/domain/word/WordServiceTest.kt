@@ -4,13 +4,13 @@ import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.word.Sentence
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeSortedBy
 import io.kotest.matchers.collections.shouldContainAll
@@ -25,10 +25,10 @@ import org.springframework.data.mongodb.core.MongoTemplate
 @InOutSpringBootTest
 class WordServiceTest(
     // factories
-    private val mongoWordFactory: MongoWordFactory,
-    private val mongoUserFactory: MongoUserFactory,
+    private val wordFactory: WordFactory,
+    private val userFactory: UserFactory,
     // services
-    private val mongoWordService: MongoWordService,
+    private val wordService: WordService,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
@@ -38,10 +38,10 @@ class WordServiceTest(
 
         describe("getWordWithDefinitionsBy - name, fromLanguage, toLanguage") {
             it("should return Word if found") {
-                val word = mongoWordFactory.createWord()
+                val word = wordFactory.createWord()
 
                 val res =
-                    mongoWordService.getWordWithDefinitionsBy(
+                    wordService.getWordWithDefinitionsBy(
                         name = word.name,
                         fromLanguage = word.fromLanguage,
                         toLanguage = word.toLanguage,
@@ -52,7 +52,7 @@ class WordServiceTest(
 
             it("should return null if not found") {
                 val res =
-                    mongoWordService.getWordWithDefinitionsBy(
+                    wordService.getWordWithDefinitionsBy(
                         name = "name",
                         fromLanguage = LanguageType.ENGLISH,
                         toLanguage = LanguageType.KOREAN,
@@ -65,7 +65,7 @@ class WordServiceTest(
         describe("getWordWithDefinitionsBy - id") {
             it("should return Word if found") {
                 val word =
-                    mongoWordFactory
+                    wordFactory
                         .createWord(
                             name = "board",
                             definitions =
@@ -91,7 +91,7 @@ class WordServiceTest(
                                 ),
                         )
 
-                val res = mongoWordService.getWordWithDefinitionsBy(id = word.id!!)
+                val res = wordService.getWordWithDefinitionsBy(id = word.id!!)
 
                 res shouldNotBe null
                 res!!.id shouldBe word.id
@@ -110,19 +110,19 @@ class WordServiceTest(
             }
 
             it("should return null if not found") {
-                val res = mongoWordService.getWordWithDefinitionsBy(id = ObjectId())
+                val res = wordService.getWordWithDefinitionsBy(id = ObjectId())
 
                 res shouldBe null
             }
         }
 
-        describe("MongoWordService - createWord") {
+        describe("createWord") {
             it("should raise ConflictException if word already exists") {
-                val word = mongoWordFactory.createWord()
+                val word = wordFactory.createWord()
 
                 val res =
                     assertThrows<ConflictException> {
-                        mongoWordService.createWord(
+                        wordService.createWord(
                             WordCreateObject(
                                 name = word.name,
                                 fromLanguage = word.fromLanguage,
@@ -156,7 +156,7 @@ class WordServiceTest(
                         ),
                     )
 
-                val res = mongoWordService.createWord(wordCreateObject)
+                val res = wordService.createWord(wordCreateObject)
 
                 res.id shouldNotBe null
                 res.name shouldBe wordCreateObject.name
@@ -171,13 +171,13 @@ class WordServiceTest(
             }
         }
 
-        describe("MongoWordService - getWordsWithLiveDefinitions") {
+        describe("getWordsWithLiveDefinitions") {
             it("should return Page of Words") {
-                val words = listOf(mongoWordFactory.createWord())
+                val words = listOf(wordFactory.createWord())
                 val pageable = PageRequest.of(0, 1)
 
                 val res =
-                    mongoWordService.getWordsWithLiveDefinitions(
+                    wordService.getWordsWithLiveDefinitions(
                         LanguageType.ENGLISH,
                         LanguageType.KOREAN,
                         "book",
@@ -193,7 +193,7 @@ class WordServiceTest(
                 val words =
                     listOf(
                         // all live
-                        mongoWordFactory.createWord(
+                        wordFactory.createWord(
                             name = "book",
                             definitions =
                                 listOf(
@@ -212,7 +212,7 @@ class WordServiceTest(
                                 ),
                         ),
                         // some live
-                        mongoWordFactory
+                        wordFactory
                             .createWord(
                                 name = "board",
                                 definitions =
@@ -238,12 +238,12 @@ class WordServiceTest(
                                     ),
                             ),
                         // no definitions
-                        mongoWordFactory.createWord(
+                        wordFactory.createWord(
                             name = "boast",
                             definitions = emptyList(),
                         ),
                         // no live definitions
-                        mongoWordFactory
+                        wordFactory
                             .createWord(
                                 name = "booked",
                                 definitions =
@@ -259,7 +259,7 @@ class WordServiceTest(
                     )
 
                 val res =
-                    mongoWordService.getWordsWithLiveDefinitions(
+                    wordService.getWordsWithLiveDefinitions(
                         fromLanguage = LanguageType.ENGLISH,
                         toLanguage = LanguageType.KOREAN,
                         prefix = "b",
@@ -280,13 +280,13 @@ class WordServiceTest(
             }
         }
 
-        describe("MongoWordService - getWordByLiveWordDefinitionId") {
+        describe("getWordByLiveWordDefinitionId") {
             it("should raise NotFoundException if not word with given wordDefinitionId does not exist") {
                 val wordDefinitionId = ObjectId()
 
                 val res =
                     assertThrows<NotFoundException> {
-                        mongoWordService.getWordByLiveWordDefinitionId(wordDefinitionId)
+                        wordService.getWordByLiveWordDefinitionId(wordDefinitionId)
                     }
 
                 res.message shouldBe "Word Definition not found"
@@ -296,7 +296,7 @@ class WordServiceTest(
             it("should return Word") {
                 // given
                 val word =
-                    mongoWordFactory
+                    wordFactory
                         .createWord(
                             name = "board",
                             definitions =
@@ -324,7 +324,7 @@ class WordServiceTest(
 
                 // when
                 val res =
-                    mongoWordService.getWordByLiveWordDefinitionId(word.definitions[1].id!!)
+                    wordService.getWordByLiveWordDefinitionId(word.definitions[1].id!!)
 
                 // then
                 res.id shouldBe word.id
@@ -340,12 +340,12 @@ class WordServiceTest(
             }
         }
 
-        describe("MongoWordService - getWordsByLiveWordDefinitionIds") {
+        describe("getWordsByLiveWordDefinitionIds") {
             it("should return list of words") {
                 // given
                 val words =
                     listOf(
-                        mongoWordFactory
+                        wordFactory
                             .createWord(
                                 name = "book",
                                 fromLanguage = LanguageType.ENGLISH,
@@ -372,7 +372,7 @@ class WordServiceTest(
                                         ),
                                     ),
                             ),
-                        mongoWordFactory
+                        wordFactory
                             .createWord(
                                 name = "booked",
                                 fromLanguage = LanguageType.ENGLISH,
@@ -405,7 +405,7 @@ class WordServiceTest(
 
                 // when
                 val res =
-                    mongoWordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
+                    wordService.getWordsByLiveWordDefinitionIds(wordDefinitionIds)
 
                 // then
                 res.size shouldBe 2
@@ -418,22 +418,22 @@ class WordServiceTest(
             }
         }
 
-        describe("MongoService - createUserSentence") {
-            var user: MongoUser? = null
+        describe("createUserSentence") {
+            var user: User? = null
             var word: WordWithDefinitions?
             var wordDefinitionId = ObjectId()
-            var sentence: MongoSentence? = null
+            var sentence: Sentence? = null
 
             beforeEach {
-                user = mongoUserFactory.createUser()
-                word = mongoWordFactory.createWord()
+                user = userFactory.createUser()
+                word = wordFactory.createWord()
                 wordDefinitionId = word!!.definitions.first().id!!
-                sentence = mongoWordFactory.createSentence(wordDefinitionId)
+                sentence = wordFactory.createSentence(wordDefinitionId)
             }
 
             it("should raise ConflictException if userSentence already exists") {
                 // given
-                mongoWordService.createUserSentence(
+                wordService.createUserSentence(
                     userId = user!!.id!!,
                     wordDefinitionId = wordDefinitionId,
                     type = SentenceType.READING,
@@ -443,7 +443,7 @@ class WordServiceTest(
                 // when & then
                 val res =
                     assertThrows<ConflictException> {
-                        mongoWordService.createUserSentence(
+                        wordService.createUserSentence(
                             userId = user!!.id!!,
                             wordDefinitionId = wordDefinitionId,
                             type = SentenceType.READING,
@@ -458,7 +458,7 @@ class WordServiceTest(
             it("should save and return UserSentence") {
                 // when
                 val res =
-                    mongoWordService.createUserSentence(
+                    wordService.createUserSentence(
                         userId = user!!.id!!,
                         wordDefinitionId = wordDefinitionId,
                         type = SentenceType.READING,
@@ -474,21 +474,21 @@ class WordServiceTest(
             }
         }
 
-        describe("MongoService - getConversationsBy") {
-            var user: MongoUser? = null
+        describe("getConversationsBy") {
+            var user: User? = null
             var word: WordWithDefinitions?
             var wordDefinitionId = ObjectId()
 
             beforeEach {
-                user = mongoUserFactory.createUser()
-                word = mongoWordFactory.createWord()
+                user = userFactory.createUser()
+                word = wordFactory.createWord()
                 wordDefinitionId = word!!.definitions.first().id!!
             }
 
             it("should return empty list if no conversations found") {
                 // when
                 val res =
-                    mongoWordService.getConversationsBy(
+                    wordService.getConversationsBy(
                         user = user!!,
                         wordDefinitionId = wordDefinitionId,
                     )
@@ -500,12 +500,12 @@ class WordServiceTest(
             it("should return list of conversations sorted by createdAt") {
                 // given
                 repeat(2) {
-                    mongoWordFactory.createConversation(user!!, wordDefinitionId)
+                    wordFactory.createConversation(user!!, wordDefinitionId)
                 }
 
                 // when
                 val res =
-                    mongoWordService.getConversationsBy(
+                    wordService.getConversationsBy(
                         user = user!!,
                         wordDefinitionId = wordDefinitionId,
                     )

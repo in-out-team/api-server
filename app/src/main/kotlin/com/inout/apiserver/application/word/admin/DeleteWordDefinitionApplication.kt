@@ -1,8 +1,8 @@
 package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.study.MongoStudyService
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.study.StudyService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class DeleteWordDefinitionApplication(
-    private val wordService: MongoWordService,
-    private val studyService: MongoStudyService,
+    private val wordService: WordService,
+    private val studyService: StudyService,
 ) {
     data class Request(
         val wordId: ObjectId,

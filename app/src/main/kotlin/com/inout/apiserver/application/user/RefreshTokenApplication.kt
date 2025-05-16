@@ -1,18 +1,18 @@
 package com.inout.apiserver.application.user
 
 import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.MongoUserService
+import com.inout.apiserver.domain.user.UserService
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.user.RefreshToken
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 class RefreshTokenApplication(
-    private val userService: MongoUserService,
+    private val userService: UserService,
     private val tokenService: TokenService,
 ) {
     data class Request(
@@ -51,7 +51,7 @@ class RefreshTokenApplication(
         }
     }
 
-    private fun generateTokens(user: MongoUser) =
+    private fun generateTokens(user: User) =
         Response(
             accessToken = tokenService.generateAccessToken(user),
             refreshToken = tokenService.generateRefreshToken(user),

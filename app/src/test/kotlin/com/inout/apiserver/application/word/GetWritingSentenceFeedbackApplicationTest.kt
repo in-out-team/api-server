@@ -2,16 +2,16 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.FeedbackService
-import com.inout.apiserver.domain.user.MongoUserFactory
-import com.inout.apiserver.domain.word.MongoWordFactory
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.word.Sentence
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -33,14 +33,14 @@ class GetWritingSentenceFeedbackApplicationTest(
     @SpyBean
     private val feedbackService: FeedbackService,
     @SpyBean
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     // factories
-    private val wordFactory: MongoWordFactory,
-    private val userFactory: MongoUserFactory,
+    private val wordFactory: WordFactory,
+    private val userFactory: UserFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
 
         beforeEach {
             user = userFactory.createUser()
@@ -77,7 +77,7 @@ class GetWritingSentenceFeedbackApplicationTest(
         describe("when sentence is found") {
             var word: WordWithDefinitions?
             var wordDefinition: WordWithDefinitions.WordDefinition? = null
-            var sentence: MongoSentence? = null
+            var sentence: Sentence? = null
 
             beforeEach {
                 word = wordFactory.createWord()

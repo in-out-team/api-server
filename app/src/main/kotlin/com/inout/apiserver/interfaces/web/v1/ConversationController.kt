@@ -3,12 +3,12 @@ package com.inout.apiserver.interfaces.web.v1
 import com.inout.apiserver.application.word.GetConversationsApplication
 import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.application.word.StartConversationApplication
-import com.inout.apiserver.config.web.RequestMongoUser
+import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import com.inout.apiserver.interfaces.web.v1.request.RespondToConversationRequest
 import com.inout.apiserver.interfaces.web.v1.request.StartConversationRequest
-import com.inout.apiserver.interfaces.web.v1.response.MongoConversationResponse
+import com.inout.apiserver.interfaces.web.v1.response.ConversationResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponseListWrapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -67,8 +67,8 @@ class ConversationController(
     )
     fun getConversations(
         @RequestParam(required = true) wordDefinitionId: ObjectId,
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<ResponseListWrapper<MongoConversationResponse>> {
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ResponseListWrapper<ConversationResponse>> {
         val result =
             getConversationsApplication.run(
                 GetConversationsApplication.Request(
@@ -79,7 +79,7 @@ class ConversationController(
 
         return ResponseEntity(
             ResponseListWrapper(
-                data = result.conversations.map { MongoConversationResponse.of(it) },
+                data = result.conversations.map { ConversationResponse.of(it) },
             ),
             OK,
         )
@@ -96,7 +96,7 @@ class ConversationController(
                 content = [
                     Content(
                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = Schema(implementation = MongoConversationResponse::class),
+                        schema = Schema(implementation = ConversationResponse::class),
                     ),
                 ],
             ),
@@ -114,10 +114,10 @@ class ConversationController(
     )
     fun startConversation(
         @RequestBody @Valid request: StartConversationRequest,
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<MongoConversationResponse> =
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ConversationResponse> =
         ResponseEntity.ok(
-            MongoConversationResponse.of(
+            ConversationResponse.of(
                 startConversationApplication
                     .run(
                         StartConversationApplication.Request(
@@ -158,7 +158,7 @@ class ConversationController(
                 content = [
                     Content(
                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = Schema(implementation = MongoConversationResponse::class),
+                        schema = Schema(implementation = ConversationResponse::class),
                     ),
                 ],
             ),
@@ -189,10 +189,10 @@ class ConversationController(
     fun respondToConversation(
         @PathVariable conversationId: ObjectId,
         @RequestBody @Valid request: RespondToConversationRequest,
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<MongoConversationResponse> =
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ConversationResponse> =
         ResponseEntity.ok(
-            MongoConversationResponse.of(
+            ConversationResponse.of(
                 respondToConversationApplication
                     .run(
                         RespondToConversationApplication.Request(

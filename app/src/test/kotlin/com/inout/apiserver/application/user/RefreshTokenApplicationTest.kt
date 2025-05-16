@@ -1,14 +1,14 @@
 package com.inout.apiserver.application.user
 
 import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.user.RefreshToken
 import com.inout.apiserver.infrastructure.mongo.user.RefreshTokenRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -24,11 +24,11 @@ class RefreshTokenApplicationTest(
     // repositories
     private val refreshTokenRepository: RefreshTokenRepository,
     // factories
-    private val userFactory: MongoUserFactory,
+    private val userFactory: UserFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
         var refreshToken: RefreshToken?
 
         beforeEach {
@@ -60,7 +60,7 @@ class RefreshTokenApplicationTest(
             it("should throw NotFoundException") {
                 // given
                 val nonExistingUser =
-                    MongoUser(
+                    User(
                         id = ObjectId(),
                         email = "nonexistingemail@1.com",
                         password = "password",

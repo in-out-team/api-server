@@ -3,8 +3,7 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.infrastructure.mongo.word.MongoWord
-import com.inout.apiserver.infrastructure.mongo.word.MongoWordDefinition
+import com.inout.apiserver.infrastructure.mongo.word.Word
 import org.bson.types.ObjectId
 
 data class WordWithDefinitions(
@@ -24,8 +23,8 @@ data class WordWithDefinitions(
 
     companion object {
         fun of(
-            word: MongoWord,
-            definitions: List<MongoWordDefinition>,
+            word: Word,
+            definitions: List<com.inout.apiserver.infrastructure.mongo.word.WordDefinition>,
         ): WordWithDefinitions =
             WordWithDefinitions(
                 id = word.id,

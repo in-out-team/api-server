@@ -1,14 +1,14 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.domain.study.MongoStudyFactory
-import com.inout.apiserver.domain.user.MongoUserFactory
-import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.study.StudyFactory
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -19,13 +19,13 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class CreateStudyApplicationTest(
     private val subject: CreateStudyApplication,
     // factories
-    private val userFactory: MongoUserFactory,
-    private val wordFactory: MongoWordFactory,
-    private val studyFactory: MongoStudyFactory,
+    private val userFactory: UserFactory,
+    private val wordFactory: WordFactory,
+    private val studyFactory: StudyFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
 
         beforeEach {
             user = userFactory.createUser()

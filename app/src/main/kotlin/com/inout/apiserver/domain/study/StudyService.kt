@@ -1,16 +1,13 @@
 package com.inout.apiserver.domain.study
 
-import com.inout.apiserver.base.alias.DailyStudySetId
-import com.inout.apiserver.base.alias.StudyId
-import com.inout.apiserver.base.alias.UserId
-import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.infrastructure.db.study.DailyStudySet
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.Study
-import com.inout.apiserver.infrastructure.db.study.StudyRepository
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySet
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySetRepository
+import com.inout.apiserver.infrastructure.mongo.study.Study
+import com.inout.apiserver.infrastructure.mongo.study.StudyRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import org.bson.types.ObjectId
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -27,7 +24,7 @@ class StudyService(
     private val dailyStudySetRepository: DailyStudySetRepository,
 ) {
     fun getAllByUserId(
-        userId: UserId,
+        userId: ObjectId,
         wordNamePrefix: String?,
         pageable: Pageable,
     ): Page<Study> =
@@ -46,69 +43,63 @@ class StudyService(
                         PageRequest.of(
                             pageable.pageNumber,
                             pageable.pageSize,
-                            Sort.by("due").descending(),
+                            Sort.by("due").ascending(),
                         )
                     }
 
-                studyRepository.findAllByUserId(userId, pageRequest)
+                studyRepository.findAllByUserId(userId = userId, pageable = pageRequest)
             }
 
             else -> {
-                PageRequest.of(
-                    pageable.pageNumber,
-                    pageable.pageSize,
-                )
-
                 studyRepository.findAllByUserIdAndWordNamePrefix(
                     userId = userId,
                     wordNamePrefix = wordNamePrefix,
-                    pageable = pageable,
+                    pageable =
+                        PageRequest.of(
+                            pageable.pageNumber,
+                            pageable.pageSize,
+                        ),
                 )
             }
         }
 
     fun getByUserIdAndWordDefinitionId(
-        userId: UserId,
-        wordDefinitionId: WordDefinitionId,
-    ): Study? = studyRepository.findByUserIdAndWordDefinitionId(userId, wordDefinitionId)
+        userId: ObjectId,
+        wordDefinitionId: ObjectId,
+    ): Study? =
+        studyRepository.findByUserIdAndWordDefinitionId(
+            userId = userId,
+            wordDefinitionId = wordDefinitionId,
+        )
 
-    fun getById(id: StudyId): Study? = studyRepository.findById(id).orElse(null)
+    fun getById(id: ObjectId): Study? = studyRepository.findById(id).orElse(null)
 
     fun getStudiesPastDue(
-        userId: UserId,
+        userId: ObjectId,
         due: Instant,
-        excludeIds: List<StudyId>,
+        excludeIds: List<ObjectId>,
         count: Int,
     ): List<Study> {
         if (count <= 0) {
             return emptyList()
         }
 
+        val pageRequest = PageRequest.of(0, count, Sort.by("due").ascending())
+
         return studyRepository
             .findAllPastDueStudiesBy(
                 userId = userId,
                 due = due,
                 excludeIds = excludeIds,
-                pageable = PageRequest.of(0, count),
+                pageable = pageRequest,
             ).content
     }
 
-    fun getStudiesByIds(ids: List<StudyId>): List<Study> = studyRepository.findAllById(ids)
-
-    fun createStudy(studyCreateObject: StudyCreateObject): Study {
-        getByUserIdAndWordDefinitionId(
-            userId = studyCreateObject.userId,
-            wordDefinitionId = studyCreateObject.wordDefinitionId,
-        )?.let {
-            throw ConflictException(message = "Study already exists", code = "STUDY_1")
-        }
-
-        return studyRepository.save(Study.fromCreateObject(studyCreateObject))
-    }
+    fun getStudiesByIds(ids: List<ObjectId>): List<Study> = studyRepository.findAllById(ids)
 
     fun createStudy(
-        userId: UserId,
-        wordDefinitionId: WordDefinitionId,
+        userId: ObjectId,
+        wordDefinitionId: ObjectId,
     ): Study {
         getByUserIdAndWordDefinitionId(
             userId = userId,
@@ -119,32 +110,36 @@ class StudyService(
 
         return studyRepository.save(
             Study.fromCreateObject(
-                StudyCreateObject(
-                    userId = userId,
-                    wordDefinitionId = wordDefinitionId,
-                ),
+                userId = userId,
+                wordDefinitionId = wordDefinitionId,
             ),
         )
     }
 
+    // FIXME: add rate & save logic here
     fun updateStudy(study: Study): Study = studyRepository.save(study)
 
     fun getDailyStudySet(
-        userId: UserId,
+        userId: ObjectId,
         date: LocalDate,
-    ): DailyStudySet? = dailyStudySetRepository.findByUserIdAndDate(userId, date)
+    ): DailyStudySet? =
+        dailyStudySetRepository.findByUserIdAndDate(
+            userId = userId,
+            date = date,
+        )
 
-    fun getDailyStudySetById(id: DailyStudySetId): DailyStudySet? = dailyStudySetRepository.findById(id).orElse(null)
+    fun getDailyStudySetById(id: ObjectId): DailyStudySet? = dailyStudySetRepository.findById(id).orElse(null)
 
     fun addStudyToDailyStudySet(
         dailyStudySet: DailyStudySet,
         study: Study,
     ): DailyStudySet {
-        if (dailyStudySet.studyIds.contains(study.id)) {
+        if (study.id in dailyStudySet.studyIds) {
             throw ConflictException(message = "Study already exists in daily study set", code = "STUDY_7")
         }
 
         val updatedStudyIds = (dailyStudySet.studyIds + study.id!!).distinct()
+
         return dailyStudySetRepository.save(
             dailyStudySet.copy(
                 studyIds = updatedStudyIds,
@@ -178,22 +173,33 @@ class StudyService(
         return dailyStudySetStudies + studiesPastDue
     }
 
-    fun createDailyStudySet(dailyStudySetCreateObject: DailyStudySetCreateObject): DailyStudySet {
+    fun createDailyStudySet(
+        userId: ObjectId,
+        date: LocalDate,
+    ): DailyStudySet {
         getDailyStudySet(
-            userId = dailyStudySetCreateObject.userId,
-            date = dailyStudySetCreateObject.date,
+            userId = userId,
+            date = date,
         )?.let {
             throw ConflictException(message = "Daily study set already exists", code = "STUDY_5")
         }
 
-        return dailyStudySetRepository.save(DailyStudySet.fromCreateObject(dailyStudySetCreateObject))
+        return dailyStudySetRepository.save(
+            DailyStudySet.fromCreateObject(
+                userId = userId,
+                date = date,
+            ),
+        )
     }
 
     fun getStudiesByUserIdAndWordDefinitionIds(
-        userId: UserId,
-        wordDefinitionIds: List<WordDefinitionId>,
-    ): List<Study> = studyRepository.findAllByUserIdAndWordDefinitionIdIn(userId, wordDefinitionIds)
+        userId: ObjectId,
+        wordDefinitionIds: List<ObjectId>,
+    ): List<Study> =
+        studyRepository.findAllByUserIdAndWordDefinitionIdIn(
+            userId = userId,
+            wordDefinitionIds = wordDefinitionIds,
+        )
 
-    fun existsStudyByWordDefinitionId(wordDefinitionId: WordDefinitionId): Boolean =
-        studyRepository.existsByWordDefinitionId(wordDefinitionId)
+    fun existsStudyByWordDefinitionId(wordDefinitionId: ObjectId): Boolean = studyRepository.existsByWordDefinitionId(wordDefinitionId)
 }

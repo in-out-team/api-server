@@ -2,18 +2,18 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.domain.study.MongoStudyService
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.study.StudyService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
 class ReadWordsApplication(
-    private val wordService: MongoWordService,
-    private val studyService: MongoStudyService,
+    private val wordService: WordService,
+    private val studyService: StudyService,
 ) {
     data class Request(
         val fromLanguage: LanguageType,
@@ -21,7 +21,7 @@ class ReadWordsApplication(
         val prefix: String,
         val lexicalCategoryType: LexicalCategoryType?,
         val pageable: Pageable,
-        val user: MongoUser,
+        val user: User,
     )
 
     data class Response(

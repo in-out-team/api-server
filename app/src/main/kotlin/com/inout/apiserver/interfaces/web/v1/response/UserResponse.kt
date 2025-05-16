@@ -1,9 +1,10 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.User
+import org.bson.types.ObjectId
 
 data class UserResponse(
-    val id: Long,
+    val id: ObjectId,
     val email: String,
     val nickname: String,
 ) {

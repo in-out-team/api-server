@@ -2,8 +2,8 @@ package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.domain.auth.GoogleApiClientService
 import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.MongoUserFactory
-import com.inout.apiserver.domain.user.MongoUserService
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.user.UserService
 import com.inout.apiserver.error.GoogleIdTokenVerificationException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
@@ -21,13 +21,13 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class GoogleLoginApplicationTest(
     private val subject: GoogleLoginApplication,
     // services
-    private val userService: MongoUserService,
+    private val userService: UserService,
     @SpyBean
     private val tokenService: TokenService,
     @SpyBean
     private val googleApiClientService: GoogleApiClientService,
     // factories
-    private val userFactory: MongoUserFactory,
+    private val userFactory: UserFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({

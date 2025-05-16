@@ -2,20 +2,20 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.FeedbackService
-import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.AudioFactory
 import com.inout.apiserver.domain.word.ConversationWithMessages
-import com.inout.apiserver.domain.word.MongoWordFactory
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.word.MongoConversationMessage
-import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.word.ConversationMessage
+import com.inout.apiserver.infrastructure.mongo.word.ConversationRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -31,21 +31,21 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class RespondToConversationApplicationTest(
     private val subject: RespondToConversationApplication,
     // services
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     @SpyBean
     private val feedbackService: FeedbackService,
     @SpyBean
     private val audioAIService: AudioAIService,
     // factories
-    private val userFactory: MongoUserFactory,
-    private val wordFactory: MongoWordFactory,
+    private val userFactory: UserFactory,
+    private val wordFactory: WordFactory,
     private val audioFactory: AudioFactory,
     // repositories
-    private val conversationRepository: MongoConversationRepository,
+    private val conversationRepository: ConversationRepository,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
         var word: WordWithDefinitions?
         var wordDefinitionId = ObjectId()
 
@@ -67,13 +67,13 @@ class RespondToConversationApplicationTest(
         }
 
         fun createConversation(
-            user: MongoUser,
+            user: User,
             wordDefinitionId: ObjectId,
         ): ConversationWithMessages {
             val audio = audioFactory.createAudio()
             val conversation = wordFactory.createConversation(user = user, wordDefinitionId = wordDefinitionId)
             val conversationMessage =
-                MongoConversationMessage(
+                ConversationMessage(
                     conversationId = conversation.id!!,
                     sender = SenderType.SYSTEM,
                     content = "system message",
@@ -160,7 +160,7 @@ class RespondToConversationApplicationTest(
             it("should raise BadRequestException if system has not responded yet") {
                 // given
                 conversationRepository.saveConversationMessage(
-                    MongoConversationMessage(
+                    ConversationMessage(
                         conversationId = conversation!!.id!!,
                         sender = SenderType.USER,
                         content = "user message",

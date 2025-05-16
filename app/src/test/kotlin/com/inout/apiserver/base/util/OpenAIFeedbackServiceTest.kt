@@ -5,13 +5,12 @@ import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.base.service.openai.OpenAIFeedbackService
 import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.word.Word
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeGreaterThan
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class OpenAIFeedbackServiceTest(
@@ -19,10 +18,10 @@ class OpenAIFeedbackServiceTest(
     // factories
     private val wordFactory: WordFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         xdescribe("fetchWritingSentenceFeedback") {
@@ -48,7 +47,7 @@ class OpenAIFeedbackServiceTest(
         }
 
         xdescribe("fetchConversationFeedback") {
-            var word: Word? = null
+            var word: WordWithDefinitions? = null
 
             beforeEach {
                 word = wordFactory.createWord()

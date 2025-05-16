@@ -3,10 +3,10 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.base.util.LocalizedResponseProvider
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -14,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 @Component
 @Transactional
 class GetWritingSentenceFeedbackApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     private val feedbackService: FeedbackService,
     private val localizedResponseProvider: LocalizedResponseProvider,
 ) {
@@ -23,7 +23,7 @@ class GetWritingSentenceFeedbackApplication(
     }
 
     data class Request(
-        val user: MongoUser,
+        val user: User,
         val sentenceId: ObjectId,
         /**
          * user's submitted answer for given writing practice sentence

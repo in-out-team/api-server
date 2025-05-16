@@ -2,10 +2,10 @@ package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.study.MongoStudyFactory
-import com.inout.apiserver.domain.user.MongoUserFactory
-import com.inout.apiserver.domain.word.MongoWordFactory
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.study.StudyFactory
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
@@ -21,11 +21,11 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class DeleteWordDefinitionApplicationTest(
     private val subject: DeleteWordDefinitionApplication,
     // factories
-    private val wordFactory: MongoWordFactory,
-    private val userFactory: MongoUserFactory,
-    private val studyFactory: MongoStudyFactory,
+    private val wordFactory: WordFactory,
+    private val userFactory: UserFactory,
+    private val studyFactory: StudyFactory,
     // services
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({

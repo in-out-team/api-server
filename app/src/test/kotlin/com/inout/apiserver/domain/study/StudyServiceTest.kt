@@ -3,18 +3,17 @@ package com.inout.apiserver.domain.study
 import com.inout.apiserver.base.enums.FsrsCardRating
 import com.inout.apiserver.base.enums.FsrsCardState
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordDefinitionCreateObject
 import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.study.DailyStudySetRepository
-import com.inout.apiserver.infrastructure.db.study.Study
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySetRepository
+import com.inout.apiserver.infrastructure.mongo.study.Study
+import com.inout.apiserver.infrastructure.mongo.user.User
 import com.inout.fsrs.base.plusDays
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeSortedBy
@@ -27,15 +26,15 @@ import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.ranges.shouldBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.bson.types.ObjectId
 import org.junit.jupiter.api.assertThrows
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import java.util.Optional
 
 @InOutSpringBootTest
 class StudyServiceTest(
@@ -48,7 +47,7 @@ class StudyServiceTest(
     private val userFactory: UserFactory,
     private val wordFactory: WordFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
         var user: User? = null
 
@@ -57,50 +56,54 @@ class StudyServiceTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("getAllByUserId") {
-            fun createWords(): List<Word> =
+            fun createWords(): List<WordWithDefinitions> =
                 listOf(
                     wordFactory
                         .createWord(
                             name = "bank",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "은행",
                                         preContext = "돈을 보관하거나 대출을 해주는 기관",
+                                        status = StatusType.LIVE,
                                     ),
                                 ),
                         ),
                     wordFactory
                         .createWord(
                             name = "book",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "책",
                                         preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                        status = StatusType.LIVE,
                                     ),
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.VERB,
                                         meaning = "예약하다",
                                         preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                        status = StatusType.LIVE,
                                     ),
                                 ),
                         ),
                     wordFactory
                         .createWord(
                             name = "booked",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "예약된",
                                         preContext = "미리 자리를 확보한",
+                                        status = StatusType.LIVE,
                                     ),
                                 ),
                         ),
@@ -108,7 +111,7 @@ class StudyServiceTest(
 
             fun createStudies(
                 user: User,
-                wordDefinitions: List<WordDefinition>,
+                wordDefinitions: List<WordWithDefinitions.WordDefinition>,
             ): List<Study> = wordDefinitions.map { studyFactory.createStudy(userId = user.id!!, wordDefinitionId = it.id!!) }
 
             it("should return empty list when there is no study") {
@@ -139,17 +142,17 @@ class StudyServiceTest(
                 res2.totalElements shouldBe 4
                 res2.content shouldBeSortedBy { it.createdAt!! }
 
-                // case 3: sort by default (due descending)
+                // case 3: sort by default (due ascending)
                 val res3 =
                     studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10))
                 res3.totalElements shouldBe 4
-                res3.content shouldBeSortedDescendingBy { it.due }
+                res3.content shouldBeSortedBy { it.due }
 
                 // case 4: sort by invalid sort
                 val res4 =
                     studyService.getAllByUserId(user!!.id!!, null, PageRequest.of(0, 10, Sort.by("invalid").descending()))
                 res4.totalElements shouldBe 4
-                res4.content shouldBeSortedDescendingBy { it.due }
+                res3.content shouldBeSortedBy { it.due }
             }
 
             it("should return list of studies with matching prefix") {
@@ -171,12 +174,12 @@ class StudyServiceTest(
                         .map { wordDefinition -> wordDefinition.id!! }
                         .filter { wordDefinitionId -> wordDefinitionId in studyingWordDefinitions.map { it.id!! } }
                 res.content.map { it.wordDefinitionId } shouldContainAll expectedWordDefinitions
-                res.content shouldBeSortedBy { expectedWords.find { it.definitions.first().wordId == it.id }!!.name }
+                res.content.shouldBeSortedBy { it.due }
             }
         }
 
         describe("getByUserIdAndWordDefinitionId") {
-            var word: Word?
+            var word: WordWithDefinitions?
             var study: Study? = null
 
             beforeEach {
@@ -194,7 +197,7 @@ class StudyServiceTest(
 
             it("should return null when study does not exist") {
                 // when
-                val res = studyService.getByUserIdAndWordDefinitionId(user!!.id!!, study!!.wordDefinitionId + 1)
+                val res = studyService.getByUserIdAndWordDefinitionId(user!!.id!!, ObjectId())
 
                 // then
                 res shouldBe null
@@ -205,8 +208,9 @@ class StudyServiceTest(
             var study: Study? = null
 
             beforeEach {
-                wordFactory.createWord()
-                study = studyFactory.createStudy(userId = user!!.id!!)
+                val word = wordFactory.createWord()
+                val wordDefinitionId = word.definitions.first().id!!
+                study = studyFactory.createStudy(userId = user!!.id!!, wordDefinitionId = wordDefinitionId)
             }
 
             it("should return study when it exists") {
@@ -219,7 +223,7 @@ class StudyServiceTest(
 
             it("should return null when study does not exist") {
                 // when
-                val res = studyService.getById(study!!.id!! + 1)
+                val res = studyService.getById(ObjectId())
 
                 // then
                 res shouldBe null
@@ -239,10 +243,8 @@ class StudyServiceTest(
                 val exception =
                     assertThrows<ConflictException> {
                         studyService.createStudy(
-                            StudyCreateObject(
-                                userId = user!!.id!!,
-                                wordDefinitionId = word.definitions.first().id!!,
-                            ),
+                            userId = user!!.id!!,
+                            wordDefinitionId = word.definitions.first().id!!,
                         )
                     }
 
@@ -259,10 +261,8 @@ class StudyServiceTest(
                 // when
                 val study =
                     studyService.createStudy(
-                        StudyCreateObject(
-                            userId = user!!.id!!,
-                            wordDefinitionId = wordDefinitionId,
-                        ),
+                        userId = user!!.id!!,
+                        wordDefinitionId = wordDefinitionId,
                     )
 
                 // then
@@ -287,17 +287,19 @@ class StudyServiceTest(
                 // given
                 val word =
                     wordFactory.createWord(
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )
@@ -328,17 +330,19 @@ class StudyServiceTest(
                 // given
                 val word =
                     wordFactory.createWord(
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )
@@ -382,16 +386,14 @@ class StudyServiceTest(
             it("should raise error if daily study set already exists") {
                 // given
                 studyFactory.createDailyStudySet(user = user!!)
-                val dailyStudySetCreateObject =
-                    DailyStudySetCreateObject(
-                        userId = user!!.id!!,
-                        date = LocalDate.now(),
-                    )
 
                 // when
                 val exception =
                     assertThrows<ConflictException> {
-                        studyService.createDailyStudySet(dailyStudySetCreateObject)
+                        studyService.createDailyStudySet(
+                            userId = user!!.id!!,
+                            date = LocalDate.now(),
+                        )
                     }
 
                 // then
@@ -400,41 +402,42 @@ class StudyServiceTest(
             }
 
             it("should create daily study set") {
-                // given
-                val dailyStudySetCreateObject =
-                    DailyStudySetCreateObject(
+                // given & when
+                val dailyStudySet =
+                    studyService.createDailyStudySet(
                         userId = user!!.id!!,
                         date = LocalDate.now(),
                     )
 
-                // when
-                val dailyStudySet = studyService.createDailyStudySet(dailyStudySetCreateObject)
-
                 // then
-                dailyStudySetRepository.findById(dailyStudySet.id!!) shouldBe Optional.of(dailyStudySet)
                 dailyStudySet.userId shouldBe user!!.id!!
                 dailyStudySet.date shouldBe LocalDate.now()
+                dailyStudySet.studyIds shouldBe emptyList()
+                dailyStudySet.createdAt shouldNotBe null
+                dailyStudySet.updatedAt shouldNotBe null
             }
         }
 
         describe("getStudiesByDailyStudySet") {
-            var word: Word?
+            var word: WordWithDefinitions?
             var studies: List<Study>? = null
 
             beforeEach {
                 word =
                     wordFactory.createWord(
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "책",
                                     preContext = "정보를 얻거나 즐거움을 얻기 위해 읽는 인쇄물",
+                                    status = StatusType.LIVE,
                                 ),
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.VERB,
                                     meaning = "예약하다",
                                     preContext = "특정한 날짜나 시간에 무엇을 하기 위해 미리 자리를 확보하다",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )
@@ -483,12 +486,13 @@ class StudyServiceTest(
                 val pastStudiesWord =
                     wordFactory.createWord(
                         name = "booked",
-                        wordDefinitions =
+                        definitions =
                             listOf(
-                                WordDefinitionCreateObject(
+                                WordWithDefinitions.WordDefinition(
                                     lexicalCategory = LexicalCategoryType.NOUN,
                                     meaning = "예약된",
                                     preContext = "미리 자리를 확보한",
+                                    status = StatusType.LIVE,
                                 ),
                             ),
                     )
@@ -517,12 +521,13 @@ class StudyServiceTest(
                         wordFactory
                             .createWord(
                                 name = "booked",
-                                wordDefinitions =
+                                definitions =
                                     listOf(
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.NOUN,
                                             meaning = "예약된",
                                             preContext = "미리 자리를 확보한",
+                                            status = StatusType.LIVE,
                                         ),
                                     ),
                             ).let { word ->
@@ -534,12 +539,13 @@ class StudyServiceTest(
                         wordFactory
                             .createWord(
                                 name = "bank",
-                                wordDefinitions =
+                                definitions =
                                     listOf(
-                                        WordDefinitionCreateObject(
+                                        WordWithDefinitions.WordDefinition(
                                             lexicalCategory = LexicalCategoryType.NOUN,
                                             meaning = "은행",
                                             preContext = "돈을 보관하거나 대출을 해주는 기관",
+                                            status = StatusType.LIVE,
                                         ),
                                     ),
                             ).let { word ->
@@ -562,9 +568,14 @@ class StudyServiceTest(
             it("should return studies according to user's timezone") {
                 // given
                 user = user!!.copy(timezone = "Asia/Seoul")
-                val dailyStudySet = studyFactory.createDailyStudySet(user = user!!, studies = emptyList())
                 val userZoneId = ZoneId.of(user!!.timezone)
                 val nowInUserZone = Instant.now().atZone(userZoneId)
+                val dailyStudySet =
+                    studyFactory.createDailyStudySet(
+                        user = user!!,
+                        date = nowInUserZone.toLocalDate(),
+                        studies = emptyList(),
+                    )
                 val endOfDayInUserZone =
                     nowInUserZone
                         .toLocalDate()
@@ -575,12 +586,13 @@ class StudyServiceTest(
                     wordFactory
                         .createWord(
                             name = "booked",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "예약된",
                                         preContext = "미리 자리를 확보한",
+                                        status = StatusType.LIVE,
                                     ),
                                 ),
                         ).let { word ->
@@ -594,12 +606,13 @@ class StudyServiceTest(
                     wordFactory
                         .createWord(
                             name = "bank",
-                            wordDefinitions =
+                            definitions =
                                 listOf(
-                                    WordDefinitionCreateObject(
+                                    WordWithDefinitions.WordDefinition(
                                         lexicalCategory = LexicalCategoryType.NOUN,
                                         meaning = "은행",
                                         preContext = "돈을 보관하거나 대출을 해주는 기관",
+                                        status = StatusType.LIVE,
                                     ),
                                 ),
                         ).let { word ->

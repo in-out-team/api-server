@@ -1,16 +1,16 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.MongoUserFactory
-import com.inout.apiserver.domain.word.MongoWordFactory
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
-import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.word.Sentence
+import com.inout.apiserver.infrastructure.mongo.word.UserSentenceRepository
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -21,16 +21,16 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class GetReadingSentencesApplicationTest(
     private val getReadingSentencesApplication: GetReadingSentencesApplication,
     // repositories
-    private val userSentenceRepository: MongoUserSentenceRepository,
+    private val userSentenceRepository: UserSentenceRepository,
     // services
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     // factories
-    private val userFactory: MongoUserFactory,
-    private val wordFactory: MongoWordFactory,
+    private val userFactory: UserFactory,
+    private val wordFactory: WordFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
         var word: WordWithDefinitions? = null
 
         beforeEach {
@@ -65,7 +65,7 @@ class GetReadingSentencesApplicationTest(
         }
 
         describe("when sentences found") {
-            var sentences: List<MongoSentence>? = null
+            var sentences: List<Sentence>? = null
 
             beforeEach {
                 val wordDefinition = word!!.definitions.first()

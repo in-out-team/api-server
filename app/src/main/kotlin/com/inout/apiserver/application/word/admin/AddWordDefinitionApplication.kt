@@ -2,7 +2,7 @@ package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class AddWordDefinitionApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
 ) {
     data class Request(
         val wordId: ObjectId,

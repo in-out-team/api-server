@@ -1,24 +1,24 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.domain.study.MongoStudyService
-import com.inout.apiserver.domain.study.MongoStudyWord
-import com.inout.apiserver.domain.word.MongoWordService
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.domain.study.StudyService
+import com.inout.apiserver.domain.study.StudyWord
+import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class CreateStudyApplication(
-    private val studyService: MongoStudyService,
-    private val wordService: MongoWordService,
+    private val studyService: StudyService,
+    private val wordService: WordService,
 ) {
     data class Request(
-        val user: MongoUser,
+        val user: User,
         val wordDefinitionId: ObjectId,
     )
 
     data class Response(
-        val studyWord: MongoStudyWord,
+        val studyWord: StudyWord,
     )
 
     fun run(request: Request): Response {
@@ -31,7 +31,7 @@ class CreateStudyApplication(
 
         return Response(
             studyWord =
-                MongoStudyWord(
+                StudyWord(
                     word = word,
                     study = createdStudy,
                 ),

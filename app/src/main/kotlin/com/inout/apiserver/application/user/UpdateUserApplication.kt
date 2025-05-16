@@ -1,18 +1,18 @@
 package com.inout.apiserver.application.user
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.domain.user.MongoUserService
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.domain.user.UserService
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Transactional
 class UpdateUserApplication(
-    private val userService: MongoUserService,
+    private val userService: UserService,
 ) {
     data class Request(
-        val user: MongoUser,
+        val user: User,
         val newNickname: String,
         val studyLanguage: LanguageType,
         val nativeLanguage: LanguageType,
@@ -21,7 +21,7 @@ class UpdateUserApplication(
     )
 
     data class Response(
-        val updatedUser: MongoUser,
+        val updatedUser: User,
     )
 
     fun run(request: Request): Response {
