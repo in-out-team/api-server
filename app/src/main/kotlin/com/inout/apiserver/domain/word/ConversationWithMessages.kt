@@ -18,6 +18,7 @@ data class ConversationWithMessages(
         val sender: SenderType,
         val content: String,
         val audio: AiAudio? = null,
+        val createdAt: Instant? = null,
     )
 
     data class AiAudio(

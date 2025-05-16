@@ -1,48 +1,49 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.study.StudyService
-import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.study.MongoStudyFactory
+import com.inout.apiserver.domain.study.MongoStudyService
+import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.AudioFactory
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Conversation
-import com.inout.apiserver.infrastructure.db.word.ConversationMessage
-import com.inout.apiserver.infrastructure.db.word.ConversationRepository
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
+import com.inout.apiserver.infrastructure.mongo.word.MongoConversationMessage
+import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import org.bson.types.ObjectId
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.data.domain.PageRequest
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class StartConversationApplicationTest(
     private val subject: StartConversationApplication,
     // services
-    private val studyService: StudyService,
+    private val studyService: MongoStudyService,
     @SpyBean
     private val audioAIService: AudioAIService,
     // repositories
-    private val conversationRepository: ConversationRepository,
+    private val conversationRepository: MongoConversationRepository,
     // factories
     private val audioFactory: AudioFactory,
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
-    private val studyFactory: StudyFactory,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val studyFactory: MongoStudyFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
-        var word: Word? = null
+        var user: MongoUser? = null
+        var word: WordWithDefinitions? = null
 
         beforeEach {
             user = userFactory.createUser()
@@ -55,7 +56,7 @@ class StartConversationApplicationTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when user is not studying given wordDefinitionId") {
@@ -85,7 +86,7 @@ class StartConversationApplicationTest(
         }
 
         describe("when user is studying given wordDefinitionId") {
-            var wordDefinitionId = 0L
+            var wordDefinitionId = ObjectId()
 
             beforeEach {
                 wordDefinitionId = word!!.definitions.first().id!!
@@ -93,33 +94,28 @@ class StartConversationApplicationTest(
             }
 
             describe("when user has existing conversation/s") {
-                val conversations = mutableListOf<Conversation>()
+                val conversations = mutableListOf<MongoConversation>()
 
                 beforeEach {
-                    conversations.add(wordFactory.createConversation(user!!.id!!, wordDefinitionId))
-                    conversations.add(wordFactory.createConversation(user!!.id!!, wordDefinitionId))
-                    conversations.add(wordFactory.createConversation(user!!.id!!, wordDefinitionId))
+                    conversations.add(wordFactory.createConversation(user!!, wordDefinitionId))
+                    conversations.add(wordFactory.createConversation(user!!, wordDefinitionId))
+                    conversations.add(wordFactory.createConversation(user!!, wordDefinitionId))
                 }
 
-                fun populateConversation(conversation: Conversation) {
-                    conversationRepository.save(
-                        conversation.apply {
-                            val audio = audioFactory.createAudio()
-                            messages.add(
-                                ConversationMessage(
-                                    sender = SenderType.SYSTEM,
-                                    content = audio.content,
-                                    audio = audio,
-                                ),
-                            )
-                            messages.add(
-                                ConversationMessage(
-                                    sender = SenderType.USER,
-                                    content = "Hello",
-                                ),
-                            )
-                        },
-                    )
+                fun populateConversation(conversation: MongoConversation) {
+                    listOf(
+                        MongoConversationMessage(
+                            conversationId = conversation.id!!,
+                            sender = SenderType.SYSTEM,
+                            content = "Hello, how can I help you?",
+                            audio = audioFactory.createAudio(),
+                        ),
+                        MongoConversationMessage(
+                            conversationId = conversation.id!!,
+                            sender = SenderType.USER,
+                            content = "Hello",
+                        ),
+                    ).forEach { conversationRepository.saveConversationMessage(it) }
                 }
 
                 it("should return the first conversation with no user messages") {

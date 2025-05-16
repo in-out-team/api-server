@@ -2,51 +2,52 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.FeedbackService
-import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.AudioFactory
-import com.inout.apiserver.domain.word.WordFactory
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.ConversationWithMessages
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Conversation
-import com.inout.apiserver.infrastructure.db.word.ConversationMessage
-import com.inout.apiserver.infrastructure.db.word.ConversationRepository
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoConversationMessage
+import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.bson.types.ObjectId
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class RespondToConversationApplicationTest(
     private val subject: RespondToConversationApplication,
     // services
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
     @SpyBean
     private val feedbackService: FeedbackService,
     @SpyBean
     private val audioAIService: AudioAIService,
     // factories
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
     private val audioFactory: AudioFactory,
     // repositories
-    private val conversationRepository: ConversationRepository,
+    private val conversationRepository: MongoConversationRepository,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
-        var word: Word?
-        var wordDefinitionId = 0L
+        var user: MongoUser? = null
+        var word: WordWithDefinitions?
+        var wordDefinitionId = ObjectId()
 
         beforeEach {
             user = userFactory.createUser()
@@ -62,39 +63,35 @@ class RespondToConversationApplicationTest(
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         fun createConversation(
-            user: User,
-            wordDefinitionId: Long,
-        ): Conversation {
+            user: MongoUser,
+            wordDefinitionId: ObjectId,
+        ): ConversationWithMessages {
             val audio = audioFactory.createAudio()
-            return wordFactory
-                .createConversation(userId = user.id!!, wordDefinitionId = wordDefinitionId)
-                .let {
-                    conversationRepository.save(
-                        it.copy(
-                            messages =
-                                mutableListOf(
-                                    ConversationMessage(
-                                        sender = SenderType.SYSTEM,
-                                        content = audio.content,
-                                        audio = audio,
-                                    ),
-                                ),
-                        ),
-                    )
-                }
+            val conversation = wordFactory.createConversation(user = user, wordDefinitionId = wordDefinitionId)
+            val conversationMessage =
+                MongoConversationMessage(
+                    conversationId = conversation.id!!,
+                    sender = SenderType.SYSTEM,
+                    content = "system message",
+                    audio = audio,
+                )
+            conversationRepository.saveConversationMessage(conversationMessage)
+
+            return wordService.getConversationById(conversation.id!!)!!
         }
 
         describe("when conversation does not exist") {
             it("should throw NotFoundException if conversation actually does not exist") {
                 // given
-                wordService.getConversationById(1L) shouldBe null
+                val conversationId = ObjectId()
+                wordService.getConversationById(conversationId) shouldBe null
                 val request =
                     RespondToConversationApplication.Request(
-                        conversationId = 1L,
+                        conversationId = conversationId,
                         responseMessage = "response",
                         user = user!!,
                     )
@@ -128,7 +125,7 @@ class RespondToConversationApplicationTest(
         }
 
         describe("when conversation of given conversationId exists") {
-            var conversation: Conversation? = null
+            var conversation: ConversationWithMessages? = null
 
             beforeEach {
                 conversation = createConversation(user!!, wordDefinitionId)
@@ -137,10 +134,14 @@ class RespondToConversationApplicationTest(
             it("should throw BadRequestException if system response limit exceeded") {
                 // given
                 repeat(3) {
-                    conversation!!.addUserMessage("user message")
-                    conversation!!.addSystemMessage("system message", audioFactory.createAudio())
+                    wordService.doConversation(
+                        conversation = conversation!!,
+                        userResponseMessage = "user message",
+                        systemResponseMessage = "system message",
+                        systemResponseAudio = audioFactory.createAudio(),
+                    )
                 }
-                conversationRepository.save(conversation!!)
+
                 val request =
                     RespondToConversationApplication.Request(
                         conversationId = conversation!!.id!!,
@@ -158,8 +159,13 @@ class RespondToConversationApplicationTest(
 
             it("should raise BadRequestException if system has not responded yet") {
                 // given
-                conversation!!.addUserMessage("user message")
-                conversationRepository.save(conversation!!)
+                conversationRepository.saveConversationMessage(
+                    MongoConversationMessage(
+                        conversationId = conversation!!.id!!,
+                        sender = SenderType.USER,
+                        content = "user message",
+                    ),
+                )
                 val request =
                     RespondToConversationApplication.Request(
                         conversationId = conversation!!.id!!,

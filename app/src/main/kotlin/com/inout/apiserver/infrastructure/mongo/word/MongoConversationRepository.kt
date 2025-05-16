@@ -119,4 +119,6 @@ class MongoConversationRepository(
     }
 
     fun saveConversation(conversation: MongoConversation): MongoConversation = conversationRepository.save(conversation)
+
+    fun saveConversationMessage(message: MongoConversationMessage): MongoConversationMessage = conversationMessageRepository.save(message)
 }
