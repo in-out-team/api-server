@@ -3,12 +3,15 @@ package com.inout.apiserver.interfaces.web.v1
 import com.inout.apiserver.application.word.GetConversationsApplication
 import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.application.word.StartConversationApplication
+import com.inout.apiserver.config.web.RequestMongoUser
 import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.RespondToConversationRequest
 import com.inout.apiserver.interfaces.web.v1.request.StartConversationRequest
 import com.inout.apiserver.interfaces.web.v1.response.ConversationResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoConversationResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponseListWrapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -16,6 +19,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -65,9 +69,9 @@ class ConversationController(
         ],
     )
     fun getConversations(
-        @RequestParam(required = true) wordDefinitionId: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<ResponseListWrapper<ConversationResponse>> {
+        @RequestParam(required = true) wordDefinitionId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<ResponseListWrapper<MongoConversationResponse>> {
         val result =
             getConversationsApplication.run(
                 GetConversationsApplication.Request(
@@ -78,7 +82,7 @@ class ConversationController(
 
         return ResponseEntity(
             ResponseListWrapper(
-                data = result.conversations.map { ConversationResponse.of(it) },
+                data = result.conversations.map { MongoConversationResponse.of(it) },
             ),
             OK,
         )
