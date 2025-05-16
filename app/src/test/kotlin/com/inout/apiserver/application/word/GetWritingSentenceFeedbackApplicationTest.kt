@@ -2,21 +2,21 @@ package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.service.FeedbackService
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordFactory
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.bson.types.ObjectId
 import org.mockito.kotlin.any
 import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
@@ -24,7 +24,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
-import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class GetWritingSentenceFeedbackApplicationTest(
@@ -33,27 +33,27 @@ class GetWritingSentenceFeedbackApplicationTest(
     @SpyBean
     private val feedbackService: FeedbackService,
     @SpyBean
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
     // factories
-    private val wordFactory: WordFactory,
-    private val userFactory: UserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val userFactory: MongoUserFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-
-        var user: User? = null
-        afterEach {
-            jdbcTemplate.cleanUp()
-        }
+        var user: MongoUser? = null
 
         beforeEach {
             user = userFactory.createUser()
         }
 
+        afterEach {
+            mongoTemplate.cleanUp()
+        }
+
         describe("when sentence is not found") {
             it("should raise NotFoundException") {
                 // given
-                val sentenceId = 0L
+                val sentenceId = ObjectId()
                 val submittedContent = "submitted content"
 
                 // when
@@ -75,9 +75,9 @@ class GetWritingSentenceFeedbackApplicationTest(
         }
 
         describe("when sentence is found") {
-            var word: Word?
-            var wordDefinition: WordDefinition? = null
-            var sentence: Sentence? = null
+            var word: WordWithDefinitions?
+            var wordDefinition: WordWithDefinitions.WordDefinition? = null
+            var sentence: MongoSentence? = null
 
             beforeEach {
                 word = wordFactory.createWord()
@@ -133,7 +133,7 @@ class GetWritingSentenceFeedbackApplicationTest(
                     // then
                     response.feedback shouldBe existingSentenceFeedback.feedback
                     verify(feedbackService, times(0)).fetchWritingSentenceFeedback(any(), any(), any(), any())
-                    verify(wordService, times(0)).createSentenceFeedback(any())
+                    verify(wordService, times(0)).createSentenceFeedback(any(), any(), any())
                 }
 
                 it("should raise error if max attempt is reached") {

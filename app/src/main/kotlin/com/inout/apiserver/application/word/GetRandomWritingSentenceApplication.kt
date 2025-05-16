@@ -1,29 +1,29 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.base.alias.WordDefinitionId
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Sentence
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class GetRandomWritingSentenceApplication(
-    private val wordService: WordService,
+    private val wordService: MongoWordService,
 ) {
     companion object {
         private const val TARGET_SENTENCES_COUNT = 3
     }
 
     data class Request(
-        val wordDefinitionId: WordDefinitionId,
-        val user: User,
+        val wordDefinitionId: ObjectId,
+        val user: MongoUser,
     )
 
     data class Response(
-        val sentence: Sentence,
+        val sentence: MongoSentence,
     )
 
     fun run(request: Request): Response {

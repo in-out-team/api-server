@@ -8,7 +8,13 @@ import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
 import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentenceFeedback
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentenceFeedbackRepository
 import com.inout.apiserver.infrastructure.mongo.word.MongoSentenceRepository
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentence
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceFeedback
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceFeedbackRepository
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceRepository
 import com.inout.apiserver.infrastructure.mongo.word.MongoWord
 import com.inout.apiserver.infrastructure.mongo.word.MongoWordDefinition
 import com.inout.apiserver.infrastructure.mongo.word.MongoWordRepository
@@ -20,6 +26,9 @@ class MongoWordFactory(
     private val wordRepository: MongoWordRepository,
     private val sentenceRepository: MongoSentenceRepository,
     private val conversationRepository: MongoConversationRepository,
+    private val mongoUserSentenceRepository: MongoUserSentenceRepository,
+    private val mongoUserSentenceFeedbackRepository: MongoUserSentenceFeedbackRepository,
+    private val mongoSentenceFeedbackRepository: MongoSentenceFeedbackRepository,
 ) {
     fun createWord(
         name: String = "book",
@@ -105,4 +114,48 @@ class MongoWordFactory(
                 wordDefinitionId = wordDefinitionId,
             ),
         )
+
+    fun createUserSentence(
+        userId: ObjectId,
+        wordDefinitionId: ObjectId,
+        sentenceId: ObjectId,
+        type: SentenceType = SentenceType.WRITING,
+    ): MongoUserSentence =
+        mongoUserSentenceRepository
+            .save(
+                MongoUserSentence(
+                    userId = userId,
+                    wordDefinitionId = wordDefinitionId,
+                    sentenceId = sentenceId,
+                    type = type,
+                ),
+            )
+
+    fun createUserSentenceFeedback(
+        userSentenceId: ObjectId,
+        sentenceFeedbackId: ObjectId,
+    ): MongoUserSentenceFeedback =
+        mongoUserSentenceFeedbackRepository
+            .save(
+                MongoUserSentenceFeedback(
+                    userSentenceId = userSentenceId,
+                    sentenceFeedbackId = sentenceFeedbackId,
+                ),
+            )
+
+    fun createSentenceFeedback(
+        sentenceId: ObjectId,
+        submittedContent: String = "I read book",
+        feedback: String = "주어와 동사 사이에 'a'를 넣어야 합니다. 'a'는 무언가 특정한 책을 가리키는데 도움을 줍니다. 모호함을 없애고 명확한 문장을 만들기 위해 필요한 내용입니다.",
+    ): MongoSentenceFeedback =
+        mongoSentenceFeedbackRepository
+            .save(
+                MongoSentenceFeedback(
+                    sentenceId = sentenceId,
+                    submittedContent = submittedContent,
+                    feedback = feedback,
+                ),
+            ).let {
+                mongoSentenceFeedbackRepository.findById(it.id!!).get()
+            }
 }

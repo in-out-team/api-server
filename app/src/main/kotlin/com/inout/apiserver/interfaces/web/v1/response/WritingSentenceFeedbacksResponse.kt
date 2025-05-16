@@ -1,6 +1,6 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.infrastructure.db.word.SentenceFeedback
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentenceFeedback
 
 data class WritingSentenceFeedbacksResponse(
     val feedbacks: List<Feedback>,
@@ -11,7 +11,7 @@ data class WritingSentenceFeedbacksResponse(
     )
 
     companion object {
-        fun of(sentenceFeedbacks: List<SentenceFeedback>): WritingSentenceFeedbacksResponse =
+        fun of(sentenceFeedbacks: List<MongoSentenceFeedback>): WritingSentenceFeedbacksResponse =
             WritingSentenceFeedbacksResponse(
                 feedbacks =
                     sentenceFeedbacks.map {

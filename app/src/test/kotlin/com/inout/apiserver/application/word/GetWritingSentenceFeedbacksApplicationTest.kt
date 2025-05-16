@@ -1,45 +1,46 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Sentence
-import com.inout.apiserver.infrastructure.db.word.Word
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.jdbc.core.JdbcTemplate
+import org.bson.types.ObjectId
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class GetWritingSentenceFeedbacksApplicationTest(
     private val subject: GetWritingSentenceFeedbacksApplication,
     // factories
-    private val wordFactory: WordFactory,
-    private val userFactory: UserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val userFactory: MongoUserFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
+        var user: MongoUser? = null
 
         beforeEach {
             user = userFactory.createUser()
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when sentence does not exists") {
             it("should throw NotFoundException") {
                 // given
+                val sentenceId = ObjectId()
                 val request =
                     GetWritingSentenceFeedbacksApplication.Request(
-                        sentenceId = 1,
+                        sentenceId = sentenceId,
                         user = user!!,
                     )
 
@@ -50,15 +51,15 @@ class GetWritingSentenceFeedbacksApplicationTest(
                     }
 
                 // then
-                result.message shouldBe "Sentence not found for id: 1"
+                result.message shouldBe "Sentence not found for id: $sentenceId"
                 result.code shouldBe "SENTENCE_3"
             }
         }
 
         describe("when sentence exists") {
-            var word: Word?
-            var wordDefinition: WordDefinition? = null
-            var sentence: Sentence? = null
+            var word: WordWithDefinitions?
+            var wordDefinition: WordWithDefinitions.WordDefinition? = null
+            var sentence: MongoSentence? = null
 
             beforeEach {
                 word = wordFactory.createWord()

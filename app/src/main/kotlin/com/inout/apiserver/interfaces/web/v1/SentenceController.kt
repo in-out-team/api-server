@@ -6,13 +6,13 @@ import com.inout.apiserver.application.word.GetWritingSentenceFeedbackApplicatio
 import com.inout.apiserver.application.word.GetWritingSentenceFeedbacksApplication
 import com.inout.apiserver.application.word.SelectReadingSentenceApplication
 import com.inout.apiserver.application.word.UnselectReadingSentenceApplication
-import com.inout.apiserver.config.web.RequestUser
+import com.inout.apiserver.config.web.RequestMongoUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.db.user.User
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
-import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
-import com.inout.apiserver.interfaces.web.v1.response.SentencesResponse
-import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoSentenceResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoSentencesResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoUserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbackResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbacksResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
+import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
@@ -53,7 +54,7 @@ class SentenceController(
                 name = "wordDefinitionId",
                 description = "단어 정의 ID",
                 required = true,
-                schema = Schema(implementation = Long::class),
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -63,7 +64,7 @@ class SentenceController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = SentenceResponse::class),
+                        schema = Schema(implementation = MongoSentencesResponse::class),
                     ),
                 ],
             ),
@@ -80,9 +81,9 @@ class SentenceController(
         ],
     )
     fun getReadingSentences(
-        @RequestParam(required = true) wordDefinitionId: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<SentencesResponse> {
+        @RequestParam(required = true) wordDefinitionId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoSentencesResponse> {
         val (selectedSentences, notSelectedSentences) =
             getReadingSentencesApplication.run(
                 GetReadingSentencesApplication.Request(
@@ -92,7 +93,7 @@ class SentenceController(
             )
 
         return ResponseEntity(
-            SentencesResponse.of(
+            MongoSentencesResponse.of(
                 selectedSentences = selectedSentences,
                 unselectedSentences = notSelectedSentences,
             ),
@@ -100,16 +101,17 @@ class SentenceController(
         )
     }
 
-    @PostMapping("/reading/{id}/select")
+    @PostMapping("/reading/{sentenceId}/select")
     @Operation(
         summary = "사용자 예문 문장 선택",
         description = "단어 정의에 대하여 메인으로 볼 예문 문장을 선택합니다.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -121,7 +123,7 @@ class SentenceController(
                         mediaType = "application/json",
                         schema =
                             Schema(
-                                implementation = UserSentenceResponse::class,
+                                implementation = MongoUserSentenceResponse::class,
                             ),
                     ),
                 ],
@@ -149,14 +151,14 @@ class SentenceController(
         ],
     )
     fun selectReadingSentence(
-        @PathVariable id: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @PathVariable sentenceId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ) = ResponseEntity(
-        UserSentenceResponse.of(
+        MongoUserSentenceResponse.of(
             selectReadingSentenceApplication
                 .run(
                     SelectReadingSentenceApplication.Request(
-                        sentenceId = id,
+                        sentenceId = sentenceId,
                         user = user,
                     ),
                 ).userSentence,
@@ -164,16 +166,17 @@ class SentenceController(
         CREATED,
     )
 
-    @DeleteMapping("/reading/{id}/unselect")
+    @DeleteMapping("/reading/{sentenceId}/unselect")
     @Operation(
         summary = "사용자 예문 문장 선택 해제",
         description = "선택한 예문 문장을 해제합니다.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -194,12 +197,12 @@ class SentenceController(
         ],
     )
     fun unselectReadingSentence(
-        @PathVariable id: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @PathVariable sentenceId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ): ResponseEntity<Void> {
         unselectReadingSentenceApplication.run(
             UnselectReadingSentenceApplication.Request(
-                sentenceId = id,
+                sentenceId = sentenceId,
                 user = user,
             ),
         )
@@ -215,7 +218,7 @@ class SentenceController(
                 name = "wordDefinitionId",
                 description = "단어 정의 ID",
                 required = true,
-                schema = Schema(implementation = Long::class),
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -225,7 +228,7 @@ class SentenceController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = SentenceResponse::class),
+                        schema = Schema(implementation = MongoSentenceResponse::class),
                     ),
                 ],
             ),
@@ -252,11 +255,11 @@ class SentenceController(
         ],
     )
     fun getRandomWritingSentence(
-        @RequestParam(required = true) wordDefinitionId: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<SentenceResponse> =
+        @RequestParam(required = true) wordDefinitionId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoSentenceResponse> =
         ResponseEntity(
-            SentenceResponse.of(
+            MongoSentenceResponse.of(
                 getRandomWritingSentenceApplication
                     .run(
                         GetRandomWritingSentenceApplication.Request(
@@ -268,16 +271,17 @@ class SentenceController(
             OK,
         )
 
-    @PostMapping("/writing/{id}/feedback")
+    @PostMapping("/writing/{sentenceId}/feedback")
     @Operation(
         summary = "작문 문장 피드백",
         description = "제출한 작문 문장에 대한 AI 피드백을 제공합니다. 외부 API 요청을 하므로 시간이 소요될 수 있으니 spinner 같은 UI를 제공해주세요.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         requestBody =
@@ -325,16 +329,16 @@ class SentenceController(
         ],
     )
     fun getWritingSentenceFeedback(
-        @PathVariable id: Long,
+        @PathVariable sentenceId: ObjectId,
         @RequestBody @Valid request: GetWritingSentenceFeedbackRequest,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ) = ResponseEntity(
         WritingSentenceFeedbackResponse(
             getWritingSentenceFeedbackApplication
                 .run(
                     GetWritingSentenceFeedbackApplication.Request(
                         user = user,
-                        sentenceId = id,
+                        sentenceId = sentenceId,
                         submittedContent = request.submittedContent,
                     ),
                 ).feedback,
@@ -342,16 +346,17 @@ class SentenceController(
         OK,
     )
 
-    @GetMapping("/writing/{id}/feedbacks")
+    @GetMapping("/writing/{sentenceId}/feedbacks")
     @Operation(
         summary = "작문 문장 피드백 조회",
         description = "제출한 작문 문장에 대해 제공받았던 AI 피드백을 조회합니다.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -378,14 +383,14 @@ class SentenceController(
         ],
     )
     fun getWritingSentenceFeedbacks(
-        @PathVariable id: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @PathVariable sentenceId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ) = ResponseEntity(
         WritingSentenceFeedbacksResponse.of(
             getWritingSentenceFeedbacksApplication
                 .run(
                     GetWritingSentenceFeedbacksApplication.Request(
-                        sentenceId = id,
+                        sentenceId = sentenceId,
                         user = user,
                     ),
                 ).feedbacks,
