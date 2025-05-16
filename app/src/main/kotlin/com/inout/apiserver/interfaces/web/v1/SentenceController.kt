@@ -13,8 +13,8 @@ import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
 import com.inout.apiserver.interfaces.web.v1.response.MongoSentencesResponse
+import com.inout.apiserver.interfaces.web.v1.response.MongoUserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
-import com.inout.apiserver.interfaces.web.v1.response.UserSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbackResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbacksResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -103,16 +103,17 @@ class SentenceController(
         )
     }
 
-    @PostMapping("/reading/{id}/select")
+    @PostMapping("/reading/{sentenceId}/select")
     @Operation(
         summary = "사용자 예문 문장 선택",
         description = "단어 정의에 대하여 메인으로 볼 예문 문장을 선택합니다.",
         parameters = [
             Parameter(
-                name = "id",
+                name = "sentenceId",
                 description = "문장 ID",
                 required = true,
-                example = "1",
+                example = "6826035f3bcd2664b679d062",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -124,7 +125,7 @@ class SentenceController(
                         mediaType = "application/json",
                         schema =
                             Schema(
-                                implementation = UserSentenceResponse::class,
+                                implementation = MongoUserSentenceResponse::class,
                             ),
                     ),
                 ],
@@ -152,14 +153,14 @@ class SentenceController(
         ],
     )
     fun selectReadingSentence(
-        @PathVariable id: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
+        @PathVariable sentenceId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
     ) = ResponseEntity(
-        UserSentenceResponse.of(
+        MongoUserSentenceResponse.of(
             selectReadingSentenceApplication
                 .run(
                     SelectReadingSentenceApplication.Request(
-                        sentenceId = id,
+                        sentenceId = sentenceId,
                         user = user,
                     ),
                 ).userSentence,
