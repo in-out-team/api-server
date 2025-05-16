@@ -1,16 +1,16 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.word.Sentence
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class GetReadingSentencesApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
 ) {
     companion object {
         private const val TARGET_SENTENCES_COUNT = 3
@@ -18,12 +18,12 @@ class GetReadingSentencesApplication(
 
     data class Request(
         val wordDefinitionId: ObjectId,
-        val user: MongoUser,
+        val user: User,
     )
 
     data class Response(
-        val selectedSentences: List<MongoSentence>,
-        val unselectedSentences: List<MongoSentence>,
+        val selectedSentences: List<Sentence>,
+        val unselectedSentences: List<Sentence>,
     )
 
     fun run(request: Request): Response {

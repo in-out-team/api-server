@@ -2,8 +2,8 @@ package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.word.MongoWordFactory
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
@@ -19,9 +19,9 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class ApproveWordDefinitionApplicationTest(
     private val subject: ApproveWordDefinitionApplication,
     // factories
-    private val wordFactory: MongoWordFactory,
+    private val wordFactory: WordFactory,
     // services
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({

@@ -4,17 +4,17 @@ import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.service.FeedbackService
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.ConversationWithMessages
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class RespondToConversationApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
     private val feedbackService: FeedbackService,
     private val audioAIService: AudioAIService,
 ) {
@@ -25,7 +25,7 @@ class RespondToConversationApplication(
     data class Request(
         val conversationId: ObjectId,
         val responseMessage: String,
-        val user: MongoUser,
+        val user: User,
     )
 
     data class Response(

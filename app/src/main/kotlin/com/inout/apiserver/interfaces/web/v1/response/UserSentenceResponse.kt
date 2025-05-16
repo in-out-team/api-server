@@ -1,12 +1,13 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.infrastructure.db.word.UserSentence
+import com.inout.apiserver.infrastructure.mongo.word.UserSentence
+import org.bson.types.ObjectId
 
 data class UserSentenceResponse(
-    val id: Long,
-    val userId: Long,
-    val wordDefinitionId: Long,
-    val sentenceId: Long,
+    val id: ObjectId,
+    val userId: ObjectId,
+    val wordDefinitionId: ObjectId,
+    val sentenceId: ObjectId,
 ) {
     companion object {
         fun of(userSentence: UserSentence): UserSentenceResponse =

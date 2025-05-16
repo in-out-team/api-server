@@ -1,21 +1,21 @@
 package com.inout.apiserver.application.word
 
-import com.inout.apiserver.domain.study.MongoStudyService
+import com.inout.apiserver.domain.study.StudyService
 import com.inout.apiserver.domain.word.ConversationWithMessages
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.error.BadRequestException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 
 @Component
 class GetConversationsApplication(
-    private val studyService: MongoStudyService,
-    private val wordService: MongoWordService,
+    private val studyService: StudyService,
+    private val wordService: WordService,
 ) {
     data class Request(
         val wordDefinitionId: ObjectId,
-        val user: MongoUser,
+        val user: User,
     )
 
     data class Response(

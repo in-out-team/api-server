@@ -1,13 +1,12 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
-import com.inout.apiserver.infrastructure.db.word.Sentence
+import com.inout.apiserver.infrastructure.mongo.word.Sentence
+import org.bson.types.ObjectId
 
 data class SentenceResponse(
-    val id: Long,
+    val id: ObjectId,
     val content: String,
     val translation: String,
-    // TODO: using SentenceEntity.LexicalCategoryInfo is not preferred, it should be replaced with a DTO or
-    //   a common interface from base
     val lexicalCategories: List<Sentence.LexicalCategoryInfo>,
 ) {
     companion object {

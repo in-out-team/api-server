@@ -1,11 +1,11 @@
 package com.inout.apiserver.domain.auth
 
-import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.user.RefreshToken
 import com.inout.apiserver.infrastructure.mongo.user.RefreshTokenRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
@@ -27,11 +27,11 @@ class TokenServiceTest(
     // repositories
     private val refreshTokenRepository: RefreshTokenRepository,
     // factories
-    private val userFactory: MongoUserFactory,
+    private val userFactory: UserFactory,
     // ect
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
 
         beforeEach {
             user = userFactory.createUser()

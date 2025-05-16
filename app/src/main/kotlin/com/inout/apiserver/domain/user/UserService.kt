@@ -1,10 +1,10 @@
 package com.inout.apiserver.domain.user
 
-import com.inout.apiserver.base.alias.UserId
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.error.ConflictException
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.user.UserRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.user.UserRepository
+import org.bson.types.ObjectId
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 
@@ -52,5 +52,5 @@ class UserService(
 
     fun getUserByEmail(email: String): User? = userRepository.findByEmail(email.lowercase())
 
-    fun getUserById(id: UserId): User? = userRepository.findById(id).orElse(null)
+    fun getUserById(id: ObjectId): User? = userRepository.findById(id).orElse(null)
 }

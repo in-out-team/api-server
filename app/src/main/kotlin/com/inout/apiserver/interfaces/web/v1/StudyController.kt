@@ -4,14 +4,14 @@ import com.inout.apiserver.application.study.CreateStudyApplication
 import com.inout.apiserver.application.study.RateStudyWordApplication
 import com.inout.apiserver.application.study.ReadOrCreateDailyStudySetApplication
 import com.inout.apiserver.application.study.ReadStudiesApplication
-import com.inout.apiserver.config.web.RequestMongoUser
+import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import com.inout.apiserver.interfaces.web.v1.request.CreateStudyRequest
 import com.inout.apiserver.interfaces.web.v1.request.RateStudyWordRequest
-import com.inout.apiserver.interfaces.web.v1.response.MongoDailyStudySetResponse
-import com.inout.apiserver.interfaces.web.v1.response.MongoStudyWordResponse
+import com.inout.apiserver.interfaces.web.v1.response.DailyStudySetResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
+import com.inout.apiserver.interfaces.web.v1.response.StudyWordResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -60,7 +60,7 @@ class StudyController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoStudyWordResponse::class),
+                        schema = Schema(implementation = StudyWordResponse::class),
                     ),
                 ],
             ),
@@ -88,8 +88,8 @@ class StudyController(
     )
     fun createStudy(
         @RequestBody @Valid request: CreateStudyRequest,
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<MongoStudyWordResponse> =
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<StudyWordResponse> =
         ResponseEntity(
             createStudyApplication
                 .run(
@@ -97,7 +97,7 @@ class StudyController(
                         user = user,
                         wordDefinitionId = request.wordDefinitionId,
                     ),
-                ).let { MongoStudyWordResponse.of(study = it.studyWord.study, word = it.studyWord.word) },
+                ).let { StudyWordResponse.of(study = it.studyWord.study, word = it.studyWord.word) },
             CREATED,
         )
 
@@ -140,10 +140,10 @@ class StudyController(
         ],
     )
     fun getStudies(
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+        @Parameter(hidden = true) @RequestUser user: User,
         @Parameter(hidden = true) pageable: Pageable,
         @RequestParam(required = false) wordNamePrefix: String?,
-    ): ResponseEntity<ResponsePaginationWrapper<MongoStudyWordResponse>> {
+    ): ResponseEntity<ResponsePaginationWrapper<StudyWordResponse>> {
         val (count, studyWithWords) =
             readStudiesApplication.run(
                 ReadStudiesApplication.Request(
@@ -154,7 +154,7 @@ class StudyController(
             )
         return ResponseEntity(
             ResponsePaginationWrapper(
-                data = studyWithWords.map { MongoStudyWordResponse.of(it.study, it.word) },
+                data = studyWithWords.map { StudyWordResponse.of(it.study, it.word) },
                 hasMore = pageable.next().offset < count,
                 count = count,
             ),
@@ -181,22 +181,22 @@ class StudyController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoDailyStudySetResponse::class),
+                        schema = Schema(implementation = DailyStudySetResponse::class),
                     ),
                 ],
             ),
         ],
     )
     fun getDailyStudySet(
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+        @Parameter(hidden = true) @RequestUser user: User,
         @RequestParam(name = "date", required = true) date: LocalDate,
-    ): ResponseEntity<MongoDailyStudySetResponse> {
+    ): ResponseEntity<DailyStudySetResponse> {
         val dailyStudySetResult =
             readOrCreateDailyStudySetApplication.run(
                 ReadOrCreateDailyStudySetApplication.Request(user = user, date = date),
             )
         return ResponseEntity(
-            MongoDailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
+            DailyStudySetResponse.of(dailyStudySetResult.dailyStudySet, dailyStudySetResult.studyWords),
             OK,
         )
     }
@@ -223,7 +223,7 @@ class StudyController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoStudyWordResponse::class),
+                        schema = Schema(implementation = StudyWordResponse::class),
                     ),
                 ],
             ),
@@ -252,9 +252,9 @@ class StudyController(
         ],
     )
     fun rateStudyWord(
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+        @Parameter(hidden = true) @RequestUser user: User,
         @RequestBody @Valid request: RateStudyWordRequest,
-    ): ResponseEntity<MongoStudyWordResponse> {
+    ): ResponseEntity<StudyWordResponse> {
         val rateStudyResult =
             rateStudyWordApplication.run(
                 RateStudyWordApplication.Request(
@@ -265,7 +265,7 @@ class StudyController(
                 ),
             )
         return ResponseEntity(
-            MongoStudyWordResponse.of(rateStudyResult.studyWord.study, rateStudyResult.studyWord.word),
+            StudyWordResponse.of(rateStudyResult.studyWord.study, rateStudyResult.studyWord.word),
             OK,
         )
     }

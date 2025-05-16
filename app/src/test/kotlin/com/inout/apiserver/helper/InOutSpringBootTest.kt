@@ -12,6 +12,7 @@ import org.springframework.test.context.support.DirtiesContextTestExecutionListe
 import org.testcontainers.containers.MongoDBContainer
 import org.testcontainers.containers.PostgreSQLContainer
 
+// TODO:phil, need to migrate jobrunr and remove postgres
 class TestDbInitializer : ApplicationContextInitializer<ConfigurableApplicationContext> {
     override fun initialize(applicationContext: ConfigurableApplicationContext) {
         val postgresSQLContainer = PostgreSQLContainer<Nothing>("postgres:14")

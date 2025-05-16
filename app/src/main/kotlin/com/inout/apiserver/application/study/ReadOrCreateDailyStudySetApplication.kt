@@ -1,13 +1,13 @@
 package com.inout.apiserver.application.study
 
-import com.inout.apiserver.domain.study.MongoStudyService
-import com.inout.apiserver.domain.study.MongoStudyWord
-import com.inout.apiserver.domain.word.MongoWordService
+import com.inout.apiserver.domain.study.StudyService
+import com.inout.apiserver.domain.study.StudyWord
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
-import com.inout.apiserver.infrastructure.mongo.study.MongoDailyStudySet
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.study.DailyStudySet
+import com.inout.apiserver.infrastructure.mongo.user.User
 import org.bson.types.ObjectId
 import org.springframework.stereotype.Component
 import java.time.LocalDate
@@ -15,17 +15,17 @@ import java.time.ZoneId
 
 @Component
 class ReadOrCreateDailyStudySetApplication(
-    private val studyService: MongoStudyService,
-    private val wordService: MongoWordService,
+    private val studyService: StudyService,
+    private val wordService: WordService,
 ) {
     data class Request(
-        val user: MongoUser,
+        val user: User,
         val date: LocalDate,
     )
 
     data class Response(
-        val dailyStudySet: MongoDailyStudySet,
-        val studyWords: List<MongoStudyWord>,
+        val dailyStudySet: DailyStudySet,
+        val studyWords: List<StudyWord>,
     )
 
     fun run(request: Request): Response {
@@ -57,7 +57,7 @@ class ReadOrCreateDailyStudySetApplication(
             dailyStudySet = dailyStudySet.copy(studyIds = studies.map { it.id!! }),
             studyWords =
                 studies.map { study ->
-                    MongoStudyWord(
+                    StudyWord(
                         study = study,
                         word =
                             wordByDefinitionIdMap[study.wordDefinitionId]

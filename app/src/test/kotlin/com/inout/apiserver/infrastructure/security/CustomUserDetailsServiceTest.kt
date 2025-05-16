@@ -1,7 +1,7 @@
 package com.inout.apiserver.infrastructure.security
 
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.user.MongoUserRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.user.UserRepository
 import io.mockk.every
 import io.mockk.mockk
 import org.bson.types.ObjectId
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 
 class CustomUserDetailsServiceTest {
-    private val userRepository = mockk<MongoUserRepository>()
+    private val userRepository = mockk<UserRepository>()
     private val customUserDetailsService = CustomUserDetailsService(userRepository)
     private val email = "test@1.com"
 
@@ -29,7 +29,7 @@ class CustomUserDetailsServiceTest {
     fun `loadUserByUsername - should return UserDetails when user found`() {
         // given
         val user =
-            MongoUser(id = ObjectId(), email = email, password = "password", nickname = "test1")
+            User(id = ObjectId(), email = email, password = "password", nickname = "test1")
         every { userRepository.findByEmail(email) } returns user
 
         // when

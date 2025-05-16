@@ -9,14 +9,14 @@ import com.inout.apiserver.application.word.admin.CreateWordManualApplication
 import com.inout.apiserver.application.word.admin.DeleteWordDefinitionApplication
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.config.web.RequestMongoUser
+import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import com.inout.apiserver.interfaces.web.v1.request.AddWordDefinitionRequest
 import com.inout.apiserver.interfaces.web.v1.request.CreateWordRequest
-import com.inout.apiserver.interfaces.web.v1.response.MongoWordResponse
-import com.inout.apiserver.interfaces.web.v1.response.MongoWordWithDefinitionsResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponsePaginationWrapper
+import com.inout.apiserver.interfaces.web.v1.response.WordResponse
+import com.inout.apiserver.interfaces.web.v1.response.WordWithDefinitionsResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -74,7 +74,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoWordResponse::class),
+                        schema = Schema(implementation = WordResponse::class),
                     ),
                 ],
             ),
@@ -102,7 +102,7 @@ class AdminWordController(
     )
     fun createWord(
         @RequestBody @Valid request: CreateWordRequest,
-    ): ResponseEntity<MongoWordResponse> {
+    ): ResponseEntity<WordResponse> {
         val result =
             createWordApplication.run(
                 CreateWordApplication.Request(
@@ -114,7 +114,7 @@ class AdminWordController(
         jobScheduler.enqueue { createSentenceApplication.run(CreateSentenceApplication.Request(wordId = result.word.id!!)) }
 
         return ResponseEntity(
-            MongoWordResponse.of(result.word),
+            WordResponse.of(result.word),
             CREATED,
         )
     }
@@ -141,7 +141,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoWordResponse::class),
+                        schema = Schema(implementation = WordResponse::class),
                     ),
                 ],
             ),
@@ -159,7 +159,7 @@ class AdminWordController(
     )
     fun createWordManual(
         @RequestBody @Valid request: CreateWordRequest,
-    ): ResponseEntity<MongoWordResponse> {
+    ): ResponseEntity<WordResponse> {
         val result =
             createWordManualApplication.run(
                 CreateWordManualApplication.Request(
@@ -170,7 +170,7 @@ class AdminWordController(
             )
 
         return ResponseEntity(
-            MongoWordResponse.of(result.word),
+            WordResponse.of(result.word),
             CREATED,
         )
     }
@@ -197,7 +197,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoWordWithDefinitionsResponse::class),
+                        schema = Schema(implementation = WordWithDefinitionsResponse::class),
                     ),
                 ],
             ),
@@ -226,7 +226,7 @@ class AdminWordController(
     fun addDefinitionToWord(
         @RequestBody @Valid request: AddWordDefinitionRequest,
         @PathVariable wordId: ObjectId,
-    ): ResponseEntity<MongoWordWithDefinitionsResponse> {
+    ): ResponseEntity<WordWithDefinitionsResponse> {
         val result =
             addWordDefinitionApplication.run(
                 AddWordDefinitionApplication.Request(
@@ -238,7 +238,7 @@ class AdminWordController(
             )
 
         return ResponseEntity(
-            MongoWordWithDefinitionsResponse.of(result.word),
+            WordWithDefinitionsResponse.of(result.word),
             CREATED,
         )
     }
@@ -254,7 +254,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoWordWithDefinitionsResponse::class),
+                        schema = Schema(implementation = WordWithDefinitionsResponse::class),
                     ),
                 ],
             ),
@@ -283,7 +283,7 @@ class AdminWordController(
     fun approveWordDefinition(
         @PathVariable wordId: ObjectId,
         @PathVariable wordDefinitionId: ObjectId,
-    ): ResponseEntity<MongoWordWithDefinitionsResponse> {
+    ): ResponseEntity<WordWithDefinitionsResponse> {
         val result =
             approveWordDefinitionApplication.run(
                 ApproveWordDefinitionApplication.Request(
@@ -294,7 +294,7 @@ class AdminWordController(
 
         jobScheduler.enqueue { createSentenceApplication.createSentencesFor(wordId, wordDefinitionId) }
 
-        return ResponseEntity.ok(MongoWordWithDefinitionsResponse.of(result.word))
+        return ResponseEntity.ok(WordWithDefinitionsResponse.of(result.word))
     }
 
     @DeleteMapping("/{wordId}/definitions/{wordDefinitionId}")
@@ -308,7 +308,7 @@ class AdminWordController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoWordWithDefinitionsResponse::class),
+                        schema = Schema(implementation = WordWithDefinitionsResponse::class),
                     ),
                 ],
             ),
@@ -337,7 +337,7 @@ class AdminWordController(
     fun deleteWordDefinition(
         @PathVariable wordId: ObjectId,
         @PathVariable wordDefinitionId: ObjectId,
-    ): ResponseEntity<MongoWordWithDefinitionsResponse> {
+    ): ResponseEntity<WordWithDefinitionsResponse> {
         val result =
             deleteWordDefinitionApplication.run(
                 DeleteWordDefinitionApplication.Request(
@@ -346,7 +346,7 @@ class AdminWordController(
                 ),
             )
 
-        return ResponseEntity(MongoWordWithDefinitionsResponse.of(result.word), OK)
+        return ResponseEntity(WordWithDefinitionsResponse.of(result.word), OK)
     }
 
     @GetMapping("/definitions")
@@ -407,8 +407,8 @@ class AdminWordController(
         prefix: String,
         @RequestParam(required = false)
         lexicalCategory: LexicalCategoryType?,
-        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<ResponsePaginationWrapper<MongoWordWithDefinitionsResponse>> {
+        @Parameter(hidden = true) @RequestUser user: User,
+    ): ResponseEntity<ResponsePaginationWrapper<WordWithDefinitionsResponse>> {
         val result =
             adminReadWordsApplication.run(
                 AdminReadWordsApplication.Request(
@@ -422,7 +422,7 @@ class AdminWordController(
 
         return ResponseEntity.ok(
             ResponsePaginationWrapper(
-                data = result.words.map { MongoWordWithDefinitionsResponse.of(it) },
+                data = result.words.map { WordWithDefinitionsResponse.of(it) },
                 hasMore = pageable.next().offset < result.totalCount,
                 count = result.totalCount,
             ),

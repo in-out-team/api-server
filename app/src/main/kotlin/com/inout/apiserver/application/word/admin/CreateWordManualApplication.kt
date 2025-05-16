@@ -1,15 +1,15 @@
 package com.inout.apiserver.application.word.admin
 
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.domain.word.MongoWordService
 import com.inout.apiserver.domain.word.WordCreateObject
+import com.inout.apiserver.domain.word.WordService
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.ConflictException
 import org.springframework.stereotype.Component
 
 @Component
 class CreateWordManualApplication(
-    private val wordService: MongoWordService,
+    private val wordService: WordService,
 ) {
     data class Request(
         val name: String,

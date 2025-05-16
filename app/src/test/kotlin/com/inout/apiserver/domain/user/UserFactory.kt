@@ -1,7 +1,7 @@
 package com.inout.apiserver.domain.user
 
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.user.UserRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.user.UserRepository
 import org.springframework.stereotype.Component
 
 @Component

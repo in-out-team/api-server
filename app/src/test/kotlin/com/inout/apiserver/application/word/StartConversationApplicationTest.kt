@@ -1,20 +1,20 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SenderType
-import com.inout.apiserver.domain.study.MongoStudyFactory
-import com.inout.apiserver.domain.study.MongoStudyService
-import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.study.StudyFactory
+import com.inout.apiserver.domain.study.StudyService
+import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.AudioAIService
 import com.inout.apiserver.domain.word.AudioFactory
-import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
-import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
-import com.inout.apiserver.infrastructure.mongo.word.MongoConversationMessage
-import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
+import com.inout.apiserver.infrastructure.mongo.user.User
+import com.inout.apiserver.infrastructure.mongo.word.Conversation
+import com.inout.apiserver.infrastructure.mongo.word.ConversationMessage
+import com.inout.apiserver.infrastructure.mongo.word.ConversationRepository
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -29,20 +29,20 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class StartConversationApplicationTest(
     private val subject: StartConversationApplication,
     // services
-    private val studyService: MongoStudyService,
+    private val studyService: StudyService,
     @SpyBean
     private val audioAIService: AudioAIService,
     // repositories
-    private val conversationRepository: MongoConversationRepository,
+    private val conversationRepository: ConversationRepository,
     // factories
     private val audioFactory: AudioFactory,
-    private val userFactory: MongoUserFactory,
-    private val wordFactory: MongoWordFactory,
-    private val studyFactory: MongoStudyFactory,
+    private val userFactory: UserFactory,
+    private val wordFactory: WordFactory,
+    private val studyFactory: StudyFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: MongoUser? = null
+        var user: User? = null
         var word: WordWithDefinitions? = null
 
         beforeEach {
@@ -94,7 +94,7 @@ class StartConversationApplicationTest(
             }
 
             describe("when user has existing conversation/s") {
-                val conversations = mutableListOf<MongoConversation>()
+                val conversations = mutableListOf<Conversation>()
 
                 beforeEach {
                     conversations.add(wordFactory.createConversation(user!!, wordDefinitionId))
@@ -102,15 +102,15 @@ class StartConversationApplicationTest(
                     conversations.add(wordFactory.createConversation(user!!, wordDefinitionId))
                 }
 
-                fun populateConversation(conversation: MongoConversation) {
+                fun populateConversation(conversation: Conversation) {
                     listOf(
-                        MongoConversationMessage(
+                        ConversationMessage(
                             conversationId = conversation.id!!,
                             sender = SenderType.SYSTEM,
                             content = "Hello, how can I help you?",
                             audio = audioFactory.createAudio(),
                         ),
-                        MongoConversationMessage(
+                        ConversationMessage(
                             conversationId = conversation.id!!,
                             sender = SenderType.USER,
                             content = "Hello",

@@ -3,13 +3,13 @@ package com.inout.apiserver.application.word
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.StatusType
-import com.inout.apiserver.domain.study.MongoStudyFactory
-import com.inout.apiserver.domain.user.MongoUserFactory
-import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.study.StudyFactory
+import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.shouldBe
@@ -20,9 +20,9 @@ import org.springframework.data.mongodb.core.MongoTemplate
 class ReadWordsApplicationTest(
     private val subject: ReadWordsApplication,
     // factories
-    private val userFactory: MongoUserFactory,
-    private val wordFactory: MongoWordFactory,
-    private val studyFactory: MongoStudyFactory,
+    private val userFactory: UserFactory,
+    private val wordFactory: WordFactory,
+    private val studyFactory: StudyFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
@@ -60,7 +60,7 @@ class ReadWordsApplicationTest(
         }
 
         describe("when matching word exists") {
-            var user: MongoUser? = null
+            var user: User? = null
             var words: MutableList<WordWithDefinitions>? = null
 
             beforeEach {

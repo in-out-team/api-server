@@ -2,13 +2,13 @@ package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.domain.auth.GoogleApiClientService
 import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.MongoUserService
+import com.inout.apiserver.domain.user.UserService
 import org.apache.commons.codec.digest.Md5Crypt
 import org.springframework.stereotype.Component
 
 @Component
 class GoogleLoginApplication(
-    private val userService: MongoUserService,
+    private val userService: UserService,
     private val googleApiClientService: GoogleApiClientService,
     private val tokenService: TokenService,
 ) {

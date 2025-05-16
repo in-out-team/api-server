@@ -5,7 +5,7 @@ import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.gson.GsonFactory
 import com.inout.apiserver.config.filter.JwtAuthFilter
 import com.inout.apiserver.config.filter.JwtExceptionHandlerFilter
-import com.inout.apiserver.infrastructure.mongo.user.MongoUserRepository
+import com.inout.apiserver.infrastructure.mongo.user.UserRepository
 import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -27,7 +27,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val userRepository: MongoUserRepository,
+    private val userRepository: UserRepository,
 ) {
     @Bean
     fun securityFilterChain(

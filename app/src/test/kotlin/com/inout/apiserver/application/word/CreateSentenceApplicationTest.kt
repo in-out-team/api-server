@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.service.DictionaryService
-import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
@@ -30,7 +30,7 @@ class CreateSentenceApplicationTest(
     @SpyBean
     private val dictionaryService: DictionaryService,
     // factories
-    private val wordFactory: MongoWordFactory,
+    private val wordFactory: WordFactory,
     // etc
     private val mongoTemplate: MongoTemplate,
     @SpyBean

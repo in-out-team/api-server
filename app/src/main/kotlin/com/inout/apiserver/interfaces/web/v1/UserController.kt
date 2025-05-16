@@ -3,12 +3,12 @@ package com.inout.apiserver.interfaces.web.v1
 import com.inout.apiserver.application.user.CreateUserApplication
 import com.inout.apiserver.application.user.ReadUserApplication
 import com.inout.apiserver.application.user.UpdateUserApplication
-import com.inout.apiserver.config.web.RequestMongoUser
+import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.mongo.user.MongoUser
+import com.inout.apiserver.infrastructure.mongo.user.User
 import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
-import com.inout.apiserver.interfaces.web.v1.response.MongoUserResponse
+import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -56,7 +56,7 @@ class UserController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoUserResponse::class),
+                        schema = Schema(implementation = UserResponse::class),
                     ),
                 ],
             ),
@@ -75,9 +75,9 @@ class UserController(
     )
     fun createUser(
         @RequestBody @Valid request: CreateUserRequest,
-    ): ResponseEntity<MongoUserResponse> =
+    ): ResponseEntity<UserResponse> =
         ResponseEntity(
-            MongoUserResponse.of(
+            UserResponse.of(
                 user =
                     createUserApplication
                         .run(
@@ -113,7 +113,7 @@ class UserController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoUserResponse::class),
+                        schema = Schema(implementation = UserResponse::class),
                     ),
                 ],
             ),
@@ -132,10 +132,10 @@ class UserController(
     )
     fun updateUser(
         @RequestBody @Valid request: UpdateUserRequest,
-        @RequestMongoUser user: MongoUser,
-    ): ResponseEntity<MongoUserResponse> =
+        @RequestUser user: User,
+    ): ResponseEntity<UserResponse> =
         ResponseEntity(
-            MongoUserResponse.of(
+            UserResponse.of(
                 user =
                     updateUserApplication
                         .run(
@@ -163,7 +163,7 @@ class UserController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = MongoUserResponse::class),
+                        schema = Schema(implementation = UserResponse::class),
                     ),
                 ],
             ),
@@ -182,9 +182,9 @@ class UserController(
     )
     fun getUser(
         @PathVariable id: ObjectId,
-    ): ResponseEntity<MongoUserResponse> =
+    ): ResponseEntity<UserResponse> =
         ResponseEntity(
-            MongoUserResponse.of(
+            UserResponse.of(
                 user = readUserApplication.run(ReadUserApplication.Request(id = id)).user,
             ),
             OK,

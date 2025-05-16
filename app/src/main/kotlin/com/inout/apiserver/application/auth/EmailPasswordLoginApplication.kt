@@ -1,7 +1,7 @@
 package com.inout.apiserver.application.auth
 
 import com.inout.apiserver.domain.auth.TokenService
-import com.inout.apiserver.domain.user.MongoUserService
+import com.inout.apiserver.domain.user.UserService
 import com.inout.apiserver.error.InternalServerErrorException
 import com.inout.apiserver.error.InvalidCredentialsException
 import com.inout.apiserver.error.NotFoundException
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 class EmailPasswordLoginApplication(
     private val tokenService: TokenService,
     private val authManager: AuthenticationManager,
-    private val userService: MongoUserService,
+    private val userService: UserService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 

@@ -1,10 +1,11 @@
 package com.inout.apiserver.interfaces.web.v1.response
 
 import com.inout.apiserver.base.enums.LexicalCategoryType
-import com.inout.apiserver.infrastructure.db.word.WordDefinition
+import com.inout.apiserver.domain.word.WordWithDefinitions
+import org.bson.types.ObjectId
 
 data class WordDefinitionWithStudyingResponse(
-    val id: Long,
+    val id: ObjectId,
     val lexicalCategory: LexicalCategoryType,
     val meaning: String,
     val preContext: String,
@@ -12,7 +13,7 @@ data class WordDefinitionWithStudyingResponse(
 ) {
     companion object {
         fun of(
-            wordDefinition: WordDefinition,
+            wordDefinition: WordWithDefinitions.WordDefinition,
             studying: Boolean,
         ): WordDefinitionWithStudyingResponse =
             WordDefinitionWithStudyingResponse(

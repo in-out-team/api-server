@@ -3,21 +3,21 @@ package com.inout.apiserver.domain.word
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.service.AudioService
-import com.inout.apiserver.infrastructure.mongo.word.MongoAiAudio
-import com.inout.apiserver.infrastructure.mongo.word.MongoAiAudioRepository
+import com.inout.apiserver.infrastructure.mongo.word.AiAudio
+import com.inout.apiserver.infrastructure.mongo.word.AiAudioRepository
 import com.inout.apiserver.infrastructure.s3.S3Service
 import org.springframework.stereotype.Service
 
 @Service
 class AudioAIService(
     private val audioService: AudioService,
-    private val aiAudioRepository: MongoAiAudioRepository,
+    private val aiAudioRepository: AiAudioRepository,
     private val s3Service: S3Service,
 ) {
     fun findOrCreateAudio(
         language: LanguageType,
         content: String,
-    ): MongoAiAudio {
+    ): AiAudio {
         aiAudioRepository
             .findByLanguageAndVoiceTypeAndContent(
                 language = language,
@@ -37,7 +37,7 @@ class AudioAIService(
             )
 
         return aiAudioRepository.save(
-            MongoAiAudio.fromCreateObject(
+            AiAudio.fromCreateObject(
                 AiAudioCreateObject(
                     language = language,
                     aiVoiceType = requestVoice,
