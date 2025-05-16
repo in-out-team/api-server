@@ -12,9 +12,9 @@ import com.inout.apiserver.error.HttpException
 import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.GetWritingSentenceFeedbackRequest
+import com.inout.apiserver.interfaces.web.v1.response.MongoSentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.MongoSentencesResponse
 import com.inout.apiserver.interfaces.web.v1.response.MongoUserSentenceResponse
-import com.inout.apiserver.interfaces.web.v1.response.SentenceResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbackResponse
 import com.inout.apiserver.interfaces.web.v1.response.WritingSentenceFeedbacksResponse
 import io.swagger.v3.oas.annotations.Operation
@@ -220,7 +220,7 @@ class SentenceController(
                 name = "wordDefinitionId",
                 description = "단어 정의 ID",
                 required = true,
-                schema = Schema(implementation = Long::class),
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -230,7 +230,7 @@ class SentenceController(
                 content = [
                     Content(
                         mediaType = "application/json",
-                        schema = Schema(implementation = SentenceResponse::class),
+                        schema = Schema(implementation = MongoSentenceResponse::class),
                     ),
                 ],
             ),
@@ -257,11 +257,11 @@ class SentenceController(
         ],
     )
     fun getRandomWritingSentence(
-        @RequestParam(required = true) wordDefinitionId: Long,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<SentenceResponse> =
+        @RequestParam(required = true) wordDefinitionId: ObjectId,
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoSentenceResponse> =
         ResponseEntity(
-            SentenceResponse.of(
+            MongoSentenceResponse.of(
                 getRandomWritingSentenceApplication
                     .run(
                         GetRandomWritingSentenceApplication.Request(

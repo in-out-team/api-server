@@ -1,42 +1,43 @@
 package com.inout.apiserver.application.word
 
 import com.inout.apiserver.base.enums.SentenceType
-import com.inout.apiserver.domain.study.StudyFactory
-import com.inout.apiserver.domain.user.UserFactory
-import com.inout.apiserver.domain.word.WordFactory
+import com.inout.apiserver.domain.study.MongoStudyFactory
+import com.inout.apiserver.domain.user.MongoUserFactory
+import com.inout.apiserver.domain.word.MongoWordFactory
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.inout.apiserver.infrastructure.db.user.User
-import com.inout.apiserver.infrastructure.db.word.Word
+import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import org.springframework.jdbc.core.JdbcTemplate
+import org.bson.types.ObjectId
+import org.springframework.data.mongodb.core.MongoTemplate
 
 @InOutSpringBootTest
 class GetRandomWritingSentenceApplicationTest(
     private val subject: GetRandomWritingSentenceApplication,
     // factories
-    private val userFactory: UserFactory,
-    private val wordFactory: WordFactory,
-    private val studyFactory: StudyFactory,
+    private val userFactory: MongoUserFactory,
+    private val wordFactory: MongoWordFactory,
+    private val studyFactory: MongoStudyFactory,
     // etc
-    private val jdbcTemplate: JdbcTemplate,
+    private val mongoTemplate: MongoTemplate,
 ) : DescribeSpec({
-        var user: User? = null
+        var user: MongoUser? = null
 
         beforeEach {
             user = userFactory.createUser()
         }
 
         afterEach {
-            jdbcTemplate.cleanUp()
+            mongoTemplate.cleanUp()
         }
 
         describe("when there are no writing sentences") {
-            var word: Word? = null
+            var word: WordWithDefinitions? = null
 
             beforeEach {
                 word = wordFactory.createWord()
@@ -68,8 +69,8 @@ class GetRandomWritingSentenceApplicationTest(
         }
 
         describe("when user already has enough sentences") {
-            var word: Word?
-            var wordDefinitionId = 0L
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
 
             beforeEach {
                 word = wordFactory.createWord()
@@ -116,8 +117,8 @@ class GetRandomWritingSentenceApplicationTest(
         }
 
         describe("when all sentences are already selected") {
-            var word: Word?
-            var wordDefinitionId = 0L
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
 
             beforeEach {
                 word = wordFactory.createWord()
@@ -156,8 +157,8 @@ class GetRandomWritingSentenceApplicationTest(
         }
 
         describe("when there are available sentences") {
-            var word: Word?
-            var wordDefinitionId = 0L
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
 
             beforeEach {
                 word = wordFactory.createWord()

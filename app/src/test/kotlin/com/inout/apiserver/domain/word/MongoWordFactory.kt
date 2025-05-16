@@ -9,6 +9,10 @@ import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
 import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
 import com.inout.apiserver.infrastructure.mongo.word.MongoSentenceRepository
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentence
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceFeedback
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceFeedbackRepository
+import com.inout.apiserver.infrastructure.mongo.word.MongoUserSentenceRepository
 import com.inout.apiserver.infrastructure.mongo.word.MongoWord
 import com.inout.apiserver.infrastructure.mongo.word.MongoWordDefinition
 import com.inout.apiserver.infrastructure.mongo.word.MongoWordRepository
@@ -20,6 +24,8 @@ class MongoWordFactory(
     private val wordRepository: MongoWordRepository,
     private val sentenceRepository: MongoSentenceRepository,
     private val conversationRepository: MongoConversationRepository,
+    private val mongoUserSentenceRepository: MongoUserSentenceRepository,
+    private val mongoUserSentenceFeedbackRepository: MongoUserSentenceFeedbackRepository,
 ) {
     fun createWord(
         name: String = "book",
@@ -105,4 +111,32 @@ class MongoWordFactory(
                 wordDefinitionId = wordDefinitionId,
             ),
         )
+
+    fun createUserSentence(
+        userId: ObjectId,
+        wordDefinitionId: ObjectId,
+        sentenceId: ObjectId,
+        type: SentenceType = SentenceType.WRITING,
+    ): MongoUserSentence =
+        mongoUserSentenceRepository
+            .save(
+                MongoUserSentence(
+                    userId = userId,
+                    wordDefinitionId = wordDefinitionId,
+                    sentenceId = sentenceId,
+                    type = type,
+                ),
+            )
+
+    fun createUserSentenceFeedback(
+        userSentenceId: ObjectId,
+        sentenceFeedbackId: ObjectId,
+    ): MongoUserSentenceFeedback =
+        mongoUserSentenceFeedbackRepository
+            .save(
+                MongoUserSentenceFeedback(
+                    userSentenceId = userSentenceId,
+                    sentenceFeedbackId = sentenceFeedbackId,
+                ),
+            )
 }
