@@ -4,13 +4,10 @@ import com.inout.apiserver.application.word.GetConversationsApplication
 import com.inout.apiserver.application.word.RespondToConversationApplication
 import com.inout.apiserver.application.word.StartConversationApplication
 import com.inout.apiserver.config.web.RequestMongoUser
-import com.inout.apiserver.config.web.RequestUser
 import com.inout.apiserver.error.HttpException
-import com.inout.apiserver.infrastructure.db.user.User
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.interfaces.web.v1.request.RespondToConversationRequest
 import com.inout.apiserver.interfaces.web.v1.request.StartConversationRequest
-import com.inout.apiserver.interfaces.web.v1.response.ConversationResponse
 import com.inout.apiserver.interfaces.web.v1.response.MongoConversationResponse
 import com.inout.apiserver.interfaces.web.v1.response.ResponseListWrapper
 import io.swagger.v3.oas.annotations.Operation
@@ -99,7 +96,7 @@ class ConversationController(
                 content = [
                     Content(
                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = Schema(implementation = ConversationResponse::class),
+                        schema = Schema(implementation = MongoConversationResponse::class),
                     ),
                 ],
             ),
@@ -117,10 +114,10 @@ class ConversationController(
     )
     fun startConversation(
         @RequestBody @Valid request: StartConversationRequest,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<ConversationResponse> =
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoConversationResponse> =
         ResponseEntity.ok(
-            ConversationResponse.of(
+            MongoConversationResponse.of(
                 startConversationApplication
                     .run(
                         StartConversationApplication.Request(
@@ -161,7 +158,7 @@ class ConversationController(
                 content = [
                     Content(
                         mediaType = MediaType.APPLICATION_JSON_VALUE,
-                        schema = Schema(implementation = ConversationResponse::class),
+                        schema = Schema(implementation = MongoConversationResponse::class),
                     ),
                 ],
             ),
@@ -190,12 +187,12 @@ class ConversationController(
         ],
     )
     fun respondToConversation(
-        @PathVariable conversationId: Long,
+        @PathVariable conversationId: ObjectId,
         @RequestBody @Valid request: RespondToConversationRequest,
-        @Parameter(hidden = true) @RequestUser user: User,
-    ): ResponseEntity<ConversationResponse> =
+        @Parameter(hidden = true) @RequestMongoUser user: MongoUser,
+    ): ResponseEntity<MongoConversationResponse> =
         ResponseEntity.ok(
-            ConversationResponse.of(
+            MongoConversationResponse.of(
                 respondToConversationApplication
                     .run(
                         RespondToConversationApplication.Request(

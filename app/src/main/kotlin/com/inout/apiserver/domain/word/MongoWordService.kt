@@ -2,6 +2,7 @@ package com.inout.apiserver.domain.word
 
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
+import com.inout.apiserver.base.enums.SenderType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.error.BadRequestException
@@ -10,6 +11,7 @@ import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.mongo.user.MongoUser
 import com.inout.apiserver.infrastructure.mongo.word.MongoAiAudio
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversation
+import com.inout.apiserver.infrastructure.mongo.word.MongoConversationMessage
 import com.inout.apiserver.infrastructure.mongo.word.MongoConversationRepository
 import com.inout.apiserver.infrastructure.mongo.word.MongoSentence
 import com.inout.apiserver.infrastructure.mongo.word.MongoSentenceFeedback
@@ -322,7 +324,7 @@ class MongoWordService(
         wordDefinitionId: ObjectId,
         systemMessage: String,
         systemAudio: MongoAiAudio,
-    ): MongoConversation {
+    ): ConversationWithMessages {
         val conversation =
             mongoConversationRepository.saveConversation(
                 MongoConversation.fromCreateObject(
@@ -331,11 +333,45 @@ class MongoWordService(
                 ),
             )
 
-        TODO("need to save system message and audio")
+        mongoConversationRepository.saveConversationMessage(
+            MongoConversationMessage(
+                conversationId = conversation.id!!,
+                sender = SenderType.SYSTEM,
+                content = systemMessage,
+                audio = systemAudio,
+            ),
+        )
+
+        return getConversationById(conversation.id)!!
     }
 
-    fun updateConversation(conversation: MongoConversation) {
-        TODO("need to add conversation message")
+    @Transactional
+    fun doConversation(
+        conversation: ConversationWithMessages,
+        userResponseMessage: String,
+        systemResponseMessage: String,
+        systemResponseAudio: MongoAiAudio,
+    ): ConversationWithMessages {
+        // 1. Add user message
+        mongoConversationRepository.saveConversationMessage(
+            MongoConversationMessage(
+                conversationId = conversation.id!!,
+                sender = SenderType.USER,
+                content = userResponseMessage,
+            ),
+        )
+
+        // 2. Add system message
+        mongoConversationRepository.saveConversationMessage(
+            MongoConversationMessage(
+                conversationId = conversation.id,
+                sender = SenderType.SYSTEM,
+                content = systemResponseMessage,
+                audio = systemResponseAudio,
+            ),
+        )
+
+        return getConversationById(conversation.id)!!
     }
 
     fun approveWordDefinition(
