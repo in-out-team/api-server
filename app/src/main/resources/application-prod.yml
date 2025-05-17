@@ -14,26 +14,15 @@ cloud:
         access-key: ${AWS_S3_ACCESS_KEY}
         secret-key: ${AWS_S3_SECRET_KEY}
 
-# Social Login Configuration
-auth:
-  google:
-    ios-client-id: ${GOOGLE_IOS_CLIENT_ID}
 
 org:
   # Jobrunr Configuration
   jobrunr:
-    database:
-      datasource: ${JOBRUNR_DB_DATASOURCE_URL}
     background-job-server:
       enabled: true # use background job server due to limited resources on cloud
     dashboard:
       # Disable JobRunr dashboard on production environment until oauth login for admin accounts is implemented
       enabled: false
-
-app:
-  jobrunr:
-    data-source-username: ${JOBRUNR_DB_USERNAME}
-    data-source-password: ${JOBRUNR_DB_PASSWORD}
 
 # Disable SpringDoc API documentation in prod environment
 springdoc:

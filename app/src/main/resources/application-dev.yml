@@ -12,18 +12,3 @@ cloud:
 auth:
   google:
     ios-client-id: ${GOOGLE_IOS_CLIENT_ID}
-
-org:
-  # Jobrunr Configuration
-  jobrunr:
-    database:
-      datasource: ${JOBRUNR_DB_DATASOURCE_URL}
-    background-job-server:
-      enabled: true # use background job server due to limited resources on cloud
-    dashboard:
-      enabled: true # Enable the JobRunr dashboard on dev environment
-
-app:
-  jobrunr:
-    data-source-username: ${JOBRUNR_DB_USERNAME}
-    data-source-password: ${JOBRUNR_DB_PASSWORD}

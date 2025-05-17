@@ -9,8 +9,6 @@ data class AppConfig(
     val jobrunr: Jobrunr = Jobrunr(),
 ) {
     data class Jobrunr(
-        var dataSourceUrl: String = "",
-        var dataSourceUsername: String = "",
-        var dataSourcePassword: String = "",
+        var uri: String = "",
     )
 }

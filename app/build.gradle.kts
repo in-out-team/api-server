@@ -27,12 +27,10 @@ tasks.test {
 dependencies {
     implementation(project(":fsrs"))
     // spring
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
     // openai
     implementation("com.aallam.openai:openai-client:3.7.2")
@@ -52,9 +50,7 @@ dependencies {
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0")
 
     // db
-    runtimeOnly("org.postgresql:postgresql")
-    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.8.2")
-    implementation("org.flywaydb:flyway-core:9.22.3")
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
     // logins
     // google api client
