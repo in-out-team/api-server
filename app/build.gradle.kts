@@ -51,6 +51,9 @@ dependencies {
 
     // db
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    implementation("io.mongock:mongock:5.5.1")
+    implementation("io.mongock:mongock-springboot-v3:5.5.1")
+    implementation("io.mongock:mongodb-springdata-v4-driver:5.5.1")
 
     // logins
     // google api client
