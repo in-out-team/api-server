@@ -4,12 +4,8 @@
 
 ### Environment Variables
 
-- DB_URL: Database URL
-  - ex) jdbc:postgresql://localhost:5432/in-out
-- DB_USERNAME: Database username
-  - ex) postgres
-- DB_PASSWORD: Database password
-  - ex) postgres
+- MONGODB_URI: Database URL
+  - ex) mongodb://root:example@in-out-db:27017/local-in-out?authSource=admin
 - JWT_KEY: JWT Secret Key
   - ex) super_long_secret_key
   - must be at least 256 bits long 
@@ -23,13 +19,11 @@
   - ex) AKIAAAAAAAAAAAAAAAAA
 - AWS_S3_SECRET_KEY: AWS S3 Secret Key
   - ex) aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-- JOBRUNR_DB_DATASOURCE_URL: JobRunr Database URL
-  - ex) jdbc:postgresql://localhost:5432/in-out-jobrunr-local
+- JOBRUNR_DB_URI: JobRunr Database URL
+  - ex) mongodb://root:example@in-out-db:27017/local-in-out-jobrunr?authSource=admin
 
 ## Next Steps
 
-- change classes mapped to entities from data classes to regular classes
-  - [ref link](https://spoqa.github.io/2022/08/16/kotlin-jpa-entity.html)
 - add logging & monitoring
   - openai usage (who used, how many(tokens), and when)
   - Sentry

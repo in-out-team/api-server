@@ -5,7 +5,6 @@ import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
 import com.inout.apiserver.helper.InOutSpringBootTest
-import com.zaxxer.hikari.HikariDataSource
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -21,7 +20,6 @@ import org.mockito.kotlin.whenever
 import org.springframework.boot.test.mock.mockito.SpyBean
 import org.springframework.data.mongodb.core.MongoTemplate
 import java.util.UUID
-import javax.sql.DataSource
 
 @InOutSpringBootTest
 class CreateSentenceApplicationTest(
@@ -35,7 +33,6 @@ class CreateSentenceApplicationTest(
     private val mongoTemplate: MongoTemplate,
     @SpyBean
     private val jobScheduler: JobScheduler,
-    private val jobrunrDataSource: DataSource,
 ) : DescribeSpec({
         beforeEach {
             doReturn(JobId(UUID.randomUUID()))
@@ -46,10 +43,6 @@ class CreateSentenceApplicationTest(
         afterEach {
             mongoTemplate.cleanUp()
             clearInvocations(jobScheduler)
-        }
-
-        afterSpec {
-            (jobrunrDataSource as HikariDataSource).close()
         }
 
         describe("CreateSentenceApplication") {

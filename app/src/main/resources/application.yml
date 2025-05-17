@@ -1,27 +1,12 @@
 spring:
-  datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        jdbc:
-          time_zone: UTC
+  data:
+    mongodb:
+      uri: ${MONGODB_URI} # need to check timezone with db settings
+      uuid-representation: standard
   servlet:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
-  flyway:
-    enabled: true
-  data:
-    mongodb:
-      uri: ${MONGODB_URI}
-      database: ${MONGODB_DATABASE}
 
 # jwt token configuration
 jwt:
@@ -58,6 +43,4 @@ org:
 
 app:
   jobrunr:
-    data-source-url: ${JOBRUNR_DB_DATASOURCE_URL:jdbc:postgresql://localhost:5432/in-out-jobrunr-local}
-    data-source-username: ${JOBRUNR_DB_USERNAME:admin}
-    data-source-password: ${JOBRUNR_DB_PASSWORD:inout1234}
+    uri: ${JOBRUNR_DB_URI}

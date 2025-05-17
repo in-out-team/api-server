@@ -1,24 +1,3 @@
-spring:
-  datasource:
-    # see: https://stackoverflow.com/questions/68468851/testcontainers-sql-too-many-connections-exception
-    # setting pool size in order to avoid connection pool exhaustion
-    # - @SpringBootTest creates a new application context for each test class
-    # - while it tries its best to reuse the same connection pool, having a @SpyBean or @MockBean will force tests to
-    #   create a new application context, and thus a new connection pool (depleting the connection pool)
-    # - setting the maximum pool size will prevent excessive connections from being created (thus, this is a workaround)
-    hikari:
-      maximum-pool-size: 2
-  jpa:
-    hibernate:
-      ddl-auto: create
-#    show-sql: true
-#    properties:
-#      hibernate:
-#        jdbc:
-#          time_zone: UTC
-  flyway:
-    enabled: false
-
 jwt:
   key: "test-super-long-secret-key-1234567890"
   access-token-expiration: 60000000
@@ -54,13 +33,11 @@ cloud:
 org:
   # Jobrunr Configuration
   jobrunr:
-    database:
-      datasource: ${JOBRUNR_DB_DATASOURCE}
     background-job-server:
+      enabled: false
+    dashboard:
       enabled: false
 
 app:
   jobrunr:
-    data-source-url: ${JOBRUNR_DB_DATASOURCE_URL}
-    data-source-username: ${JOBRUNR_DB_USERNAME}
-    data-source-password: ${JOBRUNR_DB_PASSWORD}
+    uri: ${JOBRUNR_DB_URI}
