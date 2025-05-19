@@ -44,7 +44,8 @@ class ConversationController(
                 name = "wordDefinitionId",
                 description = "단어 정의 ID",
                 required = true,
-                example = "1",
+                example = "60d5f484b3c8a2b1f8e4e4a0",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         responses = [
@@ -89,6 +90,17 @@ class ConversationController(
     @Operation(
         summary = "학습 단어에 대한 대화 시작",
         description = "학습중인 단어에 대해 대화를 시작합니다. 기존 시작된 사용자가 대화하지 않은 대화가 있으면 해당 대화를 사용합니다.",
+        requestBody =
+            io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "대화 시작 요청 정보",
+                required = true,
+                content = [
+                    Content(
+                        mediaType = MediaType.APPLICATION_JSON_VALUE,
+                        schema = Schema(implementation = StartConversationRequest::class),
+                    ),
+                ],
+            ),
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -137,7 +149,8 @@ class ConversationController(
                 name = "conversationId",
                 description = "대화 ID",
                 required = true,
-                example = "1",
+                example = "60d5f484b3c8a2b1f8e4e4a0",
+                schema = Schema(implementation = ObjectId::class),
             ),
         ],
         requestBody =
