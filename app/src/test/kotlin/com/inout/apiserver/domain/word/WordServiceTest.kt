@@ -5,6 +5,7 @@ import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SentenceType
 import com.inout.apiserver.base.enums.StatusType
 import com.inout.apiserver.domain.user.UserFactory
+import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.extension.cleanUp
@@ -513,6 +514,101 @@ class WordServiceTest(
                 // then
                 res.size shouldBe 2
                 res shouldBeSortedBy { it.createdAt }
+            }
+        }
+
+        describe("loadUserSentencesForReading") {
+            var user: User? = null
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
+            var sentences = listOf<Sentence>()
+
+            beforeEach {
+                user = userFactory.createUser()
+                word = wordFactory.createWord()
+                wordDefinitionId = word!!.definitions.first().id!!
+                sentences = (1..3).map { wordFactory.createSentence(wordDefinitionId = wordDefinitionId) }
+            }
+
+            it("should raise error if sentence of different wordDefinitionId exists with given parameter") {
+                // given
+                val differentWord = wordFactory.createWord()
+                val differentSentence = wordFactory.createSentence(wordDefinitionId = differentWord.id!!)
+
+                // when & then
+                val res =
+                    assertThrows<BadRequestException> {
+                        wordService.loadUserSentencesForReading(
+                            userId = user!!.id!!,
+                            sentences = sentences + differentSentence,
+                        )
+                    }
+
+                res.message shouldBe "Cannot load user sentences for different word definitions or type"
+                res.code shouldBe "SENTENCE_4"
+            }
+
+            it("should raise error if any of the sentences are not of type READING") {
+                // given
+                val differentSentence =
+                    wordFactory.createSentence(
+                        wordDefinitionId = wordDefinitionId,
+                        type = SentenceType.WRITING,
+                    )
+
+                // when & then
+                val res =
+                    assertThrows<BadRequestException> {
+                        wordService.loadUserSentencesForReading(
+                            userId = user!!.id!!,
+                            sentences = sentences + differentSentence,
+                        )
+                    }
+
+                res.message shouldBe "Cannot load user sentences for different word definitions or type"
+                res.code shouldBe "SENTENCE_4"
+            }
+
+            it("should not add any more userSentences if exists already") {
+                // given
+                val userSentence =
+                    sentences.first().let { sentence ->
+                        wordService.createUserSentence(
+                            userId = user!!.id!!,
+                            wordDefinitionId = wordDefinitionId,
+                            type = SentenceType.READING,
+                            sentenceId = sentence.id!!,
+                        )
+                    }
+
+                // when
+                val res =
+                    wordService.loadUserSentencesForReading(
+                        userId = user!!.id!!,
+                        sentences = sentences,
+                    )
+
+                // then
+                res.size shouldBe 1
+                res.first().id shouldBe userSentence.id
+            }
+
+            it("should add all given sentences as userSentences") {
+                // when
+                val res =
+                    wordService.loadUserSentencesForReading(
+                        userId = user!!.id!!,
+                        sentences = sentences,
+                    )
+
+                // then
+                res.size shouldBe sentences.size
+                res.forEach { userSentence ->
+                    user!!.id shouldBe userSentence.userId
+                    wordDefinitionId shouldBe userSentence.wordDefinitionId
+                    SentenceType.READING shouldBe userSentence.type
+                    sentences.find { sentence -> sentence.id == userSentence.sentenceId } shouldNotBe null
+                }
             }
         }
     })

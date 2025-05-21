@@ -230,7 +230,6 @@ class WordService(
         userSentenceRepository.delete(userSentence)
     }
 
-    // TODO: check this method & add test case
     fun loadUserSentencesForReading(
         userId: ObjectId,
         sentences: List<Sentence>,
