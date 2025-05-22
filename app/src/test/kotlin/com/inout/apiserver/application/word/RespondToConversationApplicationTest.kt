@@ -59,7 +59,7 @@ class RespondToConversationApplicationTest(
                 .fetchConversationFeedback(any(), any(), any(), any(), any())
             doReturn(audioFactory.createAudio())
                 .whenever(audioAIService)
-                .findOrCreateAudio(any(), any())
+                .findOrCreateAudio(any(), any(), any())
         }
 
         afterEach {

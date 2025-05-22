@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.mongo.word
 
+import com.inout.apiserver.base.constants.AUDIO_TABLE_NAME
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.domain.word.AiAudioCreateObject
@@ -12,7 +13,7 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
 
-@Document(collection = "ai_audios")
+@Document(collection = AUDIO_TABLE_NAME)
 @CompoundIndexes(
     CompoundIndex(
         name = "unique_language_voiceType_content",

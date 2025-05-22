@@ -1,5 +1,6 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.constants.AUDIO_TABLE_NAME
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.service.AudioService
@@ -17,22 +18,22 @@ class AudioAIService(
     fun findOrCreateAudio(
         language: LanguageType,
         content: String,
+        voiceType: AiVoiceType = AiVoiceType.ALLOY,
     ): AiAudio {
         aiAudioRepository
             .findByLanguageAndVoiceTypeAndContent(
                 language = language,
-                voiceType = AiVoiceType.ALLOY, // TODO: temp, support multi voice later
+                voiceType = voiceType,
                 content = content,
             )?.let { return it }
 
-        val requestVoice = AiVoiceType.ALLOY
-        val rawAudio = audioService.fetchSpeechFromText(text = content, requestedVoice = requestVoice)
+        val rawAudio = audioService.fetchSpeechFromText(text = content, requestedVoice = voiceType)
         val uploadedDirectory =
             s3Service.uploadAudio(
                 inputStream = rawAudio.inputStream(),
                 language = language,
-                voiceType = AiVoiceType.ALLOY,
-                tableName = "ai_audios", // TODO: should be dynamic?
+                voiceType = voiceType,
+                tableName = AUDIO_TABLE_NAME,
                 content = content,
             )
 
@@ -40,7 +41,7 @@ class AudioAIService(
             AiAudio.fromCreateObject(
                 AiAudioCreateObject(
                     language = language,
-                    aiVoiceType = requestVoice,
+                    aiVoiceType = voiceType,
                     content = content,
                     directory = uploadedDirectory,
                 ),

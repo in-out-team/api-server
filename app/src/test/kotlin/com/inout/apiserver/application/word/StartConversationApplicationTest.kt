@@ -52,7 +52,7 @@ class StartConversationApplicationTest(
             // mock calls to wordAIService to save and return a dummy audio
             doReturn(audioFactory.createAudio())
                 .`when`(audioAIService)
-                .findOrCreateAudio(any(), any())
+                .findOrCreateAudio(any(), any(), any())
         }
 
         afterEach {
