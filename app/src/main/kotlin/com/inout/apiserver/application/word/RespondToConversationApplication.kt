@@ -69,7 +69,7 @@ class RespondToConversationApplication(
         val systemAudio =
             audioAIService.findOrCreateAudio(
                 language = word.fromLanguage,
-                content = systemResponse, // TODO: error raised when response is too long (varchar of 255)
+                content = systemResponse,
             )
 
         val updatedConversation =

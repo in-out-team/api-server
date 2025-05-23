@@ -204,5 +204,24 @@ class RespondToConversationApplicationTest(
                 response.updatedConversation.messages[2].content shouldBe "response"
                 response.updatedConversation.messages[2].audio shouldNotBe null
             }
+
+            it("should not raise error when response is too long") {
+                // given
+                val responseMessage = "a".repeat(1000)
+                val request =
+                    RespondToConversationApplication.Request(
+                        conversationId = conversation!!.id!!,
+                        responseMessage = responseMessage,
+                        user = user!!,
+                    )
+
+                // when
+                val response = subject.run(request)
+
+                // then
+                response.updatedConversation.messages.size shouldBe 3
+                response.updatedConversation.messages[1].sender shouldBe SenderType.USER
+                response.updatedConversation.messages[1].content shouldBe responseMessage
+            }
         }
     })
