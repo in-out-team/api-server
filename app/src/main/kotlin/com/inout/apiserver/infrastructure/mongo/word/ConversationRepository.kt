@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.mongo.word
 
+import com.inout.apiserver.base.dto.AudioDTO
 import com.inout.apiserver.domain.word.ConversationWithMessages
 import org.bson.types.ObjectId
 import org.springframework.data.mongodb.repository.MongoRepository
@@ -40,10 +41,11 @@ class ConversationRepository(
                 .findAllByConversationIdIn(conversationIds)
                 .groupBy { it.conversationId }
 
-        val aiAudios =
-            aiAudioRepository.findAllById(
-                messagesByConversationId.values.flatten().mapNotNull { it.audio?.id },
-            )
+        val audios =
+            aiAudioRepository
+                .findAllById(
+                    messagesByConversationId.values.flatten().mapNotNull { it.audio?.id },
+                ).map { AudioDTO.of(it) }
 
         return conversations.map { conversation ->
             val messages =
@@ -53,22 +55,13 @@ class ConversationRepository(
                 messages.map { message ->
                     val audio =
                         message.audio?.let { aiAudio ->
-                            aiAudios.find { it.id == aiAudio.id }
+                            audios.find { it.id == aiAudio.id }
                         }
                     ConversationWithMessages.ConversationMessage(
                         id = message.id,
                         sender = message.sender,
                         content = message.content,
-                        audio =
-                            audio?.let {
-                                ConversationWithMessages.AiAudio(
-                                    id = it.id,
-                                    language = it.language,
-                                    voiceType = it.voiceType,
-                                    content = it.content,
-                                    directory = it.directory,
-                                )
-                            },
+                        audio = audio,
                     )
                 }
             ConversationWithMessages(
@@ -84,28 +77,19 @@ class ConversationRepository(
     fun findById(id: ObjectId): ConversationWithMessages? {
         val conversation = conversationRepository.findById(id).orElse(null) ?: return null
         val messages = conversationMessageRepository.findAllByConversationId(id)
-        val aiAudios = aiAudioRepository.findAllById(messages.mapNotNull { it.audio?.id })
+        val audios = aiAudioRepository.findAllById(messages.mapNotNull { it.audio?.id }).map { AudioDTO.of(it) }
 
         val conversationMessages =
             messages.map { message ->
                 val audio =
                     message.audio?.let { aiAudio ->
-                        aiAudios.find { it.id == aiAudio.id }
+                        audios.find { it.id == aiAudio.id }
                     }
                 ConversationWithMessages.ConversationMessage(
                     id = message.id,
                     sender = message.sender,
                     content = message.content,
-                    audio =
-                        audio?.let {
-                            ConversationWithMessages.AiAudio(
-                                id = it.id,
-                                language = it.language,
-                                voiceType = it.voiceType,
-                                content = it.content,
-                                directory = it.directory,
-                            )
-                        },
+                    audio = audio,
                 )
             }
 

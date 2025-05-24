@@ -1,5 +1,6 @@
 package com.inout.apiserver.domain.word
 
+import com.inout.apiserver.base.dto.AudioDTO
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.enums.LexicalCategoryType
 import com.inout.apiserver.base.enums.SenderType
@@ -9,7 +10,6 @@ import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
 import com.inout.apiserver.infrastructure.mongo.user.User
-import com.inout.apiserver.infrastructure.mongo.word.AiAudio
 import com.inout.apiserver.infrastructure.mongo.word.Conversation
 import com.inout.apiserver.infrastructure.mongo.word.ConversationMessage
 import com.inout.apiserver.infrastructure.mongo.word.ConversationRepository
@@ -322,7 +322,7 @@ class WordService(
         userId: ObjectId,
         wordDefinitionId: ObjectId,
         systemMessage: String,
-        systemAudio: AiAudio,
+        systemAudio: AudioDTO,
     ): ConversationWithMessages {
         val conversation =
             conversationRepository.saveConversation(
@@ -349,7 +349,7 @@ class WordService(
         conversation: ConversationWithMessages,
         userResponseMessage: String,
         systemResponseMessage: String,
-        systemResponseAudio: AiAudio,
+        systemResponseAudio: AudioDTO,
     ): ConversationWithMessages {
         // 1. Add user message
         conversationRepository.saveConversationMessage(

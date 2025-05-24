@@ -1,5 +1,6 @@
 package com.inout.apiserver.infrastructure.mongo.word
 
+import com.inout.apiserver.base.dto.AudioDTO
 import com.inout.apiserver.base.enums.SenderType
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.CreatedDate
@@ -23,8 +24,7 @@ data class ConversationMessage(
     val conversationId: ObjectId,
     val sender: SenderType,
     val content: String,
-    // TODO: need to check how audio is stored in MongoDB
-    val audio: AiAudio? = null,
+    val audio: AudioDTO? = null,
     @CreatedDate
     val createdAt: Instant? = null,
     @LastModifiedDate

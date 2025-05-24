@@ -1,7 +1,6 @@
 package com.inout.apiserver.domain.word
 
-import com.inout.apiserver.base.enums.AiVoiceType
-import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.base.dto.AudioDTO
 import com.inout.apiserver.base.enums.SenderType
 import org.bson.types.ObjectId
 import java.time.Instant
@@ -17,15 +16,7 @@ data class ConversationWithMessages(
         val id: ObjectId? = null,
         val sender: SenderType,
         val content: String,
-        val audio: AiAudio? = null,
+        val audio: AudioDTO? = null,
         val createdAt: Instant? = null,
-    )
-
-    data class AiAudio(
-        val id: ObjectId? = null,
-        val language: LanguageType,
-        val voiceType: AiVoiceType,
-        val content: String,
-        val directory: String,
     )
 }
