@@ -33,7 +33,6 @@ class UserController(
     private val updateUserApplication: UpdateUserApplication,
     private val readUserApplication: ReadUserApplication,
 ) {
-    // TODO: should only be allowed in non-production environments
     @PostMapping
     @Operation(
         summary = "사용자 생성",
@@ -61,6 +60,16 @@ class UserController(
                 ],
             ),
             ApiResponse(
+                responseCode = "400",
+                description = "사용자 생성 실패 (code: USER_2) - 이메일 & 비밃번호로 사용자 생성을 지원하지 않는 환경",
+                content = [
+                    Content(
+                        mediaType = "application/json",
+                        schema = Schema(implementation = HttpException::class),
+                    ),
+                ],
+            ),
+            ApiResponse(
                 responseCode = "409",
                 description = "사용자 생성 실패 (code: USER_1) - 이미 존재하는 사용자",
                 content = [
@@ -70,7 +79,6 @@ class UserController(
                     ),
                 ],
             ),
-            // TODO: add fail responses
         ],
     )
     fun createUser(
