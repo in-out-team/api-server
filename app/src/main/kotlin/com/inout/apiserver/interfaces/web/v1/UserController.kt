@@ -10,16 +10,15 @@ import com.inout.apiserver.interfaces.web.v1.request.CreateUserRequest
 import com.inout.apiserver.interfaces.web.v1.request.UpdateUserRequest
 import com.inout.apiserver.interfaces.web.v1.response.UserResponse
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
-import org.bson.types.ObjectId
 import org.springframework.http.HttpStatus.CREATED
 import org.springframework.http.HttpStatus.OK
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -99,9 +98,9 @@ class UserController(
             CREATED,
         )
 
-    @PutMapping
+    @PutMapping("/me")
     @Operation(
-        summary = "사용자 정보 수정",
+        summary = "사용자(본인) 정보 수정",
         description = "사용자 정보를 수정합니다.",
         requestBody =
             io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -125,22 +124,11 @@ class UserController(
                     ),
                 ],
             ),
-            ApiResponse(
-                responseCode = "404",
-                description = "사용자 정보 수정 실패 (code: USER_2) - 사용자를 찾을 수 없음",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = HttpException::class),
-                    ),
-                ],
-            ),
         ],
-        // TODO: add fail responses
     )
     fun updateUser(
         @RequestBody @Valid request: UpdateUserRequest,
-        @RequestUser user: User,
+        @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<UserResponse> =
         ResponseEntity(
             UserResponse.of(
@@ -160,10 +148,10 @@ class UserController(
             OK,
         )
 
-    @GetMapping("/{id}")
+    @GetMapping("/me")
     @Operation(
-        summary = "사용자 조회",
-        description = "사용자를 조회합니다.",
+        summary = "본인 사용자 정보 조회",
+        description = "본인 사용자 정보를 조회합니다.",
         responses = [
             ApiResponse(
                 responseCode = "200",
@@ -175,25 +163,14 @@ class UserController(
                     ),
                 ],
             ),
-            ApiResponse(
-                responseCode = "404",
-                description = "사용자 조회 실패 (code: USER_2) - 사용자를 찾을 수 없음",
-                content = [
-                    Content(
-                        mediaType = "application/json",
-                        schema = Schema(implementation = HttpException::class),
-                    ),
-                ],
-            ),
-            // TODO: add fail responses
         ],
     )
     fun getUser(
-        @PathVariable id: ObjectId,
+        @Parameter(hidden = true) @RequestUser user: User,
     ): ResponseEntity<UserResponse> =
         ResponseEntity(
             UserResponse.of(
-                user = readUserApplication.run(ReadUserApplication.Request(id = id)).user,
+                user = readUserApplication.run(ReadUserApplication.Request(id = user.id!!)).user,
             ),
             OK,
         )
