@@ -3,6 +3,7 @@ spring:
     mongodb:
       uri: ${MONGODB_URI} # need to check timezone with db settings
       uuid-representation: standard
+      auto-index-creation: true
   servlet:
     multipart:
       max-file-size: 5MB
