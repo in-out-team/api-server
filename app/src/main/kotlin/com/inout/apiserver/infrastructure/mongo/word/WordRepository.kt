@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.aggregation.Aggregation.addFields
 import org.springframework.data.mongodb.core.aggregation.Aggregation.count
 import org.springframework.data.mongodb.core.aggregation.Aggregation.limit
@@ -19,9 +20,97 @@ import org.springframework.data.mongodb.core.aggregation.Aggregation.match
 import org.springframework.data.mongodb.core.aggregation.Aggregation.newAggregation
 import org.springframework.data.mongodb.core.aggregation.Aggregation.skip
 import org.springframework.data.mongodb.core.aggregation.Aggregation.sort
+import org.springframework.data.mongodb.core.aggregation.AggregationOperation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.repository.MongoRepository
 import org.springframework.stereotype.Repository
+
+class WordAggregationBuilder(
+    private val fromLanguage: LanguageType,
+    private val toLanguage: LanguageType,
+    private val prefix: String,
+    private val pageable: Pageable,
+) {
+    private val stages = mutableListOf<AggregationOperation>()
+
+    private var filterLiveDefinitions: Boolean = false
+    private var lexicalCategory: LexicalCategoryType? = null
+
+    fun withLexicalCategory(lexicalCategory: LexicalCategoryType?): WordAggregationBuilder {
+        this.lexicalCategory = lexicalCategory
+        return this
+    }
+
+    fun filterLiveOnly(): WordAggregationBuilder {
+        this.filterLiveDefinitions = true
+        return this
+    }
+
+    fun build(): Pair<Aggregation, Aggregation> {
+        // 1. Match stage to filter by fromLanguage, toLanguage, and prefix
+        stages.add(
+            match(
+                Criteria
+                    .where("fromLanguage")
+                    .`is`(fromLanguage)
+                    .and("toLanguage")
+                    .`is`(toLanguage)
+                    .and("name")
+                    .regex("^$prefix.*", "i"),
+            ),
+        )
+
+        // 2. Lookup stage to join with word_definitions collection
+        stages.add(lookup("word_definitions", "_id", "wordId", "definitions"))
+
+        // 3. AddFields stage to filter definitions based on status and lexicalCategory
+        if (filterLiveDefinitions) {
+            val filterConditions =
+                mutableListOf(
+                    Document("\$eq", listOf("$\$def.status", StatusType.LIVE.name)),
+                )
+            lexicalCategory?.let {
+                filterConditions.add(
+                    Document("\$eq", listOf("$\$def.lexicalCategory", it.name)),
+                )
+            }
+
+            stages.add(
+                addFields()
+                    .addField("definitions")
+                    .withValue(
+                        Document(
+                            "\$filter",
+                            Document()
+                                .append("input", "\$definitions")
+                                .append("as", "def")
+                                .append(
+                                    "cond",
+                                    if (filterConditions.size == 1) {
+                                        filterConditions[0]
+                                    } else {
+                                        Document("\$and", filterConditions)
+                                    },
+                                ),
+                        ),
+                    ).build(),
+            )
+            stages.add(match(Criteria.where("definitions").not().size(0)))
+        } else {
+            stages.add(
+                addFields()
+                    .addField("definitions")
+                    .withValue("\$definitions")
+                    .build(),
+            )
+        }
+
+        val aggregation =
+            newAggregation(stages + sort(Sort.by(Sort.Order.asc("name"))) + skip(pageable.offset) + limit(pageable.pageSize.toLong()))
+        val countAggregation = newAggregation(stages + count().`as`("total"))
+        return aggregation to countAggregation
+    }
+}
 
 interface WordRepositoryInternal : MongoRepository<Word, ObjectId> {
     fun findByNameAndFromLanguageAndToLanguage(
@@ -78,141 +167,56 @@ class WordRepository(
 
     fun saveWordDefinition(wordDefinition: WordDefinition): WordDefinition = wordDefinitionRepository.save(wordDefinition)
 
-    // TODO: refactor with findAllWithDefinitionsBy
     fun findAllWithLiveDefinitionsBy(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
         lexicalCategory: LexicalCategoryType?,
         pageable: Pageable,
-    ): Page<WordWithDefinitions> {
-        val matchStage =
-            match(
-                Criteria
-                    .where("fromLanguage")
-                    .`is`(fromLanguage)
-                    .and("toLanguage")
-                    .`is`(toLanguage)
-                    .and("name")
-                    .regex("^$prefix.*", "i"),
-            )
-        val lookupStage = lookup("word_definitions", "_id", "wordId", "definitions")
-        val filterConditions =
-            mutableListOf(
-                Document("\$eq", listOf("$\$def.status", StatusType.LIVE.name)),
-            )
-        if (lexicalCategory != null) {
-            filterConditions.add(
-                Document("\$eq", listOf("$\$def.lexicalCategory", lexicalCategory)),
-            )
-        }
-        val addFieldsStage =
-            addFields()
-                .addField("definitions")
-                .withValue(
-                    Document(
-                        "\$filter",
-                        Document()
-                            .append("input", "\$definitions")
-                            .append("as", "def")
-                            .append(
-                                "cond",
-                                if (filterConditions.size == 1) {
-                                    filterConditions[0] // Only status
-                                } else {
-                                    Document("\$and", filterConditions) // status + lexicalCategory
-                                },
-                            ),
-                    ),
-                ).build()
-        val matchHavingDefinitionsStage =
-            match(
-                Criteria
-                    .where("definitions")
-                    .not()
-                    .size(0),
-            )
+    ): Page<WordWithDefinitions> =
+        WordAggregationBuilder(
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            prefix = prefix,
+            pageable = pageable,
+        ).withLexicalCategory(lexicalCategory)
+            .filterLiveOnly()
+            .build()
+            .let { (aggregation, countAggregation) ->
+                getPagedResults(
+                    aggregation = aggregation,
+                    countAggregation = countAggregation,
+                    pageable = pageable,
+                )
+            }
 
-        val countAggregation =
-            newAggregation(
-                matchStage,
-                lookupStage,
-                addFieldsStage,
-                matchHavingDefinitionsStage,
-                count().`as`("total"),
-            )
-        val aggregation =
-            newAggregation(
-                matchStage,
-                lookupStage,
-                addFieldsStage,
-                matchHavingDefinitionsStage,
-                sort(Sort.by(Sort.Order.asc("name"))),
-                skip(pageable.offset),
-                limit(pageable.pageSize.toLong()),
-            )
-
-        val countResult = mongoTemplate.aggregate(countAggregation, "words", Document::class.java).uniqueMappedResult
-        val total = (countResult?.get("total") as? Int)?.toLong() ?: 0L
-        val results =
-            mongoTemplate
-                .aggregate(
-                    aggregation,
-                    "words",
-                    WordWithDefinitions::class.java,
-                ).mappedResults
-
-        return PageImpl(
-            results,
-            pageable,
-            total,
-        )
-    }
-
-    // TODO: refactor with findAllWithLiveDefinitionsBy
     fun findAllWithDefinitionsBy(
         fromLanguage: LanguageType,
         toLanguage: LanguageType,
         prefix: String,
         lexicalCategory: LexicalCategoryType?,
         pageable: Pageable,
+    ): Page<WordWithDefinitions> =
+        WordAggregationBuilder(
+            fromLanguage = fromLanguage,
+            toLanguage = toLanguage,
+            prefix = prefix,
+            pageable = pageable,
+        ).withLexicalCategory(lexicalCategory)
+            .build()
+            .let { (aggregation, countAggregation) ->
+                getPagedResults(
+                    aggregation = aggregation,
+                    countAggregation = countAggregation,
+                    pageable = pageable,
+                )
+            }
+
+    private fun getPagedResults(
+        aggregation: Aggregation,
+        countAggregation: Aggregation,
+        pageable: Pageable,
     ): Page<WordWithDefinitions> {
-        val matchStage =
-            match(
-                Criteria
-                    .where("fromLanguage")
-                    .`is`(fromLanguage)
-                    .and("toLanguage")
-                    .`is`(toLanguage)
-                    .and("name")
-                    .regex("^$prefix.*", "i"),
-            )
-        val lookupStage = lookup("word_definitions", "_id", "wordId", "definitions")
-        val addFieldsStage =
-            addFields()
-                .addField("definitions")
-                .withValue("\$definitions")
-                .build()
-
-        val countAggregation =
-            newAggregation(
-                matchStage,
-                lookupStage,
-                addFieldsStage,
-                count().`as`("total"),
-            )
-        val aggregation =
-            newAggregation(
-                matchStage,
-                lookupStage,
-                addFieldsStage,
-                sort(Sort.by(Sort.Order.asc("name"))),
-                skip(pageable.offset),
-                limit(pageable.pageSize.toLong()),
-            )
-
-        val countResult = mongoTemplate.aggregate(countAggregation, "words", Document::class.java).uniqueMappedResult
-        val total = (countResult?.get("total") as? Int)?.toLong() ?: 0L
         val results =
             mongoTemplate
                 .aggregate(
@@ -221,10 +225,19 @@ class WordRepository(
                     WordWithDefinitions::class.java,
                 ).mappedResults
 
+        val countResult =
+            mongoTemplate
+                .aggregate(
+                    countAggregation,
+                    "words",
+                    Document::class.java,
+                ).uniqueMappedResult
+                ?.get("total") as? Int ?: 0
+
         return PageImpl(
             results,
             pageable,
-            total,
+            countResult.toLong(),
         )
     }
 
