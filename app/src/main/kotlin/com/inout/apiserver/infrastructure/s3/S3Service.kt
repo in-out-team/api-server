@@ -7,6 +7,9 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.PutObjectRequest
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
+import com.inout.apiserver.infrastructure.blobstore.BlobStoreService
+import com.inout.apiserver.infrastructure.blobstore.BlobStoreService.Companion.AUDIO_PREFIX
+import com.inout.apiserver.infrastructure.blobstore.BlobStoreService.Companion.PRE_SIGNED_URL_EXPIRATION
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.InputStream
@@ -18,20 +21,8 @@ class S3Service(
     private val amazonS3: AmazonS3,
     @Value("\${cloud.aws.s3.bucket}")
     private val bucket: String,
-) {
-    companion object {
-        /**
-         * audio directory rule:
-         * - static/audio/{{language}}/{{rule}}.{{audio speaker}}.mp3
-         * - rule?:
-         *   - table name + UUID
-         *   - ex: ai_speeches_{{uuid}}.alloy.mp3
-         */
-        private const val AUDIO_PREFIX = "static/audio/"
-        private const val PRE_SIGNED_URL_EXPIRATION = 3600 * 1000 // 1 hour
-    }
-
-    fun uploadAudio(
+) : BlobStoreService {
+    override fun uploadAudio(
         inputStream: InputStream,
         language: LanguageType,
         voiceType: AiVoiceType,
@@ -55,7 +46,7 @@ class S3Service(
         return directory
     }
 
-    fun getAudioUrl(directory: String): String {
+    override fun getAudioUrl(directory: String): String {
         val expiration = Date(System.currentTimeMillis() + PRE_SIGNED_URL_EXPIRATION)
         val generatePreSignedUrlRequest =
             GeneratePresignedUrlRequest(bucket, directory)
@@ -64,7 +55,7 @@ class S3Service(
         return amazonS3.generatePresignedUrl(generatePreSignedUrlRequest).toString()
     }
 
-    fun getAudioDirectory(
+    override fun getAudioDirectory(
         language: LanguageType,
         tableName: String,
         content: String,
