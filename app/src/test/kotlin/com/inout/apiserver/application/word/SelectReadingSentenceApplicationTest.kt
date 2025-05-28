@@ -5,6 +5,7 @@ import com.inout.apiserver.domain.study.StudyFactory
 import com.inout.apiserver.domain.user.UserFactory
 import com.inout.apiserver.domain.word.WordFactory
 import com.inout.apiserver.domain.word.WordService
+import com.inout.apiserver.domain.word.WordWithDefinitions
 import com.inout.apiserver.error.BadRequestException
 import com.inout.apiserver.error.ConflictException
 import com.inout.apiserver.error.NotFoundException
@@ -87,23 +88,21 @@ class SelectReadingSentenceApplicationTest(
         }
 
         describe("user is studying word") {
+            var word: WordWithDefinitions?
+            var wordDefinitionId = ObjectId()
+
             beforeEach {
+                word = wordFactory.createWord()
+                wordDefinitionId = word!!.definitions.first().id!!
                 studyFactory.createStudy(
                     userId = user!!.id!!,
-                    wordDefinitionId =
-                        wordFactory
-                            .createWord()
-                            .definitions
-                            .first()
-                            .id!!,
+                    wordDefinitionId = wordDefinitionId,
                 )
             }
 
             describe("has already selected sentence") {
                 it("should raise error if user has already selected sentence") {
                     // given
-                    val word = wordFactory.createWord()
-                    val wordDefinitionId = word.definitions.first().id!!
                     val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                     val sentenceId = sentence.id!!
                     wordService.createUserSentence(
@@ -133,8 +132,6 @@ class SelectReadingSentenceApplicationTest(
             describe("valid arguments with no selected sentence") {
                 it("should create UserSentence") {
                     // given
-                    val word = wordFactory.createWord()
-                    val wordDefinitionId = word.definitions.first().id!!
                     val sentence = wordFactory.createSentence(wordDefinitionId = wordDefinitionId)
                     val sentenceId = sentence.id!!
 
