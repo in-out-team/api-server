@@ -116,7 +116,6 @@ class StudyService(
         )
     }
 
-    // FIXME: add rate & save logic here
     fun updateStudy(study: Study): Study = studyRepository.save(study)
 
     fun getDailyStudySet(
