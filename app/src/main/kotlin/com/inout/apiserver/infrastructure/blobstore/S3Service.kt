@@ -1,4 +1,4 @@
-package com.inout.apiserver.infrastructure.s3
+package com.inout.apiserver.infrastructure.blobstore
 
 import com.amazonaws.HttpMethod
 import com.amazonaws.services.s3.AmazonS3
@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest
 import com.amazonaws.services.s3.model.PutObjectRequest
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
-import com.inout.apiserver.infrastructure.blobstore.BlobStoreService
 import com.inout.apiserver.infrastructure.blobstore.BlobStoreService.Companion.AUDIO_PREFIX
 import com.inout.apiserver.infrastructure.blobstore.BlobStoreService.Companion.PRE_SIGNED_URL_EXPIRATION
 import org.springframework.beans.factory.annotation.Value

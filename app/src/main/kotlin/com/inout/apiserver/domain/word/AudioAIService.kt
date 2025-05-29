@@ -5,16 +5,16 @@ import com.inout.apiserver.base.dto.AudioDTO
 import com.inout.apiserver.base.enums.AiVoiceType
 import com.inout.apiserver.base.enums.LanguageType
 import com.inout.apiserver.base.service.AudioService
+import com.inout.apiserver.infrastructure.blobstore.BlobStoreService
 import com.inout.apiserver.infrastructure.mongo.word.AiAudio
 import com.inout.apiserver.infrastructure.mongo.word.AiAudioRepository
-import com.inout.apiserver.infrastructure.s3.S3Service
 import org.springframework.stereotype.Service
 
 @Service
 class AudioAIService(
     private val audioService: AudioService,
     private val aiAudioRepository: AiAudioRepository,
-    private val s3Service: S3Service,
+    private val blobStoreService: BlobStoreService,
 ) {
     fun findOrCreateAudio(
         language: LanguageType,
@@ -30,7 +30,7 @@ class AudioAIService(
 
         val rawAudio = audioService.fetchSpeechFromText(text = content, requestedVoice = voiceType)
         val uploadedDirectory =
-            s3Service.uploadAudio(
+            blobStoreService.uploadAudio(
                 inputStream = rawAudio.inputStream(),
                 language = language,
                 voiceType = voiceType,

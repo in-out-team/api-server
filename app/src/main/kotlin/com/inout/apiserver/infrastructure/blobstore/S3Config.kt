@@ -1,4 +1,4 @@
-package com.inout.apiserver.config.storage
+package com.inout.apiserver.infrastructure.blobstore
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.auth.BasicAWSCredentials
