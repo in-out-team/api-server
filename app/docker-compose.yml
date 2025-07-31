@@ -3,14 +3,16 @@ version: '3.9'
 services:
   in-out-db:
     image: mongo:8.0.9
+    container_name: in-out-db
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
-      MONGO_INITDB_DATABASE: local-in-out
     volumes:
-      - mongo_data:/data/db
+      - mongo-data:/data/db
+    command: ["mongod", "--bind_ip_all", "--auth"]
+    restart: unless-stopped
     networks:
       - in-out-network
 
@@ -43,4 +45,4 @@ networks:
     driver: bridge
 
 volumes:
-  mongo_data:
+  mongo-data:

@@ -10,7 +10,6 @@ import com.inout.apiserver.infrastructure.security.CustomUserDetailsService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.core.env.Environment
 import org.springframework.http.HttpMethod
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.AuthenticationProvider
@@ -29,7 +28,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 class SecurityConfig(
     private val userRepository: UserRepository,
-    private val environment: Environment,
 ) {
     @Bean
     fun securityFilterChain(
@@ -37,34 +35,12 @@ class SecurityConfig(
         jwtAuthFilter: JwtAuthFilter,
         jwtExceptionHandlerFilter: JwtExceptionHandlerFilter,
     ): DefaultSecurityFilterChain {
-        applyCommonConfigurationsTo(http, jwtAuthFilter, jwtExceptionHandlerFilter)
-        applyApiConfigurationsTo(http)
-
-        return http.build()
-    }
-
-    private fun applyCommonConfigurationsTo(
-        http: HttpSecurity,
-        jwtAuthFilter: JwtAuthFilter,
-        jwtExceptionHandlerFilter: JwtExceptionHandlerFilter,
-    ) {
         http
             .csrf { it.disable() }
-            .addFilterBefore(
-                jwtAuthFilter,
-                UsernamePasswordAuthenticationFilter::class.java,
-            ).addFilterBefore(
-                jwtExceptionHandlerFilter,
-                JwtAuthFilter::class.java,
-            )
-    }
-
-    private fun applyApiConfigurationsTo(http: HttpSecurity) {
-        http
-            .authorizeHttpRequests { authRegistry ->
-                authRegistry
-                    .requestMatchers(*swaggerWhitelist())
-                    .permitAll()
+            .authorizeHttpRequests {
+                it
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")
+                    .permitAll() // permit all swagger related requests (TODO: this is for dev, disable on prod)
                     .requestMatchers(HttpMethod.POST, "/v1/users")
                     .permitAll() // for user creation, no authentication required
                     .requestMatchers("/v*/auth/**")
@@ -75,18 +51,11 @@ class SecurityConfig(
                     .hasRole("USER") // user role check
             }.sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) } // since we are using JWT
             .authenticationProvider(authenticationProvider())
-    }
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+            .addFilterBefore(jwtExceptionHandlerFilter, JwtAuthFilter::class.java)
 
-    private fun swaggerWhitelist(): Array<String> =
-        if (environment.activeProfiles.contains("prod")) {
-            arrayOf(
-                "/v3/api-docs/**",
-                "/swagger-ui/**",
-                "/swagger-ui.html",
-            )
-        } else {
-            emptyArray()
-        }
+        return http.build()
+    }
 
     @Bean
     fun userDetailsService(): UserDetailsService = CustomUserDetailsService(userRepository)
